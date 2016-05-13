@@ -1,0 +1,110 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Daedalus 04 BitmapPathfinding javascript example</title>
+</head>
+<body bgcolor="#000000">
+<script src="build/ddls.js"></script>
+<script src="js/ddls_plugins/SimpleView.js"></script>
+<script>
+
+
+var DEMO = function() {
+    this.newPath = false;
+    //this.mesh = DDLS.RectMesh(1024,780);
+    this.imageLoader = new DDLS.ImageLoader(["assets/p2_nb.png", "assets/p2_c.png"], this.onLoaded.bind(this) );
+};
+
+
+DEMO.prototype = {
+    onLoaded: function() {
+        var images = this.imageLoader.images;
+        this.img = images.get("p2_nb.png");
+        this.world = new DDLS.World(this.img.width, this.img.height);
+        this.basicCanvas = new DDLS.BasicCanvas( this.img.width, this.img.height );
+        this.view = new DDLS.SimpleView(this.basicCanvas);
+        
+        this.ctx = this.basicCanvas.ctx;
+        this.w = this.img.width;
+        this.h = this.img.height;
+        this.ctx.drawImage(this.img,0,0,this.w,this.h);
+        var pixels = DDLS.fromImageData(this.ctx.getImageData(0,0,this.w,this.h));
+        this.ctx.clearRect(0,0,this.w,this.h);
+        this.img = images.get("p2_c.png");
+        this.ctx.drawImage(this.img,0,0,this.w,this.h);
+        this.object = DDLS.BitmapObject.buildFromBmpData(pixels,1.8);
+        this.object.x = 0;
+        this.object.y = 0;
+        //var s = DDLS.Timer.stamp();
+       // this.mesh = DDLS.RectMesh(this.w,this.h);
+       // this.mesh.insertObject(this.object);
+
+        this.world.mesh.insertObject(this.object);
+
+        this.world.addHeroe({x:20, y:20, r:2, speed:10});
+
+        /*this.entityAI = new DDLS.EntityAI();
+        this.entityAI.radius = 2;
+        this.entityAI.x = 20;
+        this.entityAI.y = 20;
+        this.pathfinder = new DDLS.PathFinder();
+        this.pathfinder.entity = this.entityAI;
+        this.pathfinder.mesh = this.mesh;
+        this.path = [];
+        this.pathSampler = new DDLS.LinearPathSampler();
+        this.pathSampler.entity = this.entityAI;
+        this.pathSampler.samplingDistance = 10;
+        this.pathSampler.path = this.path;*/
+        var bc = this.basicCanvas.canvas;
+        bc.onmousedown = function(e){this.onMouseDown(e)}.bind(this);
+       // bc.onmouseup = this.onMouseUp.bind(this);
+       // bc.onmousemove = this.onMouseMove.bind(this);
+       // this.basicCanvas.onEnterFrame = this.onEnterFrame.bind(this);
+
+       this.render();
+    }
+    /*,onMouseMove: function(e) {
+        var p = e;
+        this.mx = p.clientX;
+        this.my = p.clientY;
+    }
+    ,onMouseUp: function(event) {
+        this.newPath = false;
+    }*/
+    ,onMouseDown: function(e) {
+        this.view.drawMesh(this.world.mesh,true);
+        var rect = e.target.getBoundingClientRect();
+        this.world.heroes[0].setTarget(e.clientX - rect.left, e.clientY - rect.top);
+    }
+    ,render: function() {
+        requestAnimationFrame( this.render.bind(this) );
+        this.world.update();
+        var i = this.world.heroes.length, h;
+        while(i--){
+            h = this.world.heroes[i];
+            if(h.newPath) this.view.drawPath( h.entity.path );
+            this.view.drawEntity(h.entity);
+        }
+        /*if(this.newPath) {
+            this.ctx.clearRect(0,0,this.w,this.h);
+            this.ctx.drawImage(this.img,0,0,this.w,this.h);
+            this.view.drawMesh(this.mesh,false);
+            this.pathfinder.findPath(this.mx,this.my,this.path);
+            this.view.drawPath(this.path);
+            this.pathSampler.reset();
+        }
+        if(this.pathSampler.hasNext) this.pathSampler.next();
+        this.view.drawEntity(this.entityAI);*/
+    }
+    ,onKeyDown: function(event) {
+        if(event.keyCode == 32) event.preventDefault(); else if(event.keyCode == 13) event.preventDefault();
+    }
+};
+
+new DEMO();
+</script>
+</body>

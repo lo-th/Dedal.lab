@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>three.js webgl - geometry - cube</title>
+<meta charset="utf-8">
+<style>
+body { margin: 0px; background-color: #6a6a6a; overflow: hidden; background-image:url(images/bg.png); background-repeat:repeat-x;}
+canvas { position: absolute; top:0; left:0; pointer-events:auto; width:100%; height:100%; }
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+
+<script src="src/DDLS.js"></script>
+<script src="src/math/Point.js"></script>
+<script src="src/math/Matrix2D.js"></script>
+<script src="src/math/RandGenerator.js"></script>
+<script src="src/data/Edge.js"></script>
+<script src="src/data/Face.js"></script>
+<script src="src/data/Vertex.js"></script>
+<script src="src/data/Object.js"></script>
+<script src="src/data/Segment.js"></script>
+<script src="src/data/Shape.js"></script>
+<script src="src/data/Iterators.js"></script>
+<script src="src/math/Geom2D.js"></script>
+<script src="src/data/Mesh.js"></script>
+<script src="src/data/Graph.js"></script>
+<script src="src/math/Potrace.js"></script>
+<script src="src/math/Tools.js"></script>
+<script src="src/ai/AStar.js"></script>
+<script src="src/ai/EntityAI.js"></script>
+<script src="src/ai/Funnel.js"></script>
+<script src="src/ai/PathFinder.js"></script>
+<script src="src/ai/FieldOfView.js"></script>
+<script src="src/ai/trajectory/LinearPathSampler.js"></script>
+<script src="src/ai/trajectory/PathIterator.js"></script>
+<script src="src/factories/RectMesh.js"></script>
+<script src="src/factories/BitmapObject.js"></script>
+<script src="src/factories/BitmapMesh.js"></script>
+<script src="src/ai/Heroe.js"></script>
+<script src="src/ai/World.js"></script>
+
+<script src="js/three.min.js"></script>
+<script src="js/sea3d.min.js"></script>
+<script src="js/OrbitControls.js"></script>
+<script src="js/ddls_plugins/ThreeView.js"></script>
+<script>
+
+var canvas, camera, scene, renderer, controls, clock, mouse, raycaster, offset, select = null, down = false, first = false;
+var world, ddlsRender;
+var geobox = null;
+var matbox = null;
+var matboxSelect = null;
+var h1;
+var objects = [], plane, draw;
+var obj = [];
+var mousePos = null;
+
+var heroModel = null;
+var decals = {};
+var hero = [];
+var heroObj = [];
+
+var INTERSECTED, SELECTED, HERO;
+
+var DrawCanvas = function(){
+    this.drawcanvas = document.createElement('canvas');
+    this.drawcanvas.width = 1024;
+    this.drawcanvas.height = 1024;
+    this.ctx = this.drawcanvas.getContext('2d');
+    this.ctx.lineJoin = this.ctx.lineCap = 'round';
+    this.ctx.clearRect( 0, 0, 1024, 1024 );
+    //this.ctx.lineWidth="6";
+    //this.ctx.strokeStyle="red";
+    /*this.ctx.fillStyle = "#FFFFFF";
+    this.ctx.rect(0,0,1024, 1024);
+    this.ctx.fill();*/
+    this.isDrawing = false; 
+    this.lastPoint = {};
+
+    this.texture = new THREE.Texture(this.drawcanvas);
+    this.texture.needsUpdate = true;
+    plane.material.map = this.texture;
+}
+
+DrawCanvas.prototype = {
+    down:function(x,y){
+        this.isDrawing = true;
+        this.lastPoint = { x:x, y:y };
+    },
+    move:function(x,y){
+        if (!this.isDrawing) return;
+
+        var currentPoint = { x:x, y:y };
+        var dist = distanceBetween(this.lastPoint, currentPoint);
+        var angle = angleBetween(this.lastPoint, currentPoint);
+        for (var i = 0; i < dist; i+=5) {
+            x = this.lastPoint.x + (Math.sin(angle) * i);
+            y = this.lastPoint.y + (Math.cos(angle) * i);
+            var radgrad = this.ctx.createRadialGradient(x,y,10,x,y,20);
+    
+            radgrad.addColorStop(0, '#000');
+            radgrad.addColorStop(0.5, 'rgba(0,0,0,0.5)');
+            radgrad.addColorStop(1, 'rgba(0,0,0,0)');
+
+            this.ctx.fillStyle = radgrad;
+            this.ctx.fillRect(x-20, y-20, 40, 40);
+        }
+        this.lastPoint = currentPoint;
+        this.texture.needsUpdate = true;
+
+        //this.update();
+    },
+    up:function(e){
+        if (!this.isDrawing) return;
+        this.isDrawing = false;
+        this.update();
+    },
+    update:function(){
+        var pixels = DDLS.fromImageData(this.ctx.getImageData(0,0,1024,1024));
+
+
+        world.mesh.dispose()
+        world.mesh = DDLS.BitmapMesh.buildFromBmpData(pixels,1.8);
+        //world.mesh.updateObjects(true);
+        world.mesh.isRedraw = true;
+        /*this.object = DDLS.BitmapObject.buildFromBmpData(pixels,1.8);
+
+        if(world.objects[0]){ 
+            world.objects[0] = this.object;
+            world.rebuild();
+        }else{
+            world.add(this.object);
+        }*/
+
+    }
+}
+
+
+init();
+animate();
+
+function init() {
+    canvas = document.getElementById( 'canvas' );
+
+    decals = {x:512, y:512};
+
+    camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 10000 );
+    camera.position.set(decals.x, decals.y, 300+600);
+
+    controls = new THREE.OrbitControls( camera, canvas );
+    controls.target.set(decals.x,0,decals.y);
+
+    scene = new THREE.Scene();
+
+    clock = new THREE.Clock();
+
+    mouse = new THREE.Vector2();
+    raycaster = new THREE.Raycaster();
+    offset = new THREE.Vector3();
+    mousePos = new THREE.Vector3();
+
+    var baseBox = new THREE.BoxGeometry( 1, 1, 1 );
+    baseBox.applyMatrix(new THREE.Matrix4().makeTranslation(0,0.5,0));
+
+    var geometry = new THREE.BoxGeometry( 10, 10, 10 );
+    geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0,5,0));
+    var material = new THREE.MeshBasicMaterial( { color:0x00FF00 } );
+
+    plane = new THREE.Mesh( new THREE.PlaneBufferGeometry( 1024, 1024, 8, 8 ), new THREE.MeshBasicMaterial( { visible: true , color:0xFFFFFF, transparent:true, opacity:0.1 } ) );
+    plane.geometry.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI*0.5));
+    plane.geometry.applyMatrix(new THREE.Matrix4().makeTranslation(decals.x,0, decals.y));
+    
+    scene.add( plane );
+
+    scene.add( new THREE.AmbientLight( 0xAAAAAA ) );
+
+    renderer = new THREE.WebGLRenderer({canvas:canvas, antialias:false, alpha:true });
+    renderer.setPixelRatio( window.devicePixelRatio );
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    renderer.setClearColor( 0x000000 , 0.0);
+
+    //
+
+    canvas.onmousedown = mouseDown;
+    canvas.onmouseup = mouseUp;
+    canvas.onmousemove = mouseMove;
+
+    window.addEventListener( 'resize', onWindowResize, false );
+
+
+    world = new DDLS.World(1024, 1024);
+    //world.mesh.isRedraw = true;
+    ddlsRender = new DDLSRender();
+    //world.mesh.updateObjects(true);
+
+
+    //
+
+    //load();
+    draw = new DrawCanvas();
+
+}
+
+function distanceBetween(p1, p2) {
+    return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+}
+function angleBetween(p1, p2) {
+    return Math.atan2( p2.x - p1.x, p2.y - p1.y );
+}
+
+
+function load(){
+    var loader = new THREE.SEA3D();
+    loader.onComplete = function( e ) {
+        heroModel = loader.getMesh("hero");
+        geobox = loader.getMesh("box").geometry;
+        matbox = loader.getMesh("box").material;
+        matboxSelect = matbox.clone();
+        matboxSelect.color.setHex( 0xff0000 );
+        matboxSelect.transparent = true;
+        matboxSelect.opacity = 0.5;
+
+        demo();
+    }
+    loader.load( 'models/basic.sea' );
+}
+
+function demo(){
+    world = new DDLS.World(600,600);
+
+    var i = 50, x, y, w, h, r, d;
+    while(i--) {
+        x = DDLS.randInt(50, 600);
+        y = DDLS.randInt(50, 600);
+        w = DDLS.randInt(10, 40);
+        h = DDLS.randInt(10, 40);
+        r = DDLS.rand(0, DDLS.TwoPI);
+        d = (w*h*0.025)+DDLS.rand(1, 4);
+
+        obj[i] = world.addObject({ x:x, y:y, w:w, h:h, r:r });
+        objects[i] = new THREE.Mesh( geobox, matbox );
+
+        objects[i].scale.set(w*2,d, h*2);
+        objects[i].position.set(x,0,y);
+        objects[i].rotation.y = r;
+
+        scene.add( objects[i] );
+    }
+
+    ddlsRender = new DDLSRender();
+
+    addHero(20,20,4);
+
+    //h1 = world.addHeroe({x:20, y:20, r:4, speed:10});
+}
+
+function addHero(x, y, r){
+    var id = hero.length;
+
+    //var geo = new THREE.BoxGeometry( r*2, 10, r*2 );
+    var geo = new THREE.SphereGeometry( r*2 );
+    geo.applyMatrix(new THREE.Matrix4().makeTranslation(0,r*2,0));
+    var mat = new THREE.MeshBasicMaterial( { color:0x00FF00 , visible:false } );
+    var mat2 = new THREE.MeshBasicMaterial( { color:0x00FF00, wireframe:true, visible:true} );
+
+    var cont = new THREE.Mesh(new THREE.CircleGeometry(r), mat2);
+    cont.geometry.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI*0.5));
+
+    var m =  heroModel.clone();
+    m.scale.set(25,25,25);
+    m.position.y = 7;
+    m.play("idle", .5);
+
+    hero[id] = world.addHeroe({x:x, y:y, r:r, speed:1});
+    heroObj[id] = new THREE.Mesh(geo, mat);
+
+    hero[id].mesh = heroObj[id];
+
+
+
+    heroObj[id].add(cont);
+    heroObj[id].add(m)
+    scene.add(heroObj[id]);
+
+}
+function findTargetHero(id){
+    hero[id].setTarget(mousePos.x, mousePos.z);
+    //console.log(mousePos.x)
+};
+
+function selectHero(id){
+    HERO = heroObj[id];
+    //hero[id].mesh.material = new THREE.MeshBasicMaterial( { color:0xFFFF00, visible:false } );
+    hero[id].mesh.children[0].material = new THREE.MeshBasicMaterial( { color:0xFFFF00, wireframe:true } );
+    hero[id].isSelected = true;
+};
+
+function unSelectHero(id){
+    HERO = null;
+    //hero[id].mesh.material = new THREE.MeshBasicMaterial( { color:0x00FF00 } );
+    hero[id].mesh.children[0].material = new THREE.MeshBasicMaterial( { color:0x00FF00, wireframe:true } );
+    hero[id].isSelected = false;
+};
+
+function updateWorldMesh(id){
+    obj[id].position(objects[id].position.x, objects[id].position.z)
+    //obj[id].x = objects[id].position.x;
+    //obj[id].y = objects[id].position.z;
+    obj[id].rotation = objects[id].rotation.y;
+};
+
+
+function mouseUp(e){
+    down = false;
+    e.preventDefault();
+    controls.enabled = true;
+    if ( INTERSECTED ) SELECTED = null;
+    canvas.style.cursor = 'auto';
+
+    draw.up();
+}
+
+function mouseDown(e){
+    down = true;
+    first = true;
+
+    var inter;
+    raycaster.setFromCamera( mouse, camera );
+
+    inter = raycaster.intersectObjects( heroObj );
+    if ( inter.length > 0 ) {
+        if(down){ 
+            selectHero(heroObj.indexOf(inter[ 0 ].object));
+        }
+    } /*else {
+        if(HERO!=null && down){
+            unSelectHero(heroObj.indexOf(HERO));
+        }
+    }*/
+
+    inter = raycaster.intersectObject( plane );
+    if ( inter.length > 0 ) {
+        controls.enabled = false;
+        var p = inter[ 0 ].point;
+        draw.down(p.x,p.z);
+            mousePos.copy(p);
+            if(HERO!=null && down) findTargetHero(heroObj.indexOf(HERO) );
+    }
+
+    e.preventDefault();
+}
+
+function mouseMove(e){
+    mouse.x = ( e.clientX / window.innerWidth ) * 2 - 1;
+    mouse.y = - ( e.clientY / window.innerHeight ) * 2 + 1;
+
+    raycaster.setFromCamera( mouse, camera );
+
+    var inter = raycaster.intersectObject( plane );
+    if ( inter.length > 0 ) {
+        var p = inter[ 0 ].point;
+        draw.move(p.x,p.z);
+          //  mousePos.copy(p);
+          //  if(HERO!=null && down) findTargetHero(heroObj.indexOf(HERO) );
+    }
+    //updateRaycast();
+}
+
+function updateRaycast(){
+    var inter;
+    raycaster.setFromCamera( mouse, camera );
+
+
+    
+    inter = raycaster.intersectObjects( objects );
+    if ( inter.length > 0 ) {
+        if ( INTERSECTED != inter[ 0 ].object ) {
+            if ( INTERSECTED ) INTERSECTED.material = matbox;
+            INTERSECTED = inter[ 0 ].object;
+            INTERSECTED.material = matboxSelect;
+        }
+        canvas.style.cursor = 'pointer';
+    } else {
+        if ( INTERSECTED )  INTERSECTED.material = matbox;
+        INTERSECTED = null;
+        SELECTED = null;
+        canvas.style.cursor = 'auto';
+    }
+
+    if(first && INTERSECTED){
+        controls.enabled = false;
+        SELECTED = INTERSECTED;
+        canvas.style.cursor = 'move';
+    }
+
+   
+
+    if ( SELECTED ) {
+        inter = raycaster.intersectObject( plane );
+        if ( inter.length > 0 ) {
+            var p = inter[ 0 ].point;
+            mousePos.copy(p);
+            if(first){
+                offset.x = SELECTED.position.x-p.x;
+                offset.z = SELECTED.position.z-p.z;
+            }
+            SELECTED.position.copy( p.add( offset ) );
+            updateWorldMesh(objects.indexOf(SELECTED))
+        }
+    }
+
+    if(first) first = false;
+}
+
+function onWindowResize() {
+
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize( window.innerWidth, window.innerHeight );
+
+}
+
+function animate() {
+
+    requestAnimationFrame( animate );
+
+    var delta = clock.getDelta();
+    THREE.SEA3D.AnimationHandler.update( delta*0.6 );
+    THREE.AnimationHandler.update( delta*0.6 );
+
+    var i = hero.length;
+    while(i--){
+        if(hero[i].move) { hero[i].mesh.children[1].play("walk", .5); hero[i].inWalk = true;}
+        if(hero[i].inWalk && !hero[i].move){ hero[i].mesh.children[1].play("idle", .5); hero[i].inWalk = false;}
+    }
+
+    controls.update();
+    if(ddlsRender) ddlsRender.update();
+    renderer.render( scene, camera );
+
+}
+
+</script>
+
+</body>
+</html>
