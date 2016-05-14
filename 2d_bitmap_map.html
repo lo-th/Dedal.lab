@@ -114,6 +114,10 @@ DEMO.prototype = {
     ,render: function() {
         requestAnimationFrame( this.render.bind(this) );
         this.world.update();
+
+        this.view.drawMesh( this.world.mesh, true );
+
+
         var i = this.world.heroes.length, h;
         while(i--){
             h = this.world.heroes[i];
