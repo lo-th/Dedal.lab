@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<title>three.js webgl - geometry - cube</title>
+<title>DDLS 3D draw</title>
 <meta charset="utf-8">
 <style>
 body { margin: 0px; background-color: #6a6a6a; overflow: hidden; background-image:url(images/bg.png); background-repeat:repeat-x;}
@@ -39,11 +39,12 @@ canvas { position: absolute; top:0; left:0; pointer-events:auto; width:100%; hei
 <script src="src/factories/BitmapMesh.js"></script>
 <script src="src/ai/Heroe.js"></script>
 <script src="src/ai/World.js"></script>
+<script src="src/view/ThreeView.js"></script>
 
-<script src="js/three.min.js"></script>
-<script src="js/sea3d.min.js"></script>
-<script src="js/OrbitControls.js"></script>
-<script src="js/ddls_plugins/ThreeView.js"></script>
+<script src="js/libs//three.min.js"></script>
+<script src="js/libs/sea.min.js"></script>
+<script src="js/controls/OrbitControls.js"></script>
+
 <script>
 
 var canvas, camera, scene, renderer, controls, clock, mouse, raycaster, offset, select = null, down = false, first = false;
@@ -117,7 +118,7 @@ DrawCanvas.prototype = {
         this.update();
     },
     update:function(){
-        var pixels = DDLS.fromImageData(this.ctx.getImageData(0,0,1024,1024));
+        var pixels = DDLS.fromImageData(null, this.ctx.getImageData(0,0,1024,1024));
 
 
         world.mesh.dispose()
@@ -191,7 +192,7 @@ function init() {
 
     world = new DDLS.World(1024, 1024);
     //world.mesh.isRedraw = true;
-    ddlsRender = new DDLSRender();
+    ddlsRender = new DDLS.ThreeView( scene, world );
     //world.mesh.updateObjects(true);
 
 
@@ -248,7 +249,7 @@ function demo(){
         scene.add( objects[i] );
     }
 
-    ddlsRender = new DDLSRender();
+    ddlsRender = new DDLS.ThreeView( scene, world );
 
     addHero(20,20,4);
 
@@ -427,7 +428,6 @@ function animate() {
 
     var delta = clock.getDelta();
     THREE.SEA3D.AnimationHandler.update( delta*0.6 );
-    THREE.AnimationHandler.update( delta*0.6 );
 
     var i = hero.length;
     while(i--){

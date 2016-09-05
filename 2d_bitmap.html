@@ -4,56 +4,57 @@
 <html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>DDLS Pathfinding</title>
+<title>DDLS bitmap</title>
 <style> 
 body { margin: 0px; background-color: #000000; overflow: hidden; }
-canvas { position:absolute; left:50%; top:50%; margin-left:-300px; margin-top:-300px; }
+canvas { position:absolute; left:50%; top:50%; margin-left:-512px; margin-top:-390px; }
 </style>
+<script src="build/ddls.min.js"></script>
 </head>
 <body>
-<script src="build/ddls.min.js"></script>
+
 <script>
-var world, basicCanvas, view;
 
-init();
-render();
+var world, view, loader;
 
-function init(){
+loader = new DDLS.ImageLoader(["assets/galapagosBW.png","assets/galapagosColor.png"], init );
 
-    world = new DDLS.World(600,600);
+function init (){
+
+    var images = loader.images;
+
+    var imgNB = images.get("galapagosBW3.png");
+    var img = images.get("galapagosColor.png");
+
+    world = new DDLS.World( img.width, img.height );
     view = new DDLS.SimpleView( world );
 
-    var object;
-    var i = 50;
-    while(i--) {
-        world.addObject({
-            x:DDLS.randInt(50, 600),
-            y:DDLS.randInt(50, 600),
-            w:DDLS.randInt(10, 40),
-            h:DDLS.randInt(10, 40),
-            r:DDLS.rand(0, DDLS.TwoPI)
-        });
-    }
+    view.drawImage( img );
 
-    world.addHeroe({x:20, y:20, r:4, speed:10});
+    var pixels = DDLS.fromImageData( imgNB );
+    var mesh = DDLS.BitmapObject.buildFromBmpData( pixels, 1.8 );
 
-    world.addHeroe({x:40, y:20, r:4, speed:10});
+    world.mesh.insertObject( mesh );
 
-    view.drawMesh(world.mesh);
+    view.drawMesh( world.mesh );
+
+    world.addHeroe({ x:50, y:50, r:4, speed:10 });
 
     view.domElement.onmousedown = onMouseDown;
-    
-};
+
+    render();
+
+}
 
 function onMouseDown (e) {
 
     var rect = e.target.getBoundingClientRect();
     world.heroes[0].setTarget(e.clientX - rect.left, e.clientY - rect.top);
 
- };
-
+};
 
 function render() {
+
     requestAnimationFrame( render );
 
     world.update();
@@ -62,13 +63,13 @@ function render() {
 
     var i = world.heroes.length, h;
     while(i--){
+
         h = world.heroes[i];
         view.drawPath( h.tmppath );
         view.drawEntity( h.entity );
-        
+
     }
-
 };
-
+        
 </script>
 </body>

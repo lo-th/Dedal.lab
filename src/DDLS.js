@@ -1,6 +1,9 @@
 
 var DDLS = DDLS || {};
 
+// VIEW
+DDLS.VIEW = null;
+
 // UNIQUE ID
 DDLS.SegmentID = 0;
 DDLS.ShapeID = 0;

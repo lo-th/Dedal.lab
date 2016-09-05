@@ -1,5 +1,9 @@
+var THREE;
 
-function DDLSRender(){
+DDLS.ThreeView = function( scene, world ) {
+//function ThreeView( scene, world ){
+
+    this.world = world;
 
     this.maxVertices = 30000;
     this.currentVertex = 0;
@@ -31,11 +35,13 @@ function DDLSRender(){
     this.bufferPath.frustumCulled = false;
     scene.add(this.bufferPath);
 
+    DDLS.VIEW = this;
+
 }
 
-DDLSRender.prototype = {
+DDLS.ThreeView.prototype = {
 
-    constructor: DDLSRender,
+    constructor: DDLS.ThreeView,
 
     collapseBuffer : function() {
 
@@ -74,30 +80,32 @@ DDLSRender.prototype = {
 
         //
 
-        //var redraw = world.mesh.updateObjects();
+        //var redraw = this.world.mesh.updateObjects();
         //if(redraw){
-        if( world.mesh.isRedraw ){
+        if( this.world.mesh.isRedraw ){
             this.currentVertex = 0;
             
-            world.mesh.draw();
+            this.world.mesh.draw();
 
             this.collapseBuffer();
             this.buffer.geometry.attributes.position.needsUpdate = true;
             this.buffer.geometry.attributes.color.needsUpdate = true;
         }
 
-        world.update();
+        this.world.update();
 
-        var i = world.heroes.length;
+        var i = this.world.heroes.length, h;
 
         while(i--){
 
-            //world.heroes[i].update();
+            h = this.world.heroes[i];
+
+            //this.world.heroes[i].update();
             
-            if(world.heroes[i].isSelected && world.heroes[i].tmppath.length>0){
+            if( h.isSelected && h.tmppath.length > 0 ){
                 this.currentPathVertex = 0;
-                var p = world.heroes[i].tmppath;
-                if( p.length === 0 ) return;
+                var p = this.world.heroes[i].tmppath;
+                //if( p.length === 0 ) return;
                 var prevX = p[0];
                 var prevY = p[1];
                 var j = 2;
@@ -116,7 +124,7 @@ DDLSRender.prototype = {
                     this.insertPath(p[n], p[n+1], p[n+2], p[n+3], 1,0,0);
                 }*/
 
-               this.collapsePathBuffer();
+                this.collapsePathBuffer();
                 this.bufferPath.geometry.attributes.position.needsUpdate = true;
                 this.bufferPath.geometry.attributes.color.needsUpdate = true;
 
@@ -180,9 +188,9 @@ DDLS.Mesh.prototype.draw = function(){
     while(i--){
         n = i * 5;
         if(edge[n+4]) {
-            ddlsRender.insertLine( edge[n], edge[n+1], edge[n+2], edge[n+3], 0,0,0 );
+            DDLS.VIEW.insertLine( edge[n], edge[n+1], edge[n+2], edge[n+3], 0,0,0 );
         }else{
-            ddlsRender.insertLine( edge[n], edge[n+1], edge[n+2], edge[n+3], 0.4,0.4,0.4 );
+            DDLS.VIEW.insertLine( edge[n], edge[n+1], edge[n+2], edge[n+3], 0.4,0.4,0.4 );
         }
     }
     this.isRedraw = false;

@@ -48,7 +48,7 @@ DDLS.Funnel.prototype = {
     getCopyPoint: function(pointToCopy) {
         return this.getPoint(pointToCopy.x,pointToCopy.y);
     },
-    findPath: function(from, target, listFaces, listEdges, resultPath) {
+    findPath: function( from, target, listFaces, listEdges, resultPath ) {
         var p_from = from;
         var p_to = target;
         var rad = this._radius * 1.01;

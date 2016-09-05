@@ -1,6 +1,9 @@
 
 var DDLS = DDLS || {};
 
+// VIEW
+DDLS.VIEW = null;
+
 // UNIQUE ID
 DDLS.SegmentID = 0;
 DDLS.ShapeID = 0;
@@ -42,6 +45,9 @@ DDLS.TwoPI  = 6.283185307179586;
 DDLS.PI90   = 1.570796326794896;
 DDLS.PI270  = 4.712388980384689;
 
+DDLS.torad = 0.0174532925199432957;
+DDLS.todeg = 57.295779513082320876;
+
 DDLS.NaN = Number.NaN;
 DDLS.NEGATIVE_INFINITY = -Infinity;
 DDLS.POSITIVE_INFINITY = Infinity;
@@ -58,7 +64,7 @@ if(!DDLS_ARRAY_TYPE) DDLS_ARRAY_TYPE = (typeof Float32Array !== 'undefined') ? F
 
 // LOG
 DDLS.Log = function(str){
-    console.log(str)
+    console.log( str );
 };
 
 // BIND
@@ -188,6 +194,11 @@ DDLS.Point.prototype = {
     },
     get_length: function() {
         return DDLS.sqrt(this.x * this.x + this.y * this.y);
+    },
+    angular:function(a){
+        this.x = DDLS.cos(a);
+        this.y = DDLS.sin(a);
+        return this;
     },
     normalize: function() {
         var norm = this.get_length();
@@ -507,15 +518,15 @@ DDLS.Object = function() {
 };
 DDLS.Object.prototype = {
     constructor: DDLS.Object,
-    position:function(x,y){
+    position:function( x, y ){
         this._position.set(x,y);
         this.hasChanged = true;
     },
-    scale:function(w,h){
+    scale:function( w, h ){
         this._scale.set(w,h);
         this.hasChanged = true;
     },
-    pivot:function(x,y){
+    pivot:function( x, y ){
         this._pivot.set(x,y);
         this.hasChanged = true;
     },
@@ -735,12 +746,15 @@ DDLS.FromMeshToFaces.prototype = {
 //-------------------------
 
 DDLS.FromVertexToHoldingFaces = function() {
-    //this._fromVertex = null;
-    //this._nextEdge = null;
+    this._fromVertex = null;
+    this._nextEdge = null;
     Object.defineProperty(this, 'fromVertex', {
-        set: function(value) { 
+        set: function( value ) { 
+            //console.log(value)
             this._fromVertex = value;
-            this._nextEdge = this._fromVertex.edge;
+            this._nextEdge = this._fromVertex.edge;// || null;
+           // if(this._fromVertex) this._nextEdge = this._fromVertex.edge;// || null;
+           // else DDLS.Log('!! null vertex')
         }
     });
 };
@@ -759,7 +773,8 @@ DDLS.FromVertexToHoldingFaces.prototype = {
                 if(!this._resultFace.isReal) this._resultFace = null;
                 break;
             }
-        } while(!this._resultFace.isReal); else this._resultFace = null;
+        } while(!this._resultFace.isReal); 
+        else this._resultFace = null;
         return this._resultFace;
     }
 };
@@ -877,61 +892,83 @@ DDLS.SquaredSqrt = function(a,b){
 DDLS.Geom2D = {};
 DDLS.Geom2D.__samples = [];
 DDLS.Geom2D.__circumcenter = new DDLS.Point();
+DDLS.Geom2D._randGen = null;
 
-DDLS.Geom2D.locatePosition = function(p,mesh) {
+DDLS.Geom2D.locatePosition = function( p, mesh ) {
 
     // jump and walk algorithm
 
-    if(DDLS.Geom2D._randGen == null) DDLS.Geom2D._randGen = new DDLS.RandGenerator();
-    DDLS.Geom2D._randGen.seed = DDLS.int(p.x * 10 + 4 * p.y);
+    if(this._randGen == null) this._randGen = new DDLS.RandGenerator();
+    this._randGen.seed = DDLS.int(p.x * 10 + 4 * p.y);
     var i;
-    DDLS.Geom2D.__samples.splice(0, DDLS.Geom2D.__samples.length);
-    var numSamples = DDLS.int(DDLS.pow(mesh._vertices.length,0.333333333333333315));
+    this.__samples.splice(0, this.__samples.length);
+    //var numSamples = DDLS.int(DDLS.pow(mesh._vertices.length,0.333333333333333315));
+    var numSamples = DDLS.int(DDLS.pow(mesh._vertices.length,1/3));
+    
     //console.log(numSamples, mesh._vertices.length);
-    DDLS.Geom2D._randGen.rangeMin = 0;
-    DDLS.Geom2D._randGen.rangeMax = mesh._vertices.length - 1;
 
-    i = numSamples;
-    while(i--){
-        DDLS.Geom2D.__samples.push(mesh._vertices[DDLS.Geom2D._randGen.next()]);
+    this._randGen.rangeMin = 0;
+    this._randGen.rangeMax = mesh._vertices.length - 1;
+
+    //i = numSamples;
+    //while(i--){
+    for ( i = 0 ; i < numSamples; i++ ){
+        this.__samples.push(mesh._vertices[this._randGen.next()]);
     }
 
     var currVertex, currVertexPos, distSquared;
     var minDistSquared = DDLS.POSITIVE_INFINITY;
     var closedVertex = null;
-    i = 0;
-    var n = 0
-    while(n < numSamples) {
-        i = n++;
-        currVertex = DDLS.Geom2D.__samples[i];
+    //i = 0;
+    //var n = 0
+    //while( n < numSamples ) {
+    for ( i = 0 ; i < numSamples; i++ ){
+        //i = n++;
+        currVertex = this.__samples[i];
         currVertexPos = currVertex.pos;
         distSquared = DDLS.Squared(currVertexPos.x - p.x, currVertexPos.y - p.y);
-        if(distSquared < minDistSquared) {
+        if( distSquared < minDistSquared ) {
             minDistSquared = distSquared;
             closedVertex = currVertex;
         }
     }
-    var currFace;
+
+    //var currFace;
     var iterFace = new DDLS.FromVertexToHoldingFaces();
+
+    if(closedVertex===null){ 
+        DDLS.Log('no closedVertex find ?');
+        //return {type:DDLS.NULL};
+    }
     iterFace.fromVertex = closedVertex;
-    currFace = iterFace.next();
-    var faceVisited = new DDLS.Dictionary(1);
+
+    var currFace = iterFace.next();
+
+    //var faceVisited = new DDLS.Dictionary(1);
+    var faceVisited = new DDLS.Dictionary();
     var currEdge;
     var iterEdge = new DDLS.FromFaceToInnerEdges();
-    var relativPos;
+    var relativPos = 0;
     var numIter = 0;
 
-    var objectContainer = DDLS.Geom2D.isInFace(p,currFace);
+    var objectContainer = DDLS.Geom2D.isInFace( p, currFace );
 
-    while(faceVisited.get(currFace) || objectContainer.type === 3 ){
+    while( faceVisited.get(currFace) || objectContainer.type === DDLS.NULL ){
+
+        
+
         faceVisited.set(currFace, true);
         numIter++;
         if(numIter == 50) DDLS.Log("WALK TAKE MORE THAN 50 LOOP");
-        if(numIter == 1000){ DDLS.Log("WALK TAKE MORE THAN 1000 LOOP -> WE ESCAPE"); objectContainer = {type:DDLS.NULL}; break; }
+        if(numIter == 1000){ 
+            DDLS.Log("WALK TAKE MORE THAN 1000 LOOP -> WE ESCAPE"); 
+            objectContainer = {type:DDLS.NULL}; 
+            break; 
+        }
         iterEdge.fromFace = currFace;
         do {
             currEdge = iterEdge.next();
-            if(currEdge == null) {
+            if(currEdge === null) {
                 DDLS.Log("KILL PATH");
                 return null;
             }
@@ -941,8 +978,13 @@ DDLS.Geom2D.locatePosition = function(p,mesh) {
 
         objectContainer = DDLS.Geom2D.isInFace(p,currFace);
     }
+
     faceVisited.dispose();
+
     return objectContainer;
+
+
+   
 };
 
 DDLS.Geom2D.isCircleIntersectingAnyConstraint = function(p,radius,mesh) {
@@ -1019,11 +1061,24 @@ DDLS.Geom2D.getRelativePosition2 = function(p, eUp) {
     return DDLS.Geom2D.Orient2d( eUp.originVertex.pos, eUp.destinationVertex.pos, p );
 };
 
-DDLS.Geom2D.isInFace = function(p,polygon) {
+// the function checks by priority:
+// - if the (x, y) lies on a vertex of the polygon, it will return this vertex
+// - if the (x, y) lies on a edge of the polygon, it will return this edge
+// - if the (x, y) lies inside the polygon, it will return the polygon
+// - if the (x, y) lies outside the polygon, it will return null
+DDLS.Geom2D.isInFace = function( p, polygon ) {
+
+    // remember polygons are triangle only,
+    // and we suppose we have not degenerated flat polygons !
+
     var result = {type:DDLS.NULL};
+
+    if(polygon === null) return result;
+
     var e1_2 = polygon.edge;
     var e2_3 = e1_2.nextLeftEdge;
     var e3_1 = e2_3.nextLeftEdge;
+
     if(DDLS.Geom2D.getRelativePosition(p, e1_2) >= 0 && DDLS.Geom2D.getRelativePosition(p, e2_3) >= 0 && DDLS.Geom2D.getRelativePosition(p, e3_1) >= 0) {
         var v1 = e1_2.originVertex;
         var v2 = e2_3.originVertex;
@@ -2575,8 +2630,8 @@ DDLS.Mesh.prototype = {
 
         dictVerticesDone.dispose();
 
-        this.AR_vertex = new DDLS_ARRAY_TYPE(data_vertex);
-        this.AR_edge = new DDLS_ARRAY_TYPE(data_edges);
+        this.AR_vertex = new DDLS_ARRAY_TYPE( data_vertex );
+        this.AR_edge = new DDLS_ARRAY_TYPE( data_edges );
 
         this.data_vertex = null;
         this.data_edges = null;
@@ -2721,14 +2776,39 @@ DDLS.GraphNode.prototype = {
 
 // IMAGE DATA
 
-DDLS.fromImageData = function(image) {
-    var pixels = new DDLS.PixelsData(image.width,image.height);
-    var data = image.data;
+DDLS.fromImageData = function( image, img ) {
+
+    if(image){
+        var w = image.width;
+        var h = image.height;
+
+        var canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+
+        var ctx = canvas.getContext("2d");
+        ctx.drawImage( image, 0, 0, w, h);
+        img = ctx.getImageData(0,0,w,h);
+    }
+
+    
+
+
+    var pixels = new DDLS.PixelsData(img.width,img.height);
+    var data = img.data;
     var l = data.byteLength, n=0, i=0;
     while(n < l) {
         i = n++;
         pixels.bytes[i] = data[i] & 255;
     }
+
+    if(image){
+        ctx.clearRect(0,0,w,h);
+        canvas = null;
+        ctx = null;
+    }
+
+
     return pixels;
 };
 
@@ -3244,7 +3324,7 @@ DDLS.AStar.prototype = {
         this.scoreH = null;
         this.predecessor = null;
     },
-    findPath: function(from, target, resultListFaces, resultListEdges) {
+    findPath: function( from, target, resultListFaces, resultListEdges ) {
         this.sortedOpenedFaces = [];
         this.closedFaces = new DDLS.Dictionary(1);
         this.openedFaces = new DDLS.Dictionary(1);
@@ -3272,7 +3352,7 @@ DDLS.AStar.prototype = {
             this.fromFace = loc;
         }
         //
-        loc = DDLS.Geom2D.locatePosition(target, this.mesh);
+        loc = DDLS.Geom2D.locatePosition( target, this.mesh );
         if ( loc.type == 0 ){
             locVertex = loc;
             this.toFace = locVertex.edge.leftFace;
@@ -3536,7 +3616,7 @@ DDLS.AStar.prototype = {
         //?\\return true;
     }
 };
-DDLS.EntityAI = function(x, y, r) {
+DDLS.EntityAI = function(x, y, r, d) {
     this.path = [];
     this.position = new DDLS.Point(x || 0, y || 0);
     this.direction = new DDLS.Point(1,0);
@@ -3546,8 +3626,10 @@ DDLS.EntityAI = function(x, y, r) {
     //this.dirNormX = 1;
     //this.dirNormY = 0;
     this.angle = 0;
-    this.angleFOV = 60;
-    this.radiusFOV = 0;
+    this.angleFOV = 120 * DDLS.torad;
+    this.radiusFOV = d || 200;
+
+    this.isSee = false;
     //this._radiusSquaredFOV = 0;
 
     /*Object.defineProperty(this, 'radiusFOV', {
@@ -3657,7 +3739,7 @@ DDLS.Funnel.prototype = {
     getCopyPoint: function(pointToCopy) {
         return this.getPoint(pointToCopy.x,pointToCopy.y);
     },
-    findPath: function(from, target, listFaces, listEdges, resultPath) {
+    findPath: function( from, target, listFaces, listEdges, resultPath ) {
         var p_from = from;
         var p_to = target;
         var rad = this._radius * 1.01;
@@ -4200,37 +4282,39 @@ DDLS.PathFinder.prototype = {
         this.listEdges = null;
         this.listFaces = null;
     },
-    findPath: function(target,resultPath) {
+    findPath: function( target, resultPath ) {
         //resultPath = [];
         resultPath.splice(0,resultPath.length);
         //DDLS.Debug.assertFalse(this._mesh == null,"Mesh missing",{ fileName : "PathFinder.hx", lineNumber : 51, className : "DDLS.PathFinder", methodName : "findPath"});
         //DDLS.Debug.assertFalse(this.entity == null,"Entity missing",{ fileName : "PathFinder.hx", lineNumber : 52, className : "DDLS.PathFinder", methodName : "findPath"});
-        if(DDLS.Geom2D.isCircleIntersectingAnyConstraint(target,this.entity.radius,this._mesh)) return;
+        if( DDLS.Geom2D.isCircleIntersectingAnyConstraint(target,this.entity.radius,this._mesh) ) return;
         this.astar.radius = this.entity.radius;
         this.funnel.radius = this.entity.radius;
         this.listFaces.splice(0,this.listFaces.length);
         this.listEdges.splice(0,this.listEdges.length);
+        //this.listFaces = [];
+        //this.listEdges = [];
         var start = this.entity.position;
-        this.astar.findPath(start,target,this.listFaces,this.listEdges);
+        this.astar.findPath( start, target, this.listFaces, this.listEdges );
         if(this.listFaces.length == 0) {
             DDLS.Log("PathFinder listFaces.length == 0");
             return;
         }
-        this.funnel.findPath(start,target,this.listFaces,this.listEdges,resultPath);
+        this.funnel.findPath( start, target, this.listFaces, this.listEdges, resultPath );
     }
 };
-DDLS.FieldOfView = function(entity, mesh) {
+DDLS.FieldOfView = function(entity, world) {
     this.entity = entity || null;
-    this.mesh = mesh || null;
+    this.world = world || null;
     //this._debug = false;
-
-   
 };
 
 DDLS.FieldOfView.prototype = {
-    isInField:function(targetEntity){
-        if (!this.mesh) return;//throw new Error("Mesh missing");
+    isInField:function( targetEntity ){
+        if (!this.world) return;//throw new Error("Mesh missing");
         if (!this.entity) return;//throw new Error("From entity missing");
+
+        this.mesh = this.world.mesh;
 
         var pos = this.entity.position;
         var direction = this.entity.direction;
@@ -4243,7 +4327,7 @@ DDLS.FieldOfView.prototype = {
         //var targetY = targetEntity.y;
         var targetRadius = targetEntity.radius
         
-        var distSquared = DDLS.Squared(pos.x-target.x, pos.y-target.y);//(posX-targetX)*(posX-targetX) + (posY-targetY)*(posY-targetY);
+        var distSquared = DDLS.Squared( pos.x - target.x, pos.y - target.y );//(posX-targetX)*(posX-targetX) + (posY-targetY)*(posY-targetY);
         
         // if target is completely outside field radius
         if ( distSquared >= (radius + targetRadius)*(radius + targetRadius) ){
@@ -4251,10 +4335,10 @@ DDLS.FieldOfView.prototype = {
             return false;
         }
         
-        if (distSquared < targetRadius*targetRadius){
+        /*if (distSquared < targetRadius * targetRadius ){
             //trace("degenerate case if the field center is inside the target");
             return true;
-        }
+        }*/
         
         //var leftTargetX, leftTargetY, rightTargetX, rightTargetY, leftTargetInField, rightTargetInField;
 
@@ -4286,7 +4370,7 @@ DDLS.FieldOfView.prototype = {
             this._debug.graphics.drawCircle(rightTargetX, rightTargetY, 2);
         }*/
         
-        var dotProdMin = DDLS.cos(this.entity.angleFOV*0.5);
+        var dotProdMin = DDLS.cos( this.entity.angleFOV*0.5 );
 
         // we compare the dots for the left point
         var left = leftTarget.clone().sub(pos);
@@ -4310,7 +4394,7 @@ DDLS.FieldOfView.prototype = {
         if (!leftTargetInField && !rightTargetInField){
             var pdir = pos.clone().add(direction);
             // we must check if the Left/right points are on 2 different sides
-            if ( DDLS.Geom2D.getDirection(pos, pdir, leftTarget) == 1 && DDLS.Geom2D.getDirection(pos, pdir, rightTarget) == -1 ){
+            if ( DDLS.Geom2D.getDirection(pos, pdir, leftTarget) === 1 && DDLS.Geom2D.getDirection(pos, pdir, rightTarget) === -1 ){
                 //trace("the Left/right points are on 2 different sides"); 
             }else{
                 // we abort : target is not in field
@@ -4322,7 +4406,7 @@ DDLS.FieldOfView.prototype = {
         if (!leftTargetInField || !rightTargetInField){
             var p = new DDLS.Point();
             var dirAngle;
-            dirAngle = DDLS.atan2(direction.y, direction.x);
+            dirAngle = DDLS.atan2( direction.y, direction.x );
             if ( !leftTargetInField ){
                 var leftField = new DDLS.Point(DDLS.cos(dirAngle - angle*0.5), DDLS.sin(dirAngle - angle*0.5)).add(pos);
                 DDLS.Geom2D.intersections2segments(pos, leftField , leftTarget, rightTarget, p, null, true);
@@ -4359,7 +4443,7 @@ DDLS.FieldOfView.prototype = {
         // we set the window wall
         var wall = [];
         // we localize the field center
-        var startObj = DDLS.Geom2D.locatePosition(pos, this.mesh);
+        var startObj = DDLS.Geom2D.locatePosition( pos, this.mesh );
         var startFace;
 
         if ( startObj.type == 2 ) startFace = startObj;
@@ -4404,6 +4488,7 @@ DDLS.FieldOfView.prototype = {
             }
             
             while (edges.length > 0){
+
                 currentEdge = edges.pop();
                 
                 // if the edge overlap (interects or lies inside) the window
@@ -4466,8 +4551,8 @@ DDLS.FieldOfView.prototype = {
                     currentFace = currentEdge.rightFace;
                     if (!openFaces.get(currentFace) && !facesDone.get(currentFace)){
                         // we add it in open list
-                        openFacesList.push(currentFace);
-                        openFaces.set(currentFace, true);
+                        openFacesList.push( currentFace );
+                        openFaces.set( currentFace, true );
                     }
                 }
             }
@@ -4482,13 +4567,9 @@ DDLS.FieldOfView.prototype = {
             }
         }*/
         // if the window is totally covered, we stop and return false
-        /*if ( wall.length == 2
-            && -QEConstants.EPSILON < wall[0] && wall[0] < QEConstants.EPSILON
-            && 1-QEConstants.EPSILON < wall[1] && wall[1] < 1+QEConstants.EPSILON )
-        {
-            return false;
-        }
-        trace(wall);*/
+        //if ( wall.length === 2 && -DDLS.EPSILON < wall[0] && wall[0] < DDLS.EPSILON && 1-DDLS.EPSILON < wall[1] && wall[1] < 1+DDLS.EPSILON ) return false;
+        
+        //trace(wall);
         
         return true;
     }
@@ -4682,7 +4763,12 @@ DDLS.LinearPathSampler.prototype = {
     },
     updateEntity: function() {
         if(this.entity == null) return;
+        this.entity.angle = DDLS.atan2( this.pos.y - this.entity.position.y, this.pos.x - this.entity.position.x );//*DDLS.todeg;
+        this.entity.direction.angular( this.entity.angle );
         this.entity.position.copy(this.pos);
+
+        //console.log(this.entity.direction)
+
         //this.entity.x = this.pos.x;
         //this.entity.y = this.pos.y;
     }
@@ -4950,6 +5036,7 @@ DDLS.Heroe = function(s, world) {
     this.world = world;
 
     this.path = [];
+    this._path = [];
     this.tmppath = [];
 
     this.target = new DDLS.Point();
@@ -4958,77 +5045,144 @@ DDLS.Heroe = function(s, world) {
 
     this.mesh = null;
     this.isSelected = false;
+    this.isWalking = false;
 
-    this.entity = new DDLS.EntityAI(s.x || 0, s.y || 0, s.r || 4);
+    this.entity = new DDLS.EntityAI( s.x || 0, s.y || 0, s.r || 4 );
 
-    this.fov = new DDLS.FieldOfView(this.entity, this.world.mesh);
+    this.fov = new DDLS.FieldOfView( this.entity, this.world );
 
     this.pathSampler = new DDLS.LinearPathSampler();
     this.pathSampler.entity = this.entity;
-    this.pathSampler.path = this.path;
+    this.pathSampler.path = this.tmppath;
     this.pathSampler.samplingDistance = s.speed || 10;
+
 };
 
 DDLS.Heroe.prototype = {
     setTarget:function(x, y){
-        this.target.set(x,y);
+
+        this.path = []
+        this.target.set( x, y );
         this.world.pathFinder.entity = this.entity;
-        this.world.pathFinder.findPath(this.target, this.path);
+        //this.world.pathFinder.findPath( this.target, this.path );
+        this.world.pathFinder.findPath( this.target, this.path );
         this.testPath();
+
     },
     testPath:function(){
-        if(this.path.length > 0){
+        if( !this.path ) return;
+        if( this.path.length > 0 ){
+        //if( this.path.length > 0 ){
+            this.pathSampler.reset();
             this.tmppath = [];
             var i = this.path.length;
             while(i--) this.tmppath[i] = this.path[i];
-            //this.tmppath = this.path;
+            this.pathSampler.path = this.tmppath;
+
+            /*this.path = [];
+            var i = this._path.length;
+            while(i--) this.path[i] = this._path[i];
+            //this.tmppath = this.path;*/
             this.newPath = true;
         }
     },
+    getPos:function(){
+        return { x:this.entity.position.x, y:this.entity.position.y, r:-this.entity.angle };
+    },
     update:function(){
-        if(this.mesh != null) this.mesh.position.set(this.entity.position.x, 0, this.entity.position.y);
-        if(this.newPath){
+        /*if(this.mesh !== null){ 
+            this.mesh.position.set( this.entity.position.x, 0, this.entity.position.y );
+            this.mesh.rotation.y = -this.entity.angle;
+        }*/
+        //if(this.newPath){
             //console.log(this.path);
-            //this.newPath = false;
-            this.pathSampler.reset();
-        }
+            ////this.newPath = false;
+            //this.pathSampler.reset();
+            //this.pathSampler.path = this._path;
+        //}
       
+        if( this.pathSampler.hasNext ){
 
-        if(this.pathSampler.hasNext){ 
             this.newPath = false;
             this.move = true;
             this.pathSampler.next();
+
+        } else {
+            this.move = false;
+            this.tmppath = [];
         }
-        else this.move = false;
+
+        if(this.move && !this.isWalking) this.isWalking = true;
+        if(!this.move && this.isWalking) this.isWalking = false;
+
+
+
     }
 };
-DDLS.World = function(w, h) {
+
+DDLS.World = function( w, h ) {
+    
     this.w = w || 512;
     this.h = h || 512;
-    this.mesh = DDLS.RectMesh(this.w,this.h);
+
+    this.mesh = DDLS.RectMesh( this.w, this.h );
 
     this.pathFinder = new DDLS.PathFinder();
     this.pathFinder.mesh = this.mesh;
 
     this.heroes = [];
-
     this.shapes = [];
     this.segments = [];
     this.objects = [];
+
 };
 
 DDLS.World.prototype = {
+
     update:function(){
-        var i = this.heroes.length;
-        while(i--){
+
+        var lng = this.heroes.length;
+
+        var i = lng, j;
+
+        while( i-- ){
+
             this.heroes[i].update();
+            j = lng;
+
+            while( j-- ){
+                if( i !== j ) {
+                    this.heroes[i].entity.isSee = this.heroes[i].fov.isInField( this.heroes[j].entity );
+                }
+            }
+
         }
+
     },
-    add:function(o){
+
+    updateMesh : function(){
+
+       this.mesh.updateObjects();
+
+    },
+    
+    add : function ( o ) {
+
         this.mesh.insertObject(o);
         this.objects.push(o);
+
     },
-    addObject:function(s){
+
+    addHeroe : function( s ){
+
+        var h = new DDLS.Heroe( s, this );
+        this.heroes.push( h );
+        return h;
+        
+    },
+
+    addObject : function( s ){
+
         s = s || {};
         var o = new DDLS.Object();
         o.coordinates = s.coord || [-1,-1,1,-1,  1,-1,1,1,  1,1,-1,1,  -1,1,-1,-1];
@@ -5041,16 +5195,21 @@ DDLS.World.prototype = {
         this.objects.push(o);
         return o;
     },
-    reset:function(w,h){
+
+    reset : function(w,h){
+
         this.mesh.dispose();
         if(w) this.w = w;
         if(h) this.h = h;
-        this.mesh = DDLS.RectMesh(this.w,this.h);
+        this.mesh = DDLS.RectMesh( this.w, this.h );
         this.pathFinder.mesh = this.mesh;
+    
     },
-    rebuild:function(){
+
+    rebuild : function(){
+
         this.mesh.clear(true);
-        this.mesh = DDLS.RectMesh(this.w,this.h);
+        this.mesh = DDLS.RectMesh( this.w, this.h );
         this.pathFinder.mesh = this.mesh;
         //this.mesh._objects = [];
         var i = this.objects.length;
@@ -5059,14 +5218,550 @@ DDLS.World.prototype = {
             this.mesh.insertObject(this.objects[i]);
         }
     },
-    /*updateObjects : function(){
-       return this.mesh.updateObjects();
-    },*/
-    addHeroe:function(s){
-        var h = new DDLS.Heroe(s, this);
-        //h.setMesh(this.mesh);
-        this.heroes.push(h);
-        return h;
+    
+
+
+};
+DDLS.GridMaze = function(width,height,cols,rows) {
+
+    this.generate(width,height,cols,rows);
+
+};
+
+DDLS.GridMaze.prototype = {
+    constructor: DDLS.GridMaze,
+
+    generate : function(width,height,cols,rows) {
+        this.tileWidth = width / cols | 0;
+        this.tileHeight = height / rows | 0;
+        this.cols = cols;
+        this.rows = rows;
+        this.rng = new DDLS.RandGenerator(DDLS.randInt(1234,7259));
+        this.makeGrid();
+        this.traverseGrid();
+        this.populateObject();
+    },
+    makeGrid : function() {
+        this.grid = [];
+        var _g1 = 0;
+        var _g = this.cols;
+        while(_g1 < _g) {
+            var c = _g1++;
+            this.grid[c] = [];
+            var _g3 = 0;
+            var _g2 = this.rows;
+            while(_g3 < _g2) {
+                var r = _g3++;
+                var cell = new DDLS.Cell(c,r);
+                this.grid[c][r] = cell;
+                var topLeft = [c * this.tileWidth,r * this.tileHeight];
+                var topRight = [(c + 1) * this.tileWidth,r * this.tileHeight];
+                var bottomLeft = [c * this.tileWidth,(r + 1) * this.tileHeight];
+                var bottomRight = [(c + 1) * this.tileWidth,(r + 1) * this.tileHeight];
+                cell.walls[0] = topLeft.concat(topRight);
+                cell.walls[1] = topRight.concat(bottomRight);
+                cell.walls[2] = bottomLeft.concat(bottomRight);
+                if(r != 0 || c != 0) cell.walls[3] = topLeft.concat(bottomLeft);
+            }
+        }
+    },
+    traverseGrid : function() {
+        var DX = [0,1,0,-1];
+        var DY = [-1,0,1,0];
+        var REVERSED_DIR = [2,3,0,1];
+        var c = this.rng.nextInRange(0,this.cols - 1);
+        var r = this.rng.nextInRange(0,this.rows - 1);
+        var cells = [this.grid[c][r]];
+        while(cells.length > 0) {
+            var idx = cells.length - 1;
+            var currCell = cells[idx];
+            currCell.visited = true;
+            var dirs = [0,1,2,3];
+            this.rng.shuffle(dirs);
+            var _g = 0;
+            while(_g < dirs.length) {
+                var dir = dirs[_g];
+                ++_g;
+                var c1 = currCell.col + DX[dir];
+                var r1 = currCell.row + DY[dir];
+                if(c1 >= 0 && c1 < this.cols && r1 >= 0 && r1 < this.rows && !this.grid[c1][r1].visited) {
+                    var chosenCell = this.grid[c1][r1];
+                    currCell.walls[dir] = [];
+                    chosenCell.walls[REVERSED_DIR[dir]] = [];
+                    chosenCell.visited = true;
+                    cells.push(chosenCell);
+                    idx = -1;
+                    break;
+                }
+            }
+            if(idx >= 0) cells.splice(idx,1);
+        }
+    },
+    populateObject : function() {
+        this.object = new DDLS.Object();
+        var coords = [];
+        var _g1 = 0;
+        var _g = this.cols;
+        while(_g1 < _g) {
+            var c = _g1++;
+            var _g3 = 0;
+            var _g2 = this.rows;
+            while(_g3 < _g2) {
+                var r = _g3++;
+                var cell = this.grid[c][r];
+                var _g4 = 0;
+                var _g5 = cell.walls;
+                while(_g4 < _g5.length) {
+                    var wall = _g5[_g4];
+                    ++_g4;
+                    var _g6 = 0;
+                    while(_g6 < wall.length) {
+                        var coord = wall[_g6];
+                        ++_g6;
+                        coords.push(coord);
+                    }
+                }
+            }
+        }
+        this.object.coordinates = coords;
+    }
+}
+
+DDLS.Cell = function(col,row) {
+    this.visited = false;
+    this.col = col;
+    this.row = row;
+    var _g = [];
+    var _g2 = 0;
+    var _g1 = 4;
+    while(_g2 < _g1) {
+        var i = _g2++;
+        _g.push([]);
+    }
+    this.walls = _g;
+};
+//var DDLS = DDLS || {};
+
+DDLS.SimpleView = function( world ) {
+
+
+
+    //this.w = w || 512;
+    //this.h = h || 512;
+
+    this.g0 = new DDLS.BasicCanvas( world.w, world.h )
+    this.g = new DDLS.BasicCanvas( world.w, world.h );
+
+    this.g.canvas.style.pointerEvents = 'none';
+
+
+
+    this.entitiesWidth = 1;
+    this.entitiesColor = {r:0, g:255, b:0, a:0.75};
+    this.entitiesColor2 = {r:255, g:255, b:255, a:0.75};
+    this.entitiesField = {r:255, g:255, b:0, a:0.2};
+    this.pathsWidth = 2;
+    this.pathsColor = {r:255, g:255, b:0, a:0.75};
+    this.verticesRadius = 1;
+    this.verticesColor = {r:255, g:120, b:0, a:0.5};
+    this.constraintsWidth = 2;
+    this.constraintsColor = {r:255, g:0, b:0, a:1};
+    this.edgesWidth = 1;
+    this.edgesColor = {r:190, g:190, b:190, a:0.25};
+    this.edgesColor2 = {r:0, g:190, b:0, a:0.25};
+    //this.graphics = new DDLS.DrawContext( canvas );
+    //this.g = this.graphics.g;
+    this.mesh_data = null;
+
+    this.domElement = this.g0.canvas;
+
+    DDLS.VIEW = this;
+
+};
+
+DDLS.SimpleView.prototype = {
+
+    drawImage : function ( img, w, h ) {
+
+        this.g0.drawImage( img, w, h );
+
+    },
+
+    drawMesh: function ( mesh, clean ) {
+
+        var c = clean === undefined ? false : clean;
+        if(c) this.g0.clear();
+
+        mesh.compute_Data();
+
+        var edge = mesh.AR_edge;
+        var vertex = mesh.AR_vertex;
+
+        var i = edge.length;
+        var n = 0;
+        while(i--){
+            n = i * 5;
+            if(edge[n+4]) {
+                this.g0.lineStyle( this.constraintsWidth, this.constraintsColor );
+            }else{
+                //if( edge[n+4] ) this.g.lineStyle( this.edgesWidth, this.edgesColor2 );
+                //else 
+                this.g0.lineStyle( this.edgesWidth, this.edgesColor );
+            }
+            this.g0.moveTo(edge[n],edge[n+1]);
+            this.g0.lineTo(edge[n+2],edge[n+3]);
+        }
+
+        
+        this.g0.lineStyle( this.verticesRadius, this.verticesColor );
+        i = vertex.length;
+        while(i--){
+            n = i * 2;
+            this.g0.beginFill( this.verticesColor, this.verticesAlpha );
+            this.g0.drawCircle(vertex[n],vertex[n+1],this.verticesRadius);
+            this.g0.endFill();
+        }
+    },
+
+    drawEntity: function( entity, clean ) {
+
+        var c = clean === undefined ? false : clean;
+        if(c) this.g.clear();
+
+        this.g.beginFill( this.entitiesField );
+        this.g.moveTo(entity.position.x, entity.position.y);
+        this.g.drawCircle( entity.position.x, entity.position.y, entity.radiusFOV, (entity.angle-(entity.angleFOV*0.5)), (entity.angle+(entity.angleFOV*0.5)) );
+        this.g.lineTo(entity.position.x, entity.position.y);
+        this.g.endFill();
+
+        this.g.lineStyle( this.entitiesWidth, this.entitiesColor );
+        if(entity.isSee )this.g.beginFill(this.entitiesColor2);
+        else this.g.beginFill(this.entitiesColor);
+        this.g.drawCircle( entity.position.x, entity.position.y, entity.radius );
+        //console.log(entity.direction)
+        this.g.endFill();
+
+        
+    },
+
+    drawEntities: function( vEntities, clean ) {
+
+        var c = clean === undefined ? false : clean;
+        if(c) this.g.clear();
+
+        var _g1 = 0;
+        var _g = vEntities.length;
+        while(_g1 < _g) {
+            var i = _g1++;
+            this.drawEntity( vEntities[i], false );
+        }
+    },
+
+    drawPath: function( path, clean ) {
+
+        var c = clean === undefined ? false : clean;
+        if(c) this.g.clear();
+
+        if(path.length === 0) return;
+        this.g.lineStyle( this.pathsWidth, this.pathsColor );
+        this.g.moveTo( path[0], path[1] );
+        var i = 2;
+        while(i < path.length) {
+            this.g.lineTo(path[i],path[i + 1]);
+            this.g.moveTo(path[i],path[i + 1]);
+            i += 2;
+        }
+        this.g.endFill();
+    },
+
+    clear : function(){
+
+        this.g.clear();
+
     }
 
 };
+
+// CANVAS
+
+DDLS.BasicCanvas = function( w, h ) {
+
+    this.w = w || 200;
+    this.h = h || 200;
+
+    this.canvas = document.createElement("canvas");
+    this.canvas.width = this.w;
+    this.canvas.height = this.h;
+    this.ctx = this.canvas.getContext("2d");
+    document.body.appendChild( this.canvas );
+
+};
+
+DDLS.BasicCanvas.prototype = {
+
+    clear: function() {
+        this.ctx.clearRect(0,0,this.w,this.h);
+    },
+    drawImage : function(img, w, h){
+        this.ctx.drawImage( img, 0, 0, w || this.w, h || this.h );
+    },
+    drawCircle: function(x,y,radius, s, e) {
+        s = s || 0;
+        e = e || DDLS.TwoPI;
+        this.ctx.beginPath();
+        this.ctx.arc(x,y,radius, s, e, false);
+        this.ctx.stroke();
+        //this.ctx.closePath();
+    },
+    drawRect: function(x,y,width,height) {
+        this.ctx.beginPath();
+        this.ctx.moveTo(x,y);
+        this.ctx.lineTo(x + width,y);
+        this.ctx.lineTo(x + width,y + height);
+        this.ctx.lineTo(x,y + height);
+        this.ctx.stroke();
+        this.ctx.closePath();
+    },
+    lineStyle: function(wid,c) {
+        this.ctx.lineWidth = wid;
+        this.ctx.strokeStyle = "rgba(" + c.r + "," + c.g + "," + c.b + "," + c.a + ")";
+    },
+    moveTo: function(x,y) {
+        this.ctx.beginPath();
+        this.ctx.moveTo(x,y);
+    },
+    lineTo: function(x,y) {
+        this.ctx.lineTo(x,y);
+        this.ctx.stroke();
+        this.ctx.closePath();
+        
+    },
+    beginFill: function(c) {
+        this.ctx.fillStyle = "rgba(" + c.r + "," + c.g + "," + c.b + "," + c.a + ")";
+        this.ctx.beginPath();
+    },
+    endFill: function() {
+        this.ctx.stroke();
+        this.ctx.closePath();
+        this.ctx.fill();
+    }
+};
+
+// DRAW CONTEXT
+
+DDLS.DrawContext = function(g) {
+    this.g = g;
+};
+
+DDLS.DrawContext.prototype = {
+    clear: function() { this.g.clear(); },
+    lineStyle: function(thickness,c) { this.g.lineStyle(thickness,c); },
+    beginFill: function(c) { this.g.beginFill(c);},
+    endFill: function() { this.g.endFill(); },
+    moveTo: function(x,y) { this.g.moveTo(x,y); },
+    lineTo: function(x,y) { this.g.lineTo(x,y);},
+    drawCircle: function(cx,cy,r) { this.g.drawCircle(cx,cy,r); },
+    drawRect: function(x,y,w,h) { this.g.drawRect(x,y,w,h); }
+};
+var THREE;
+
+DDLS.ThreeView = function( scene, world ) {
+//function ThreeView( scene, world ){
+
+    this.world = world;
+
+    this.maxVertices = 30000;
+    this.currentVertex = 0;
+
+    var geometry = new THREE.BufferGeometry();
+    geometry.addAttribute('position', new THREE.BufferAttribute( new Float32Array( this.maxVertices * 3 ), 3 ));
+    geometry.addAttribute('color', new THREE.BufferAttribute( new Float32Array( this.maxVertices * 3 ), 3 ));
+    this.positions = geometry.attributes.position.array;
+    this.colors = geometry.attributes.color.array;
+    geometry.computeBoundingSphere();
+
+    this.buffer = new THREE.LineSegments(geometry, new THREE.LineBasicMaterial({ vertexColors: true }));
+    this.buffer.frustumCulled = false;
+    scene.add(this.buffer);
+
+    // PATH
+
+    this.maxPathVertices = 1000;
+    this.currentPathVertex = 0;
+
+    var geometryPath = new THREE.BufferGeometry();
+    geometryPath.addAttribute('position', new THREE.BufferAttribute( new Float32Array( this.maxPathVertices * 3 ), 3 ));
+    geometryPath.addAttribute('color', new THREE.BufferAttribute( new Float32Array( this.maxPathVertices * 3 ), 3 ));
+    this.positionsPath = geometryPath.attributes.position.array;
+    this.colorsPath = geometryPath.attributes.color.array;
+    geometry.computeBoundingSphere();
+    
+    this.bufferPath = new THREE.LineSegments(geometryPath, new THREE.LineBasicMaterial({ vertexColors: true }));
+    this.bufferPath.frustumCulled = false;
+    scene.add(this.bufferPath);
+
+    DDLS.VIEW = this;
+
+}
+
+DDLS.ThreeView.prototype = {
+
+    constructor: DDLS.ThreeView,
+
+    collapseBuffer : function() {
+
+        var i = this.maxVertices;
+        var min = this.currentVertex;
+        var n = 0;
+        while(i>=min){
+            n = i * 3;
+            this.positions[n] = 0;
+            this.positions[n+1] = 0;
+            this.positions[n+2] = 0;
+            this.colors[n] = 0;
+            this.colors[n+1] = 0;
+            this.colors[n+2] = 0;
+            i--;
+        }
+    },
+    collapsePathBuffer : function() {
+
+        var i = this.maxPathVertices;
+        var min = this.currentPathVertex;
+        var n = 0;
+        while(i>=min){
+            n = i * 3;
+            this.positionsPath[n] = 0;
+            this.positionsPath[n+1] = 0;
+            this.positionsPath[n+2] = 0;
+            this.colorsPath[n] = 0;
+            this.colorsPath[n+1] = 0;
+            this.colorsPath[n+2] = 0;
+            i--;
+        }
+    },
+
+    update : function() {
+
+        //
+
+        //var redraw = this.world.mesh.updateObjects();
+        //if(redraw){
+        if( this.world.mesh.isRedraw ){
+            this.currentVertex = 0;
+            
+            this.world.mesh.draw();
+
+            this.collapseBuffer();
+            this.buffer.geometry.attributes.position.needsUpdate = true;
+            this.buffer.geometry.attributes.color.needsUpdate = true;
+        }
+
+        this.world.update();
+
+        var i = this.world.heroes.length, h;
+
+        while(i--){
+
+            h = this.world.heroes[i];
+
+            //this.world.heroes[i].update();
+            
+            if( h.isSelected && h.tmppath.length > 0 ){
+                this.currentPathVertex = 0;
+                var p = this.world.heroes[i].tmppath;
+                //if( p.length === 0 ) return;
+                var prevX = p[0];
+                var prevY = p[1];
+                var j = 2;
+
+                while(j < p.length) {
+                    this.insertPath(prevX, prevY, p[j], p[j+1], 1,0,0);
+                    prevX = p[j];
+                    prevY = p[j+1];
+                    j += 2;
+                }
+
+
+                /*var j = p.length*0.25, n;
+                while(j--){
+                    n = j*4;
+                    this.insertPath(p[n], p[n+1], p[n+2], p[n+3], 1,0,0);
+                }*/
+
+                this.collapsePathBuffer();
+                this.bufferPath.geometry.attributes.position.needsUpdate = true;
+                this.bufferPath.geometry.attributes.color.needsUpdate = true;
+
+            }
+        }
+
+        
+    },
+
+    insertLine : function(x1, y1, x2, y2, r, g, b) {
+
+        var i = this.currentVertex;
+        var n = i * 3;
+        this.positions[n] = x1;
+        this.positions[n + 1] = 0;
+        this.positions[n + 2] = y1;
+        this.colors[n] = r;
+        this.colors[n + 1] = g;
+        this.colors[n + 2] = b;
+        i++;
+        n = i * 3;
+        this.positions[n] = x2;
+        this.positions[n + 1] = 0;
+        this.positions[n + 2] = y2;
+        this.colors[n] = r;
+        this.colors[n + 1] = g;
+        this.colors[n + 2] = b;
+        this.currentVertex += 2;
+    },
+
+    insertPath : function(x1, y1, x2, y2, r, g, b) {
+
+        var i = this.currentPathVertex;
+        var n = i * 3;
+        this.positionsPath[n] = x1;
+        this.positionsPath[n + 1] = 0;
+        this.positionsPath[n + 2] = y1;
+        this.colorsPath[n] = r;
+        this.colorsPath[n + 1] = g;
+        this.colorsPath[n + 2] = b;
+        i++;
+        n = i * 3;
+        this.positionsPath[n] = x2;
+        this.positionsPath[n + 1] = 0;
+        this.positionsPath[n + 2] = y2;
+        this.colorsPath[n] = r;
+        this.colorsPath[n + 1] = g;
+        this.colorsPath[n + 2] = b;
+        this.currentPathVertex += 2;
+    }
+}
+
+DDLS.Mesh.prototype.draw = function(){
+
+    //console.log('meshdraw')
+    this.compute_Data();
+
+    var edge = this.AR_edge;
+    var i = edge.length;
+    var n = 0;
+    while(i--){
+        n = i * 5;
+        if(edge[n+4]) {
+            DDLS.VIEW.insertLine( edge[n], edge[n+1], edge[n+2], edge[n+3], 0,0,0 );
+        }else{
+            DDLS.VIEW.insertLine( edge[n], edge[n+1], edge[n+2], edge[n+3], 0.4,0.4,0.4 );
+        }
+    }
+    this.isRedraw = false;
+
+}
+
+DDLS.Heroe.prototype.draw = function(){
+
+}

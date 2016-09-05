@@ -4,167 +4,64 @@
 <html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>Daedalus.js GridMaze</title>
+<title>DDLS gridmaze</title>
 <style> 
 body { margin: 0px; background-color: #000000; overflow: hidden; }
 canvas { position:absolute; left:50%; top:50%; margin-left:-300px; margin-top:-300px; }
 </style>
 </head>
 <body>
-<script src="build/ddls.js"></script>
-<script src="js/ddls_plugins/SimpleView.js"></script>
+<script src="build/ddls.min.js"></script>
 <script>
 
-var GridMaze = function() {};
-GridMaze.generate = function(width,height,cols,rows) {
-    GridMaze.tileWidth = width / cols | 0;
-    GridMaze.tileHeight = height / rows | 0;
-    GridMaze.cols = cols;
-    GridMaze.rows = rows;
-    GridMaze.rng = new DDLS.RandGenerator(DDLS.randInt(1234,7259));
-    GridMaze.makeGrid();
-    GridMaze.traverseGrid();
-    GridMaze.populateObject();
-};
-GridMaze.makeGrid = function() {
-    GridMaze.grid = [];
-    var _g1 = 0;
-    var _g = GridMaze.cols;
-    while(_g1 < _g) {
-        var c = _g1++;
-        GridMaze.grid[c] = [];
-        var _g3 = 0;
-        var _g2 = GridMaze.rows;
-        while(_g3 < _g2) {
-            var r = _g3++;
-            var cell = new Cell(c,r);
-            GridMaze.grid[c][r] = cell;
-            var topLeft = [c * GridMaze.tileWidth,r * GridMaze.tileHeight];
-            var topRight = [(c + 1) * GridMaze.tileWidth,r * GridMaze.tileHeight];
-            var bottomLeft = [c * GridMaze.tileWidth,(r + 1) * GridMaze.tileHeight];
-            var bottomRight = [(c + 1) * GridMaze.tileWidth,(r + 1) * GridMaze.tileHeight];
-            cell.walls[0] = topLeft.concat(topRight);
-            cell.walls[1] = topRight.concat(bottomRight);
-            cell.walls[2] = bottomLeft.concat(bottomRight);
-            if(r != 0 || c != 0) cell.walls[3] = topLeft.concat(bottomLeft);
-        }
-    }
-};
-GridMaze.traverseGrid = function() {
-    var DX = [0,1,0,-1];
-    var DY = [-1,0,1,0];
-    var REVERSED_DIR = [2,3,0,1];
-    var c = GridMaze.rng.nextInRange(0,GridMaze.cols - 1);
-    var r = GridMaze.rng.nextInRange(0,GridMaze.rows - 1);
-    var cells = [GridMaze.grid[c][r]];
-    while(cells.length > 0) {
-        var idx = cells.length - 1;
-        var currCell = cells[idx];
-        currCell.visited = true;
-        var dirs = [0,1,2,3];
-        GridMaze.rng.shuffle(dirs);
-        var _g = 0;
-        while(_g < dirs.length) {
-            var dir = dirs[_g];
-            ++_g;
-            var c1 = currCell.col + DX[dir];
-            var r1 = currCell.row + DY[dir];
-            if(c1 >= 0 && c1 < GridMaze.cols && r1 >= 0 && r1 < GridMaze.rows && !GridMaze.grid[c1][r1].visited) {
-                var chosenCell = GridMaze.grid[c1][r1];
-                currCell.walls[dir] = [];
-                chosenCell.walls[REVERSED_DIR[dir]] = [];
-                chosenCell.visited = true;
-                cells.push(chosenCell);
-                idx = -1;
-                break;
-            }
-        }
-        if(idx >= 0) cells.splice(idx,1);
-    }
-};
-GridMaze.populateObject = function() {
-    GridMaze.object = new DDLS.Object();
-    var coords = [];
-    var _g1 = 0;
-    var _g = GridMaze.cols;
-    while(_g1 < _g) {
-        var c = _g1++;
-        var _g3 = 0;
-        var _g2 = GridMaze.rows;
-        while(_g3 < _g2) {
-            var r = _g3++;
-            var cell = GridMaze.grid[c][r];
-            var _g4 = 0;
-            var _g5 = cell.walls;
-            while(_g4 < _g5.length) {
-                var wall = _g5[_g4];
-                ++_g4;
-                var _g6 = 0;
-                while(_g6 < wall.length) {
-                    var coord = wall[_g6];
-                    ++_g6;
-                    coords.push(coord);
-                }
-            }
-        }
-    }
-    GridMaze.object.coordinates = coords;
-};
-
-var Cell = function(col,row) {
-    this.visited = false;
-    this.col = col;
-    this.row = row;
-    var _g = [];
-    var _g2 = 0;
-    var _g1 = 4;
-    while(_g2 < _g1) {
-        var i = _g2++;
-        _g.push([]);
-    }
-    this.walls = _g;
-};
-
-var world, basicCanvas, view;
+var world, view, grid;
 
 init();
 render();
 
 function init() {
-    this.cols = 15;
-    this.rows = 15;
-    world = new DDLS.World(600,600);
+
+    world = new DDLS.World( 600,600 );
+    view = new DDLS.SimpleView( world );
 
     //mesh = DDLS.RectMesh(600,600);
-    basicCanvas = new DDLS.BasicCanvas(600,600);
-    this.view = new DDLS.SimpleView(basicCanvas);
-    GridMaze.generate(600,600,this.cols,this.rows);
-    world.mesh.insertObject(GridMaze.object);
+    //basicCanvas = new DDLS.BasicCanvas(600,600);
+    //view = new DDLS.SimpleView(basicCanvas);
 
-    world.addHeroe({x:GridMaze.tileWidth * 0.5, y:GridMaze.tileHeight * 0.5, r:GridMaze.tileWidth * .27, speed:10});
+    grid  = new DDLS.GridMaze( 600,600, 15, 15 );
+    world.mesh.insertObject( grid.object );
 
-    view.drawMesh(world.mesh);
+    view.drawMesh( world.mesh );
 
-    basicCanvas.canvas.onmousedown = onMouseDown;
+
+    world.addHeroe({x:grid.tileWidth * 0.5, y:grid.tileHeight * 0.5, r:grid.tileWidth * .27, speed:10});
+
+    view.domElement.onmousedown = onMouseDown;
     //basicCanvas.canvas.onmouseup = onMouseUp;
     //basicCanvas.canvas.onmousemove = onMouseMove;
     window.document.onkeydown = onKeyDown;
 };
 
 function onMouseDown (e) {
-    view.drawMesh(world.mesh,true);
+
+    view.drawMesh( world.mesh , true );
     var rect = e.target.getBoundingClientRect();
     world.heroes[0].setTarget(e.clientX - rect.left, e.clientY - rect.top);
 };
 
 function render() {
+
     requestAnimationFrame( render );
+    
     world.update();
+
+    view.clear();
+
     var i = world.heroes.length, h;
     while(i--){
         h = world.heroes[i];
-        if(h.newPath) view.drawPath( h.entity.path );
-        view.drawEntity(h.entity);
+        view.drawPath( h.tmppath );
+        view.drawEntity( h.entity );
     }
 };
 
@@ -173,17 +70,17 @@ function reset(newMaze) {
     var seed = parseInt(Math.random() * 10000 + 1000);
     world.reset();
     if(newMaze) {
-        GridMaze.generate(600,600,30,30,seed);
-        GridMaze.object.scaleX = (.92);
-        GridMaze.object.scaleY = (.92);
-        GridMaze.object.x = (23);
-        GridMaze.object.y = (23);
-        world.mesh.insertObject(GridMaze.object);
+        grid.generate(600,600,30,30,seed);
+        grid.object.scaleX = (.92);
+        grid.object.scaleY = (.92);
+        grid.object.x = (23);
+        grid.object.y = (23);
+        world.mesh.insertObject(grid.object);
     }
     
     view.drawMesh(world.mesh,true);
-    world.heroes[0].entity.radius = GridMaze.tileWidth * .27;
-    world.heroes[0].entity.position(GridMaze.tileWidth * 0.5, GridMaze.tileHeight * 0.5 );
+    world.heroes[0].entity.radius = grid.tileWidth * .27;
+    world.heroes[0].entity.position.set(grid.tileWidth * 0.5, grid.tileHeight * 0.5 );
 }
 
 function onKeyDown(e) {

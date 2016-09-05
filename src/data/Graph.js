@@ -131,14 +131,39 @@ DDLS.GraphNode.prototype = {
 
 // IMAGE DATA
 
-DDLS.fromImageData = function(image) {
-    var pixels = new DDLS.PixelsData(image.width,image.height);
-    var data = image.data;
+DDLS.fromImageData = function( image, img ) {
+
+    if(image){
+        var w = image.width;
+        var h = image.height;
+
+        var canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+
+        var ctx = canvas.getContext("2d");
+        ctx.drawImage( image, 0, 0, w, h);
+        img = ctx.getImageData(0,0,w,h);
+    }
+
+    
+
+
+    var pixels = new DDLS.PixelsData(img.width,img.height);
+    var data = img.data;
     var l = data.byteLength, n=0, i=0;
     while(n < l) {
         i = n++;
         pixels.bytes[i] = data[i] & 255;
     }
+
+    if(image){
+        ctx.clearRect(0,0,w,h);
+        canvas = null;
+        ctx = null;
+    }
+
+
     return pixels;
 };
 

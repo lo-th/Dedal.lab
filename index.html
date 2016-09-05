@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<title>three.js webgl - geometry - cube</title>
+<title>DDLS</title>
 <meta charset="utf-8">
 <style>
 body { margin: 0px; background-color: #6a6a6a; overflow: hidden; background-image:url(images/bg.png); background-repeat:repeat-x;}
@@ -38,11 +38,12 @@ canvas { position: absolute; top:0; left:0; pointer-events:auto; width:100%; hei
 <script src="src/factories/BitmapMesh.js"></script>
 <script src="src/ai/Heroe.js"></script>
 <script src="src/ai/World.js"></script>
+<script src="src/view/ThreeView.js"></script>
 
-<script src="js/three.min.js"></script>
-<script src="js/sea3d.min.js"></script>
-<script src="js/OrbitControls.js"></script>
-<script src="js/ddls_plugins/ThreeView.js"></script>
+<script src="js/libs/three.min.js"></script>
+<script src="js/libs/sea.min.js"></script>
+<script src="js/controls/OrbitControls.js"></script>
+
 
 <canvas id="canvas"></canvas>
 
@@ -65,6 +66,7 @@ var hero = [];
 var heroObj = [];
 
 var INTERSECTED, SELECTED, HERO;
+var HEROID = -1;
 
 init();
 animate();
@@ -94,7 +96,7 @@ function init() {
     geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0,5,0));
     var material = new THREE.MeshBasicMaterial( { color:0x00FF00 } );
 
-    plane = new THREE.Mesh( new THREE.PlaneBufferGeometry( 1000, 1000, 8, 8 ), new THREE.MeshBasicMaterial( { visible: true , color:0x6a6a6a } ) );
+    plane = new THREE.Mesh( new THREE.PlaneBufferGeometry( 1000, 1000, 8, 8 ), new THREE.MeshBasicMaterial( { visible: true , color:0x3a3a3a, depthWrite:false } ) );
     plane.geometry.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI*0.5));
     plane.geometry.applyMatrix(new THREE.Matrix4().makeTranslation(300,0, 300));
     
@@ -138,6 +140,7 @@ function load(){
 }
 
 function demo(){
+
     world = new DDLS.World(600,600);
 
     var i = 50, x, y, w, h, r, d;
@@ -159,12 +162,14 @@ function demo(){
         scene.add( objects[i] );
     }
 
-    ddlsRender = new DDLSRender();
+    ddlsRender = new DDLS.ThreeView( scene, world );
 
-    addHero(20,20,4);
+    var i = 29;
+    while(i--){
+         addHero(20 + (i*20) ,20,4);
+    }
 
-    addHero(80,20,4);
-
+   
     //h1 = world.addHeroe({x:20, y:20, r:4, speed:10});
 }
 
@@ -181,7 +186,11 @@ function addHero(x, y, r){
     var cont = new THREE.Mesh(new THREE.CircleGeometry(r), mat2);
     cont.geometry.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI*0.5));
 
-    var m = clone( heroModel, heroModel.material.clone() );
+    //var m = clone( heroModel, heroModel.material.clone() );
+
+    var m = heroModel.clone();
+
+    m.material = heroModel.material.clone();
     m.scale.set(25,25,25);
     m.position.y = 7;
     m.rotation.y = - Math.PI * 0.5;
@@ -202,24 +211,18 @@ function addHero(x, y, r){
 
 }
 
-function clone( mesh, material ){
-
-    var obj = new THREE.SEA3D.SkinnedMesh( mesh.geometry, material );
-    obj.setAnimations( mesh.geometry.animations );
-    //obj.material = mesh.material;
-    return obj;
-
-}
-
 function findTargetHero(id){
-    hero[id].setTarget( ~~mousePos.x, ~~mousePos.z );
+    //console.log( id, mousePos.x, mousePos.z )
+    hero[id].setTarget( mousePos.x, mousePos.z );
     //console.log(mousePos.x)
 };
 
 function selectHero(id){
-    if( HERO ) unSelectHero( heroObj.indexOf(HERO) );
+    if( HEROID !== -1 ) unSelectHero( HEROID );
+    //if( HERO ) unSelectHero( heroObj.indexOf(HERO) );
 
     HERO = heroObj[id];
+    HEROID = id;
     //hero[id].mesh.material = new THREE.MeshBasicMaterial( { color:0xFFFF00, visible:false } );
     hero[id].mesh.children[0].material.color.setHex(0xFFFF00);
     hero[id].mesh.children[1].material.color.setHex(0xFFFF00);
@@ -227,6 +230,8 @@ function selectHero(id){
 };
 
 function unSelectHero(id){
+
+    HEROID = -1;
 
     HERO = null;
     //hero[id].mesh.material = new THREE.MeshBasicMaterial( { color:0x00FF00 } );
@@ -255,6 +260,7 @@ function mouseUp(e){
 }
 
 function mouseDown(e){
+
     down = true;
     first = true;
 
@@ -262,7 +268,7 @@ function mouseDown(e){
 
     updateRaycast();
 
-    if ( SELECTED !== null ) return
+    if ( SELECTED != null ) return
 
         //console.log('mmmm')
 
@@ -283,16 +289,17 @@ function mouseDown(e){
     inter = raycaster.intersectObject( plane );
     if ( inter.length > 0 ) {
         var p = inter[ 0 ].point;
-        mousePos.copy(p);
-        mousePos.x = mousePos.x < 10 ? 10 : mousePos.x;
+        mousePos.copy(p).round();
+        /*mousePos.x = mousePos.x < 10 ? 10 : mousePos.x;
         mousePos.x = mousePos.x > 590 ? 590 : mousePos.x;
 
         mousePos.z = mousePos.z < 10 ? 10 : mousePos.z;
-        mousePos.z = mousePos.z > 590 ? 590 : mousePos.z;
+        mousePos.z = mousePos.z > 590 ? 590 : mousePos.z;*/
 
        // console.log(mousePos)
        // if()
-        if( HERO!=null && down ) findTargetHero( heroObj.indexOf(HERO) );
+        //if( HERO!==null && down ) findTargetHero( heroObj.indexOf(HERO) );
+        if( HEROID !== -1 ) findTargetHero( HEROID );
     }
 
     e.preventDefault();
@@ -335,6 +342,8 @@ function updateRaycast(){
     }
 
     if ( SELECTED ) {
+
+         if( HEROID !== -1 ) unSelectHero( HEROID );
         //if(HERO) unSelectHero( heroObj.indexOf(HERO) );
         inter = raycaster.intersectObject( plane );
         if ( inter.length > 0 ) {
@@ -368,7 +377,6 @@ function animate() {
 
     var delta = clock.getDelta();
     THREE.SEA3D.AnimationHandler.update( delta*0.6 );
-    THREE.AnimationHandler.update( delta*0.6 );
 
     var i = hero.length, p;
     while(i--){

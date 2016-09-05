@@ -4,7 +4,7 @@
 <html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>Daedalus Basic js</title>
+<title>DDLS basic</title>
 <style> 
 body { margin: 0px; background-color: #000000; overflow: hidden; }
 canvas { position:absolute; left:50%; top:50%; margin-left:-300px; margin-top:-300px; }
@@ -41,7 +41,8 @@ canvas { position:absolute; left:50%; top:50%; margin-left:-300px; margin-top:-3
 <script src="src/ai/Heroe.js"></script>
 <script src="src/ai/World.js"></script>
 
-<script src="js/ddls_plugins/SimpleView.js"></script>
+<script src="src/view/SimpleView.js"></script>
+
 <script>
 var world, basicCanvas, view;
 
@@ -50,10 +51,11 @@ render();
 
 function init() {
     
-    basicCanvas = new DDLS.BasicCanvas(600,600, '#000000', 60);
-    view = new DDLS.SimpleView(basicCanvas);
+    //basicCanvas = new DDLS.BasicCanvas(600,600, '#000000', 60);
+    
 
-    world = new DDLS.World(600,600);
+    world = new DDLS.World( 600, 600 );
+    view = new DDLS.SimpleView( world );
 
     //var segment = world.mesh.insertConstraintSegment(70,300,530,320);
 
@@ -62,47 +64,14 @@ function init() {
         world.addObject({x:DDLS.rand(50,600), y:DDLS.rand(50,600), w:DDLS.rand(10,100), h:DDLS.rand(10,100)})
     }
 
-    view.drawMesh(world.mesh);
+    view.drawMesh( world.mesh );
 
     world.addHeroe({x:20, y:20, r:4, speed:10});
     
 
-    basicCanvas.canvas.onmousedown = onMouseDown;
-    //basicCanvas.canvas.onmouseup = onMouseUp;
-    //basicCanvas.canvas.onmousemove = onMouseMove;
-
-    // render()
+    view.domElement.onmousedown = onMouseDown;
+    
 };
-
-/*function rebuildMesh(){
-
-        obj[0].rotation += 0.01;
-        obj[1].rotation -= 0.03;
-        obj[2].rotation += 0.01;
-        obj[3].rotation -= 0.01;
-
-        mesh.clear(true);
-        DDLS.RectMesh(600,600, mesh);
-        //mesh = DDLS.RectMesh(600,600);
-        //var vertex = mesh.insertVertex(550,50);
-        var segment = mesh.insertConstraintSegment(70,300,530,320);
-        //var shape = mesh.insertConstraintShape([50.,50.,100.,50.,100.,50.,100.,100.,100.,100.,50.,100.,50.,100.,50.,50.,20.,50.,130.,100.]);
-        var i = obj.length;
-        while(i--){
-            obj[i]._constraintShape = null;
-            mesh.insertObject(obj[i]);
-        }
-
-        i = objPlus.length;
-        while(i--){
-            objPlus[i]._constraintShape = null;
-            mesh.insertObject(objPlus[i]);
-        }
-
-        view.drawMesh(mesh, true);
-        pathfinder.mesh = mesh;
-
-};*/
 
 function onMouseDown (e) {
     view.drawMesh(world.mesh,true);
@@ -118,20 +87,21 @@ function render() {
         world.objects[i].rotation += 0.001; 
     }
 
-    //world.updateObjects();
-    //world.rebuild();
+    world.updateMesh();
 
-    view.drawMesh(world.mesh,true);
+    view.drawMesh( world.mesh, true );
 
     world.update();
 
+    view.clear();
+
     i = world.heroes.length, h;
     while(i--){
+
         h = world.heroes[i];
-        //if( h.newPath ) view.drawPath( h.entity.path );
-        if( h.newPath ) view.drawPath( h.tmppath );
-        else world.updateMesh();
-        view.drawEntity(h.entity);
+        view.drawPath( h.tmppath );
+        view.drawEntity( h.entity );
+
     }
 };
         

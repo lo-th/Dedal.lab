@@ -8,39 +8,33 @@ DDLS.SquaredSqrt = function(a,b){
 DDLS.Geom2D = {};
 DDLS.Geom2D.__samples = [];
 DDLS.Geom2D.__circumcenter = new DDLS.Point();
-DDLS.Geom2D._randGen = null;
 
 DDLS.Geom2D.locatePosition = function( p, mesh ) {
 
     // jump and walk algorithm
 
-    if(this._randGen == null) this._randGen = new DDLS.RandGenerator();
-    this._randGen.seed = DDLS.int(p.x * 10 + 4 * p.y);
+    if(DDLS.Geom2D._randGen == null) DDLS.Geom2D._randGen = new DDLS.RandGenerator();
+    DDLS.Geom2D._randGen.seed = DDLS.int(p.x * 10 + 4 * p.y);
     var i;
-    this.__samples.splice(0, this.__samples.length);
-    //var numSamples = DDLS.int(DDLS.pow(mesh._vertices.length,0.333333333333333315));
-    var numSamples = DDLS.int(DDLS.pow(mesh._vertices.length,1/3));
-    
+    DDLS.Geom2D.__samples.splice(0, DDLS.Geom2D.__samples.length);
+    var numSamples = DDLS.int(DDLS.pow(mesh._vertices.length,0.333333333333333315));
     //console.log(numSamples, mesh._vertices.length);
+    DDLS.Geom2D._randGen.rangeMin = 0;
+    DDLS.Geom2D._randGen.rangeMax = mesh._vertices.length - 1;
 
-    this._randGen.rangeMin = 0;
-    this._randGen.rangeMax = mesh._vertices.length - 1;
-
-    //i = numSamples;
-    //while(i--){
-    for ( i = 0 ; i < numSamples; i++ ){
-        this.__samples.push(mesh._vertices[this._randGen.next()]);
+    i = numSamples;
+    while(i--){
+        DDLS.Geom2D.__samples.push(mesh._vertices[DDLS.Geom2D._randGen.next()]);
     }
 
     var currVertex, currVertexPos, distSquared;
     var minDistSquared = DDLS.POSITIVE_INFINITY;
     var closedVertex = null;
-    //i = 0;
-    //var n = 0
-    //while( n < numSamples ) {
-    for ( i = 0 ; i < numSamples; i++ ){
-        //i = n++;
-        currVertex = this.__samples[i];
+    i = 0;
+    var n = 0
+    while( n < numSamples ) {
+        i = n++;
+        currVertex = DDLS.Geom2D.__samples[i];
         currVertexPos = currVertex.pos;
         distSquared = DDLS.Squared(currVertexPos.x - p.x, currVertexPos.y - p.y);
         if( distSquared < minDistSquared ) {
@@ -48,20 +42,11 @@ DDLS.Geom2D.locatePosition = function( p, mesh ) {
             closedVertex = currVertex;
         }
     }
-
-    //var currFace;
+    var currFace;
     var iterFace = new DDLS.FromVertexToHoldingFaces();
-
-    if(closedVertex===null){ 
-        DDLS.Log('no closedVertex find ?');
-        //return {type:DDLS.NULL};
-    }
     iterFace.fromVertex = closedVertex;
-
-    var currFace = iterFace.next();
-
-    //var faceVisited = new DDLS.Dictionary(1);
-    var faceVisited = new DDLS.Dictionary();
+    currFace = iterFace.next();
+    var faceVisited = new DDLS.Dictionary(1);
     var currEdge;
     var iterEdge = new DDLS.FromFaceToInnerEdges();
     var relativPos = 0;
@@ -95,7 +80,7 @@ DDLS.Geom2D.locatePosition = function( p, mesh ) {
         objectContainer = DDLS.Geom2D.isInFace(p,currFace);
     }
 
-    faceVisited.dispose();
+    //faceVisited.dispose();
 
     return objectContainer;
 

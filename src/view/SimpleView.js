@@ -1,6 +1,19 @@
-var DDLS = DDLS || {};
+//var DDLS = DDLS || {};
 
-DDLS.SimpleView = function(canvas) {
+DDLS.SimpleView = function( world ) {
+
+
+
+    //this.w = w || 512;
+    //this.h = h || 512;
+
+    this.g0 = new DDLS.BasicCanvas( world.w, world.h )
+    this.g = new DDLS.BasicCanvas( world.w, world.h );
+
+    this.g.canvas.style.pointerEvents = 'none';
+
+
+
     this.entitiesWidth = 1;
     this.entitiesColor = {r:0, g:255, b:0, a:0.75};
     this.entitiesColor2 = {r:255, g:255, b:255, a:0.75};
@@ -14,15 +27,28 @@ DDLS.SimpleView = function(canvas) {
     this.edgesWidth = 1;
     this.edgesColor = {r:190, g:190, b:190, a:0.25};
     this.edgesColor2 = {r:0, g:190, b:0, a:0.25};
-    this.graphics = new DDLS.DrawContext( canvas );
-    this.g = this.graphics.g;
+    //this.graphics = new DDLS.DrawContext( canvas );
+    //this.g = this.graphics.g;
     this.mesh_data = null;
+
+    this.domElement = this.g0.canvas;
+
+    DDLS.VIEW = this;
+
 };
 
 DDLS.SimpleView.prototype = {
-    drawMesh: function(mesh,cleanBefore) {
-        if(cleanBefore == null) cleanBefore = false;
-        if(cleanBefore) this.g.clear();
+
+    drawImage : function ( img, w, h ) {
+
+        this.g0.drawImage( img, w, h );
+
+    },
+
+    drawMesh: function ( mesh, clean ) {
+
+        var c = clean === undefined ? false : clean;
+        if(c) this.g0.clear();
 
         mesh.compute_Data();
 
@@ -34,31 +60,33 @@ DDLS.SimpleView.prototype = {
         while(i--){
             n = i * 5;
             if(edge[n+4]) {
-                this.g.lineStyle( this.constraintsWidth, this.constraintsColor );
+                this.g0.lineStyle( this.constraintsWidth, this.constraintsColor );
             }else{
                 //if( edge[n+4] ) this.g.lineStyle( this.edgesWidth, this.edgesColor2 );
                 //else 
-                this.g.lineStyle( this.edgesWidth, this.edgesColor );
+                this.g0.lineStyle( this.edgesWidth, this.edgesColor );
             }
-            this.g.moveTo(edge[n],edge[n+1]);
-            this.g.lineTo(edge[n+2],edge[n+3]);
+            this.g0.moveTo(edge[n],edge[n+1]);
+            this.g0.lineTo(edge[n+2],edge[n+3]);
         }
 
         
-        this.g.lineStyle( this.verticesRadius, this.verticesColor );
+        this.g0.lineStyle( this.verticesRadius, this.verticesColor );
         i = vertex.length;
         while(i--){
             n = i * 2;
-            this.g.beginFill( this.verticesColor, this.verticesAlpha );
-            this.g.drawCircle(vertex[n],vertex[n+1],this.verticesRadius);
-            this.g.endFill();
+            this.g0.beginFill( this.verticesColor, this.verticesAlpha );
+            this.g0.drawCircle(vertex[n],vertex[n+1],this.verticesRadius);
+            this.g0.endFill();
         }
     },
-    drawEntity: function( entity, cleanBefore ) {
-        if(cleanBefore == null) cleanBefore = false;
-        if(cleanBefore) this.g.clear();
 
-        this.g.beginFill(this.entitiesField);
+    drawEntity: function( entity, clean ) {
+
+        var c = clean === undefined ? false : clean;
+        if(c) this.g.clear();
+
+        this.g.beginFill( this.entitiesField );
         this.g.moveTo(entity.position.x, entity.position.y);
         this.g.drawCircle( entity.position.x, entity.position.y, entity.radiusFOV, (entity.angle-(entity.angleFOV*0.5)), (entity.angle+(entity.angleFOV*0.5)) );
         this.g.lineTo(entity.position.x, entity.position.y);
@@ -73,9 +101,12 @@ DDLS.SimpleView.prototype = {
 
         
     },
-    drawEntities: function( vEntities, cleanBefore ) {
-        if(cleanBefore == null) cleanBefore = false;
-        if(cleanBefore) this.g.clear();
+
+    drawEntities: function( vEntities, clean ) {
+
+        var c = clean === undefined ? false : clean;
+        if(c) this.g.clear();
+
         var _g1 = 0;
         var _g = vEntities.length;
         while(_g1 < _g) {
@@ -83,9 +114,12 @@ DDLS.SimpleView.prototype = {
             this.drawEntity( vEntities[i], false );
         }
     },
-    drawPath: function( path, cleanBefore ) {
-        if(cleanBefore == null) cleanBefore = false;
-        if(cleanBefore) this.g.clear();
+
+    drawPath: function( path, clean ) {
+
+        var c = clean === undefined ? false : clean;
+        if(c) this.g.clear();
+
         if(path.length === 0) return;
         this.g.lineStyle( this.pathsWidth, this.pathsColor );
         this.g.moveTo( path[0], path[1] );
@@ -95,23 +129,39 @@ DDLS.SimpleView.prototype = {
             this.g.moveTo(path[i],path[i + 1]);
             i += 2;
         }
-        //this.g.endFill();
+        this.g.endFill();
+    },
+
+    clear : function(){
+
+        this.g.clear();
+
     }
+
 };
 
 // CANVAS
 
-DDLS.BasicCanvas = function( w, h, color, fps ) {
-    this.canvas = window.document.createElement("canvas");
-    this.canvas.width = w || 200;
-    this.canvas.height = h || 200;
+DDLS.BasicCanvas = function( w, h ) {
+
+    this.w = w || 200;
+    this.h = h || 200;
+
+    this.canvas = document.createElement("canvas");
+    this.canvas.width = this.w;
+    this.canvas.height = this.h;
     this.ctx = this.canvas.getContext("2d");
-    window.document.body.appendChild(this.canvas);
+    document.body.appendChild( this.canvas );
+
 };
 
 DDLS.BasicCanvas.prototype = {
+
     clear: function() {
-        this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
+        this.ctx.clearRect(0,0,this.w,this.h);
+    },
+    drawImage : function(img, w, h){
+        this.ctx.drawImage( img, 0, 0, w || this.w, h || this.h );
     },
     drawCircle: function(x,y,radius, s, e) {
         s = s || 0;

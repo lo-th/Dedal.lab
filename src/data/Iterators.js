@@ -171,9 +171,11 @@ DDLS.FromVertexToHoldingFaces = function() {
     this._nextEdge = null;
     Object.defineProperty(this, 'fromVertex', {
         set: function( value ) { 
+            //console.log(value)
             this._fromVertex = value;
-            if(this._fromVertex) this._nextEdge = this._fromVertex.edge;// || null;
-            else DDLS.Log('!! null vertex')
+            this._nextEdge = this._fromVertex.edge;// || null;
+           // if(this._fromVertex) this._nextEdge = this._fromVertex.edge;// || null;
+           // else DDLS.Log('!! null vertex')
         }
     });
 };
@@ -192,7 +194,8 @@ DDLS.FromVertexToHoldingFaces.prototype = {
                 if(!this._resultFace.isReal) this._resultFace = null;
                 break;
             }
-        } while(!this._resultFace.isReal); else this._resultFace = null;
+        } while(!this._resultFace.isReal); 
+        else this._resultFace = null;
         return this._resultFace;
     }
 };

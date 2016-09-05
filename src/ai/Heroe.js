@@ -4,6 +4,7 @@ DDLS.Heroe = function(s, world) {
     this.world = world;
 
     this.path = [];
+    this._path = [];
     this.tmppath = [];
 
     this.target = new DDLS.Point();
@@ -14,15 +15,13 @@ DDLS.Heroe = function(s, world) {
     this.isSelected = false;
     this.isWalking = false;
 
-
-
     this.entity = new DDLS.EntityAI( s.x || 0, s.y || 0, s.r || 4 );
 
     this.fov = new DDLS.FieldOfView( this.entity, this.world );
 
     this.pathSampler = new DDLS.LinearPathSampler();
     this.pathSampler.entity = this.entity;
-    this.pathSampler.path = this.path;
+    this.pathSampler.path = this.tmppath;
     this.pathSampler.samplingDistance = s.speed || 10;
 
 };
@@ -30,18 +29,28 @@ DDLS.Heroe = function(s, world) {
 DDLS.Heroe.prototype = {
     setTarget:function(x, y){
 
+        this.path = []
         this.target.set( x, y );
         this.world.pathFinder.entity = this.entity;
+        //this.world.pathFinder.findPath( this.target, this.path );
         this.world.pathFinder.findPath( this.target, this.path );
         this.testPath();
 
     },
     testPath:function(){
-        if(this.path.length > 0){
+        if( !this.path ) return;
+        if( this.path.length > 0 ){
+        //if( this.path.length > 0 ){
+            this.pathSampler.reset();
             this.tmppath = [];
             var i = this.path.length;
             while(i--) this.tmppath[i] = this.path[i];
-            //this.tmppath = this.path;
+            this.pathSampler.path = this.tmppath;
+
+            /*this.path = [];
+            var i = this._path.length;
+            while(i--) this.path[i] = this._path[i];
+            //this.tmppath = this.path;*/
             this.newPath = true;
         }
     },
@@ -53,11 +62,12 @@ DDLS.Heroe.prototype = {
             this.mesh.position.set( this.entity.position.x, 0, this.entity.position.y );
             this.mesh.rotation.y = -this.entity.angle;
         }*/
-        if(this.newPath){
+        //if(this.newPath){
             //console.log(this.path);
-            //this.newPath = false;
-            this.pathSampler.reset();
-        }
+            ////this.newPath = false;
+            //this.pathSampler.reset();
+            //this.pathSampler.path = this._path;
+        //}
       
         if( this.pathSampler.hasNext ){
 
@@ -67,6 +77,7 @@ DDLS.Heroe.prototype = {
 
         } else {
             this.move = false;
+            this.tmppath = [];
         }
 
         if(this.move && !this.isWalking) this.isWalking = true;

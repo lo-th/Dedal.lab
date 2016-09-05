@@ -1,41 +1,67 @@
-DDLS.World = function(w, h) {
+
+DDLS.World = function( w, h ) {
+    
     this.w = w || 512;
     this.h = h || 512;
-    this.mesh = DDLS.RectMesh(this.w,this.h);
+
+    this.mesh = DDLS.RectMesh( this.w, this.h );
 
     this.pathFinder = new DDLS.PathFinder();
     this.pathFinder.mesh = this.mesh;
 
     this.heroes = [];
-
     this.shapes = [];
     this.segments = [];
     this.objects = [];
+
 };
 
 DDLS.World.prototype = {
+
     update:function(){
-        var i = this.heroes.length, j;
-        while(i--){
+
+        var lng = this.heroes.length;
+
+        var i = lng, j;
+
+        while( i-- ){
+
             this.heroes[i].update();
-            j = this.heroes.length;
-            while(j--){
-                if(i!==j){
+            j = lng;
+
+            while( j-- ){
+                if( i !== j ) {
                     this.heroes[i].entity.isSee = this.heroes[i].fov.isInField( this.heroes[j].entity );
                 }
             }
 
         }
+
     },
+
     updateMesh : function(){
+
        this.mesh.updateObjects();
+
     },
     
-    add:function(o){
+    add : function ( o ) {
+
         this.mesh.insertObject(o);
         this.objects.push(o);
+
     },
-    addObject:function(s){
+
+    addHeroe : function( s ){
+
+        var h = new DDLS.Heroe( s, this );
+        this.heroes.push( h );
+        return h;
+        
+    },
+
+    addObject : function( s ){
+
         s = s || {};
         var o = new DDLS.Object();
         o.coordinates = s.coord || [-1,-1,1,-1,  1,-1,1,1,  1,1,-1,1,  -1,1,-1,-1];
@@ -48,14 +74,19 @@ DDLS.World.prototype = {
         this.objects.push(o);
         return o;
     },
-    reset:function(w,h){
+
+    reset : function(w,h){
+
         this.mesh.dispose();
         if(w) this.w = w;
         if(h) this.h = h;
         this.mesh = DDLS.RectMesh( this.w, this.h );
         this.pathFinder.mesh = this.mesh;
+    
     },
-    rebuild:function(){
+
+    rebuild : function(){
+
         this.mesh.clear(true);
         this.mesh = DDLS.RectMesh( this.w, this.h );
         this.pathFinder.mesh = this.mesh;
@@ -67,11 +98,6 @@ DDLS.World.prototype = {
         }
     },
     
-    addHeroe:function(s){
-        var h = new DDLS.Heroe(s, this);
-        //h.setMesh(this.mesh);
-        this.heroes.push(h);
-        return h;
-    }
+
 
 };
