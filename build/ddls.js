@@ -5024,6 +5024,8 @@ DDLS.Heroe = function(s, world) {
     this.isSelected = false;
     this.isWalking = false;
 
+    this.testSee = s.see || false;
+
     this.entity = new DDLS.EntityAI( s.x || 0, s.y || 0, s.r || 4 );
 
     this.fov = new DDLS.FieldOfView( this.entity, this.world );
@@ -5124,16 +5126,20 @@ DDLS.World.prototype = {
 
         var lng = this.heroes.length;
 
-        var i = lng, j;
+        var i = lng, j, h;
 
         while( i-- ){
 
-            this.heroes[i].update();
-            j = lng;
+            h = this.heroes[i];
 
-            while( j-- ){
-                if( i !== j ) {
-                    this.heroes[i].entity.isSee = this.heroes[i].fov.isInField( this.heroes[j].entity );
+            h.update();
+
+            if(h.testSee){
+                j = lng;
+                while( j-- ){
+                    if( i !== j ) {
+                        this.heroes[i].entity.isSee = this.heroes[i].fov.isInField( this.heroes[j].entity );
+                    }
                 }
             }
 

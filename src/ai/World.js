@@ -26,16 +26,20 @@ DDLS.World.prototype = {
 
         var lng = this.heroes.length;
 
-        var i = lng, j;
+        var i = lng, j, h;
 
         while( i-- ){
 
-            this.heroes[i].update();
-            j = lng;
+            h = this.heroes[i];
 
-            while( j-- ){
-                if( i !== j ) {
-                    this.heroes[i].entity.isSee = this.heroes[i].fov.isInField( this.heroes[j].entity );
+            h.update();
+
+            if(h.testSee){
+                j = lng;
+                while( j-- ){
+                    if( i !== j ) {
+                        this.heroes[i].entity.isSee = this.heroes[i].fov.isInField( this.heroes[j].entity );
+                    }
                 }
             }
 

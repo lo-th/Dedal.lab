@@ -15,6 +15,8 @@ DDLS.Heroe = function(s, world) {
     this.isSelected = false;
     this.isWalking = false;
 
+    this.testSee = s.see || false;
+
     this.entity = new DDLS.EntityAI( s.x || 0, s.y || 0, s.r || 4 );
 
     this.fov = new DDLS.FieldOfView( this.entity, this.world );
