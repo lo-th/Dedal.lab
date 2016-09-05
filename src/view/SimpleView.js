@@ -48,6 +48,8 @@ DDLS.SimpleView.prototype = {
 
     drawMesh: function ( mesh, clean ) {
 
+        var g = this.g0;
+
         var c = clean === undefined ? false : clean;
         if(c) this.g0.clear();
 
@@ -61,33 +63,32 @@ DDLS.SimpleView.prototype = {
         while(i--){
             n = i * 5;
             if(edge[n+4]) {
-                this.g0.lineStyle( this.constraintsWidth, this.constraintsColor );
+                g.lineStyle( this.constraintsWidth, this.constraintsColor );
             }else{
                 //if( edge[n+4] ) this.g.lineStyle( this.edgesWidth, this.edgesColor2 );
                 //else 
-                this.g0.lineStyle( this.edgesWidth, this.edgesColor );
+                g.lineStyle( this.edgesWidth, this.edgesColor );
             }
-            this.g0.moveTo(edge[n],edge[n+1]);
-            this.g0.lineTo(edge[n+2],edge[n+3]);
-            this.g0.stroke();
-            this.g0.closePath()
+            g.moveTo(edge[n],edge[n+1]);
+            g.lineTo(edge[n+2],edge[n+3]);
+            g.stroke();
+            g.closePath();
         }
 
         
-        this.g0.lineStyle( this.verticesRadius, this.verticesColor );
+        g.lineStyle( this.verticesRadius, this.verticesColor );
         i = vertex.length;
         while(i--){
             n = i * 2;
-            this.g0.beginFill( this.verticesColor, this.verticesAlpha );
-            this.g0.drawCircle(vertex[n],vertex[n+1],this.verticesRadius);
-            this.g0.endFill();
+            g.beginFill( this.verticesColor, this.verticesAlpha );
+            g.drawCircle(vertex[n],vertex[n+1],this.verticesRadius);
+            g.endFill();
         }
     },
 
     drawEntity: function( entity, clean ) {
 
         var g = this.g;
-        g.lineStyle();
 
         var see = entity.isSee;
 
@@ -126,19 +127,21 @@ DDLS.SimpleView.prototype = {
 
     drawPath: function( path, clean ) {
 
+        var g = this.g;
+
         var c = clean === undefined ? false : clean;
         if(c) this.g.clear();
 
         if(path.length === 0) return;
-        this.g.lineStyle( this.pathsWidth, this.pathsColor );
-        this.g.moveTo( path[0], path[1] );
+        g.lineStyle( this.pathsWidth, this.pathsColor );
+        g.moveTo( path[0], path[1] );
         var i = 2;
         while(i < path.length) {
-            this.g.lineTo(path[i],path[i + 1]);
-            this.g.moveTo(path[i],path[i + 1]);
+            g.lineTo(path[i],path[i + 1]);
+            //g.moveTo(path[i],path[i + 1]);
             i += 2;
         }
-        this.g.endFill();
+        g.stroke();
     },
 
     clear : function(){
@@ -191,15 +194,9 @@ DDLS.BasicCanvas.prototype = {
     },
     lineStyle: function(wid,c) {
 
-        if( wid && c ){
-            this.ctx.lineWidth = wid;
-            this.ctx.strokeStyle = "rgba(" + c.r + "," + c.g + "," + c.b + "," + c.a + ")";
-    } else {
-        this.ctx.lineWidth = 0;
-        this.ctx.strokeStyle = "none";
-    }
+        this.ctx.lineWidth = wid;
+        this.ctx.strokeStyle = "rgba(" + c.r + "," + c.g + "," + c.b + "," + c.a + ")";
 
-        
     },
     moveTo: function(x,y) {
         this.ctx.beginPath();

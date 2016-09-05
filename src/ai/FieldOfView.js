@@ -9,7 +9,7 @@ DDLS.FieldOfView.prototype = {
         if (!this.world) return;//throw new Error("Mesh missing");
         if (!this.entity) return;//throw new Error("From entity missing");
 
-        this.mesh = this.world.mesh;
+        this.mesh = this.world.getMesh();
 
         var pos = this.entity.position;
         var direction = this.entity.direction;
@@ -98,37 +98,23 @@ DDLS.FieldOfView.prototype = {
         }
         
         // we init the window
-        if (!leftTargetInField || !rightTargetInField){
+        if ( !leftTargetInField || !rightTargetInField ){
             var p = new DDLS.Point();
             var dirAngle;
             dirAngle = DDLS.atan2( direction.y, direction.x );
             if ( !leftTargetInField ){
                 var leftField = new DDLS.Point(DDLS.cos(dirAngle - angle*0.5), DDLS.sin(dirAngle - angle*0.5)).add(pos);
                 DDLS.Geom2D.intersections2segments(pos, leftField , leftTarget, rightTarget, p, null, true);
-                /*if (this._debug){
-                    this._debug.graphics.lineStyle(1, 0x0000FF);
-                    this._debug.graphics.drawCircle(p.x, p.y, 2);
-                }*/
                 leftTarget = p.clone();
             }
             if ( !rightTargetInField ){
                 var rightField = new DDLS.Point(DDLS.cos(dirAngle + angle*0.5), DDLS.sin(dirAngle + angle*0.5)).add(pos);
                 DDLS.Geom2D.intersections2segments(pos, rightField , leftTarget, rightTarget, p, null, true);
-                /*if (this._debug){
-                    this._debug.graphics.lineStyle(1, 0xFF0000);
-                    this._debug.graphics.drawCircle(p.x, p.y, 2);
-                }*/
                 rightTarget = p.clone();
             }
         }
         
-        /*if (this._debug){
-            this._debug.graphics.lineStyle(1, 0x000000);
-            this._debug.graphics.moveTo(posX, posY);
-            this._debug.graphics.lineTo(leftTargetX, leftTargetY);
-            this._debug.graphics.lineTo(rightTargetX, rightTargetY);
-            this._debug.graphics.lineTo(posX, posY);
-        }*/
+     
         // now we have a triangle called the window defined by: posX, posY, rightTargetX, rightTargetY, leftTargetX, leftTargetY
         
         // we set a dictionnary of faces done
@@ -182,7 +168,7 @@ DDLS.FieldOfView.prototype = {
                 edgesDone.set(currentEdge, true);
             }
             
-            while (edges.length > 0){
+            while ( edges.length > 0 ){
 
                 currentEdge = edges.pop();
                 
@@ -192,12 +178,6 @@ DDLS.FieldOfView.prototype = {
                 if ( DDLS.Geom2D.clipSegmentByTriangle(s1.x, s1.y, s2.x, s2.y, pos.x, pos.y, rightTarget.x, rightTarget.y, leftTarget.x, leftTarget.y, p1, p2) ){
                     // if the edge if constrained
                     if ( currentEdge.isConstrained ){
-                        /*if (this._debug){
-                            this._debug.graphics.lineStyle(6, 0xFFFF00);
-                            this._debug.graphics.moveTo(p1.x, p1.y);
-                            this._debug.graphics.lineTo(p2.x, p2.y);
-                        }*/
-                        
                         // we project the constrained edge on the wall
                         params.splice(0, params.length);
                         DDLS.Geom2D.intersections2segments(pos, p1, leftTarget, rightTarget, null, params, true);
@@ -208,13 +188,7 @@ DDLS.FieldOfView.prototype = {
                             param1 = param2;
                             param2 = params[1];
                         }
-                        /*if (_debug)
-                        {
-                            _debug.graphics.lineStyle(3, 0x00FFFF);
-                            _debug.graphics.moveTo(leftTargetX + param1*(rightTargetX-leftTargetX), leftTargetY + param1*(rightTargetY-leftTargetY));
-                            _debug.graphics.lineTo(leftTargetX + param2*(rightTargetX-leftTargetX), leftTargetY + param2*(rightTargetY-leftTargetY));
-                        }*/
-                        
+                       
                         // we sum it to the window wall
                         for (i=wall.length-1 ; i>=0 ; i--){
                             if ( param2 >= wall[i] ) break;

@@ -4,7 +4,7 @@ DDLS.Heroe = function(s, world) {
     this.world = world;
 
     this.path = [];
-    this._path = [];
+    //this._path = [];
     this.tmppath = [];
 
     this.target = new DDLS.Point();

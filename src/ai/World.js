@@ -18,6 +18,10 @@ DDLS.World = function( w, h ) {
 
 DDLS.World.prototype = {
 
+    getMesh:function(){
+        return this.mesh;
+    },
+
     update:function(){
 
         var lng = this.heroes.length;

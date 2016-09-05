@@ -4314,7 +4314,7 @@ DDLS.FieldOfView.prototype = {
         if (!this.world) return;//throw new Error("Mesh missing");
         if (!this.entity) return;//throw new Error("From entity missing");
 
-        this.mesh = this.world.mesh;
+        this.mesh = this.world.getMesh();
 
         var pos = this.entity.position;
         var direction = this.entity.direction;
@@ -4403,37 +4403,23 @@ DDLS.FieldOfView.prototype = {
         }
         
         // we init the window
-        if (!leftTargetInField || !rightTargetInField){
+        if ( !leftTargetInField || !rightTargetInField ){
             var p = new DDLS.Point();
             var dirAngle;
             dirAngle = DDLS.atan2( direction.y, direction.x );
             if ( !leftTargetInField ){
                 var leftField = new DDLS.Point(DDLS.cos(dirAngle - angle*0.5), DDLS.sin(dirAngle - angle*0.5)).add(pos);
                 DDLS.Geom2D.intersections2segments(pos, leftField , leftTarget, rightTarget, p, null, true);
-                /*if (this._debug){
-                    this._debug.graphics.lineStyle(1, 0x0000FF);
-                    this._debug.graphics.drawCircle(p.x, p.y, 2);
-                }*/
                 leftTarget = p.clone();
             }
             if ( !rightTargetInField ){
                 var rightField = new DDLS.Point(DDLS.cos(dirAngle + angle*0.5), DDLS.sin(dirAngle + angle*0.5)).add(pos);
                 DDLS.Geom2D.intersections2segments(pos, rightField , leftTarget, rightTarget, p, null, true);
-                /*if (this._debug){
-                    this._debug.graphics.lineStyle(1, 0xFF0000);
-                    this._debug.graphics.drawCircle(p.x, p.y, 2);
-                }*/
                 rightTarget = p.clone();
             }
         }
         
-        /*if (this._debug){
-            this._debug.graphics.lineStyle(1, 0x000000);
-            this._debug.graphics.moveTo(posX, posY);
-            this._debug.graphics.lineTo(leftTargetX, leftTargetY);
-            this._debug.graphics.lineTo(rightTargetX, rightTargetY);
-            this._debug.graphics.lineTo(posX, posY);
-        }*/
+     
         // now we have a triangle called the window defined by: posX, posY, rightTargetX, rightTargetY, leftTargetX, leftTargetY
         
         // we set a dictionnary of faces done
@@ -4487,7 +4473,7 @@ DDLS.FieldOfView.prototype = {
                 edgesDone.set(currentEdge, true);
             }
             
-            while (edges.length > 0){
+            while ( edges.length > 0 ){
 
                 currentEdge = edges.pop();
                 
@@ -4497,12 +4483,6 @@ DDLS.FieldOfView.prototype = {
                 if ( DDLS.Geom2D.clipSegmentByTriangle(s1.x, s1.y, s2.x, s2.y, pos.x, pos.y, rightTarget.x, rightTarget.y, leftTarget.x, leftTarget.y, p1, p2) ){
                     // if the edge if constrained
                     if ( currentEdge.isConstrained ){
-                        /*if (this._debug){
-                            this._debug.graphics.lineStyle(6, 0xFFFF00);
-                            this._debug.graphics.moveTo(p1.x, p1.y);
-                            this._debug.graphics.lineTo(p2.x, p2.y);
-                        }*/
-                        
                         // we project the constrained edge on the wall
                         params.splice(0, params.length);
                         DDLS.Geom2D.intersections2segments(pos, p1, leftTarget, rightTarget, null, params, true);
@@ -4513,13 +4493,7 @@ DDLS.FieldOfView.prototype = {
                             param1 = param2;
                             param2 = params[1];
                         }
-                        /*if (_debug)
-                        {
-                            _debug.graphics.lineStyle(3, 0x00FFFF);
-                            _debug.graphics.moveTo(leftTargetX + param1*(rightTargetX-leftTargetX), leftTargetY + param1*(rightTargetY-leftTargetY));
-                            _debug.graphics.lineTo(leftTargetX + param2*(rightTargetX-leftTargetX), leftTargetY + param2*(rightTargetY-leftTargetY));
-                        }*/
-                        
+                       
                         // we sum it to the window wall
                         for (i=wall.length-1 ; i>=0 ; i--){
                             if ( param2 >= wall[i] ) break;
@@ -5036,7 +5010,7 @@ DDLS.Heroe = function(s, world) {
     this.world = world;
 
     this.path = [];
-    this._path = [];
+    //this._path = [];
     this.tmppath = [];
 
     this.target = new DDLS.Point();
@@ -5138,6 +5112,10 @@ DDLS.World = function( w, h ) {
 };
 
 DDLS.World.prototype = {
+
+    getMesh:function(){
+        return this.mesh;
+    },
 
     update:function(){
 
@@ -5390,6 +5368,8 @@ DDLS.SimpleView.prototype = {
 
     drawMesh: function ( mesh, clean ) {
 
+        var g = this.g0;
+
         var c = clean === undefined ? false : clean;
         if(c) this.g0.clear();
 
@@ -5403,33 +5383,32 @@ DDLS.SimpleView.prototype = {
         while(i--){
             n = i * 5;
             if(edge[n+4]) {
-                this.g0.lineStyle( this.constraintsWidth, this.constraintsColor );
+                g.lineStyle( this.constraintsWidth, this.constraintsColor );
             }else{
                 //if( edge[n+4] ) this.g.lineStyle( this.edgesWidth, this.edgesColor2 );
                 //else 
-                this.g0.lineStyle( this.edgesWidth, this.edgesColor );
+                g.lineStyle( this.edgesWidth, this.edgesColor );
             }
-            this.g0.moveTo(edge[n],edge[n+1]);
-            this.g0.lineTo(edge[n+2],edge[n+3]);
-            this.g0.stroke();
-            this.g0.closePath()
+            g.moveTo(edge[n],edge[n+1]);
+            g.lineTo(edge[n+2],edge[n+3]);
+            g.stroke();
+            g.closePath();
         }
 
         
-        this.g0.lineStyle( this.verticesRadius, this.verticesColor );
+        g.lineStyle( this.verticesRadius, this.verticesColor );
         i = vertex.length;
         while(i--){
             n = i * 2;
-            this.g0.beginFill( this.verticesColor, this.verticesAlpha );
-            this.g0.drawCircle(vertex[n],vertex[n+1],this.verticesRadius);
-            this.g0.endFill();
+            g.beginFill( this.verticesColor, this.verticesAlpha );
+            g.drawCircle(vertex[n],vertex[n+1],this.verticesRadius);
+            g.endFill();
         }
     },
 
     drawEntity: function( entity, clean ) {
 
         var g = this.g;
-        g.lineStyle();
 
         var see = entity.isSee;
 
@@ -5468,19 +5447,21 @@ DDLS.SimpleView.prototype = {
 
     drawPath: function( path, clean ) {
 
+        var g = this.g;
+
         var c = clean === undefined ? false : clean;
         if(c) this.g.clear();
 
         if(path.length === 0) return;
-        this.g.lineStyle( this.pathsWidth, this.pathsColor );
-        this.g.moveTo( path[0], path[1] );
+        g.lineStyle( this.pathsWidth, this.pathsColor );
+        g.moveTo( path[0], path[1] );
         var i = 2;
         while(i < path.length) {
-            this.g.lineTo(path[i],path[i + 1]);
-            this.g.moveTo(path[i],path[i + 1]);
+            g.lineTo(path[i],path[i + 1]);
+            //g.moveTo(path[i],path[i + 1]);
             i += 2;
         }
-        this.g.endFill();
+        g.stroke();
     },
 
     clear : function(){
@@ -5533,15 +5514,9 @@ DDLS.BasicCanvas.prototype = {
     },
     lineStyle: function(wid,c) {
 
-        if( wid && c ){
-            this.ctx.lineWidth = wid;
-            this.ctx.strokeStyle = "rgba(" + c.r + "," + c.g + "," + c.b + "," + c.a + ")";
-    } else {
-        this.ctx.lineWidth = 0;
-        this.ctx.strokeStyle = "none";
-    }
+        this.ctx.lineWidth = wid;
+        this.ctx.strokeStyle = "rgba(" + c.r + "," + c.g + "," + c.b + "," + c.a + ")";
 
-        
     },
     moveTo: function(x,y) {
         this.ctx.beginPath();
