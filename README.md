@@ -1,4 +1,4 @@
-<p align="center">Dedal Advanced pathfinding full javascript<br>
+<p align="center">DDLS Advanced pathfinding full javascript<br>
 start with hx version <a href="https://github.com/hxDaedalus/hxDaedalus">hxDaedalus</a><br><br>
 
 3D DEMOS<br>
