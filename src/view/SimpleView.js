@@ -17,7 +17,8 @@ DDLS.SimpleView = function( world ) {
     this.entitiesWidth = 1;
     this.entitiesColor = {r:0, g:255, b:0, a:0.75};
     this.entitiesColor2 = {r:255, g:255, b:255, a:0.75};
-    this.entitiesField = {r:255, g:255, b:0, a:0.2};
+    this.entitiesField = {r:0, g:255, b:0, a:0.1};
+    this.entitiesField2 = {r:255, g:255, b:255, a:0.1};
     this.pathsWidth = 2;
     this.pathsColor = {r:255, g:255, b:0, a:0.75};
     this.verticesRadius = 1;
@@ -68,6 +69,8 @@ DDLS.SimpleView.prototype = {
             }
             this.g0.moveTo(edge[n],edge[n+1]);
             this.g0.lineTo(edge[n+2],edge[n+3]);
+            this.g0.stroke();
+            this.g0.closePath()
         }
 
         
@@ -83,26 +86,32 @@ DDLS.SimpleView.prototype = {
 
     drawEntity: function( entity, clean ) {
 
+        var g = this.g;
+        g.lineStyle();
+
+        var see = entity.isSee;
+
         var c = clean === undefined ? false : clean;
-        if(c) this.g.clear();
+        if(c) g.clear();
 
-        this.g.beginFill( this.entitiesField );
-        this.g.moveTo(entity.position.x, entity.position.y);
-        this.g.drawCircle( entity.position.x, entity.position.y, entity.radiusFOV, (entity.angle-(entity.angleFOV*0.5)), (entity.angle+(entity.angleFOV*0.5)) );
-        this.g.lineTo(entity.position.x, entity.position.y);
-        this.g.endFill();
+        if( see ) g.beginFill( this.entitiesField );
+        else g.beginFill( this.entitiesField2 );
+        g.moveTo( entity.position.x, entity.position.y );
+        g.drawCircle( entity.position.x, entity.position.y, entity.radiusFOV, (entity.angle-(entity.angleFOV*0.5)), (entity.angle+(entity.angleFOV*0.5)) );
+        g.lineTo( entity.position.x, entity.position.y );
+        g.endFill();
 
-        this.g.lineStyle( this.entitiesWidth, this.entitiesColor );
-        if(entity.isSee )this.g.beginFill(this.entitiesColor2);
-        else this.g.beginFill(this.entitiesColor);
-        this.g.drawCircle( entity.position.x, entity.position.y, entity.radius );
+        //g.lineStyle( this.entitiesWidth, this.entitiesColor );
+        if( see ) g.beginFill(this.entitiesColor);
+        else g.beginFill(this.entitiesColor2);
+        g.drawCircle( entity.position.x, entity.position.y, entity.radius );
         //console.log(entity.direction)
-        this.g.endFill();
+        g.endFill();
 
         
     },
 
-    drawEntities: function( vEntities, clean ) {
+    /*drawEntities: function( vEntities, clean ) {
 
         var c = clean === undefined ? false : clean;
         if(c) this.g.clear();
@@ -113,7 +122,7 @@ DDLS.SimpleView.prototype = {
             var i = _g1++;
             this.drawEntity( vEntities[i], false );
         }
-    },
+    },*/
 
     drawPath: function( path, clean ) {
 
@@ -168,7 +177,7 @@ DDLS.BasicCanvas.prototype = {
         e = e || DDLS.TwoPI;
         this.ctx.beginPath();
         this.ctx.arc(x,y,radius, s, e, false);
-        this.ctx.stroke();
+        //this.ctx.stroke();
         //this.ctx.closePath();
     },
     drawRect: function(x,y,width,height) {
@@ -181,8 +190,16 @@ DDLS.BasicCanvas.prototype = {
         this.ctx.closePath();
     },
     lineStyle: function(wid,c) {
-        this.ctx.lineWidth = wid;
-        this.ctx.strokeStyle = "rgba(" + c.r + "," + c.g + "," + c.b + "," + c.a + ")";
+
+        if( wid && c ){
+            this.ctx.lineWidth = wid;
+            this.ctx.strokeStyle = "rgba(" + c.r + "," + c.g + "," + c.b + "," + c.a + ")";
+    } else {
+        this.ctx.lineWidth = 0;
+        this.ctx.strokeStyle = "none";
+    }
+
+        
     },
     moveTo: function(x,y) {
         this.ctx.beginPath();
@@ -190,8 +207,20 @@ DDLS.BasicCanvas.prototype = {
     },
     lineTo: function(x,y) {
         this.ctx.lineTo(x,y);
+        //this.ctx.stroke();
+       // this.ctx.closePath();
+        
+    },
+    stroke: function() {
         this.ctx.stroke();
+        //this.ctx.stroke();
+       // this.ctx.closePath();
+        
+    },
+    closePath: function() {
         this.ctx.closePath();
+        //this.ctx.stroke();
+       // this.ctx.closePath();
         
     },
     beginFill: function(c) {
@@ -199,7 +228,7 @@ DDLS.BasicCanvas.prototype = {
         this.ctx.beginPath();
     },
     endFill: function() {
-        this.ctx.stroke();
+        //this.ctx.stroke();
         this.ctx.closePath();
         this.ctx.fill();
     }
