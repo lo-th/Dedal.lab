@@ -4480,7 +4480,8 @@ DDLS.FieldOfView.prototype = {
                 // if the edge overlap (interects or lies inside) the window
                 s1 = currentEdge.originVertex.pos;
                 s2 = currentEdge.destinationVertex.pos;
-                if ( DDLS.Geom2D.clipSegmentByTriangle(s1.x, s1.y, s2.x, s2.y, pos.x, pos.y, rightTarget.x, rightTarget.y, leftTarget.x, leftTarget.y, p1, p2) ){
+                //if ( DDLS.Geom2D.clipSegmentByTriangle(s1.x, s1.y, s2.x, s2.y, pos.x, pos.y, rightTarget.x, rightTarget.y, leftTarget.x, leftTarget.y, p1, p2) ){
+                if ( DDLS.Geom2D.clipSegmentByTriangle(s1, s2, pos, rightTarget, leftTarget, p1, p2) ){
                     // if the edge if constrained
                     if ( currentEdge.isConstrained ){
                         // we project the constrained edge on the wall
@@ -4544,6 +4545,8 @@ DDLS.FieldOfView.prototype = {
         //if ( wall.length === 2 && -DDLS.EPSILON < wall[0] && wall[0] < DDLS.EPSILON && 1-DDLS.EPSILON < wall[1] && wall[1] < 1+DDLS.EPSILON ) return false;
         
         //trace(wall);
+
+        //console.log(wall)
         
         return true;
     }
