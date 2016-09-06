@@ -60,6 +60,8 @@ DDLS.Heroe.prototype = {
         return { x:this.entity.position.x, y:this.entity.position.y, r:-this.entity.angle };
     },
     update:function(){
+
+        var p;
         /*if(this.mesh !== null){ 
             this.mesh.position.set( this.entity.position.x, 0, this.entity.position.y );
             this.mesh.rotation.y = -this.entity.angle;
@@ -84,6 +86,12 @@ DDLS.Heroe.prototype = {
 
         if(this.move && !this.isWalking) this.isWalking = true;
         if(!this.move && this.isWalking) this.isWalking = false;
+
+        if( this.mesh !== null ){
+            p = this.getPos();
+            this.mesh.position.set( p.x, 0, p.y );
+            this.mesh.rotation.y = p.r;
+        }
 
 
 

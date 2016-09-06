@@ -45,6 +45,6 @@ DDLS.BitmapObject.buildFromBmpData = function(bmpData,simpleEpsilon,debugBmp,deb
         obj.coordinates.push(polygons[i4][j]);
         obj.coordinates.push(polygons[i4][j + 1]);
     }
-    console.log('build');
+    //console.log('build');
     return obj;
 };

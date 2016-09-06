@@ -7,7 +7,7 @@
 body { margin: 0px; background-color: #6a6a6a; overflow: hidden; background-image:url(images/bg.png); background-repeat:repeat-x;}
 canvas { position: absolute; top:0; left:0; pointer-events:auto; width:100%; height:100%; }
 </style>
-<script src="build/ddls.min.js"></script>
+<script src="build/ddls.js"></script>
 <script src="js/libs//three.min.js"></script>
 <script src="js/libs/sea.min.js"></script>
 <script src="js/controls/OrbitControls.js"></script>
@@ -16,6 +16,8 @@ canvas { position: absolute; top:0; left:0; pointer-events:auto; width:100%; hei
 <canvas id="canvas"></canvas>
 
 <script>
+
+var tt = 0;
 
 var canvas, camera, scene, renderer, controls, clock, mouse, raycaster, offset, select = null, down = false, first = false;
 var world, ddlsRender;
@@ -90,11 +92,25 @@ DrawCanvas.prototype = {
     update:function(){
         var pixels = DDLS.fromImageData(null, this.ctx.getImageData(0,0,1024,1024));
 
+        //world.reset()
+        //world.objects = [];
+        //world.mesh.insertObject( DDLS.BitmapMesh.buildFromBmpData(pixels,1.8) );
+        //world.mesh.insertObject( DDLS.BitmapObject.buildFromBmpData(pixels,1.8) );
 
-        world.mesh.dispose()
-        world.mesh = DDLS.BitmapMesh.buildFromBmpData(pixels,1.8);
-        //world.mesh.updateObjects(true);
-        world.mesh.isRedraw = true;
+        var m = DDLS.BitmapObject.buildFromBmpData( pixels, 1.8 );
+        world.reset();
+        world.mesh.insertObject( m );
+       //
+
+        //world.rebuild( DDLS.BitmapMesh.buildFromBmpData( pixels, 1 ) );
+
+
+        //world.mesh.dispose();
+        //world.mesh = DDLS.BitmapMesh.buildFromBmpData( pixels, 1.8 );
+
+        //world.mesh.isRedraw = true;
+        
+       // 
         /*this.object = DDLS.BitmapObject.buildFromBmpData(pixels,1.8);
 
         if(world.objects[0]){ 
@@ -121,6 +137,8 @@ function init() {
 
     controls = new THREE.OrbitControls( camera, canvas );
     controls.target.set(decals.x,0,decals.y);
+
+    controls.update();
 
     scene = new THREE.Scene();
 
@@ -160,16 +178,18 @@ function init() {
     window.addEventListener( 'resize', onWindowResize, false );
 
 
+    // init DDLS
+
     world = new DDLS.World(1024, 1024);
-    //world.mesh.isRedraw = true;
     ddlsRender = new DDLS.ThreeView( scene, world );
-    //world.mesh.updateObjects(true);
 
 
     //
 
-    //load();
     draw = new DrawCanvas();
+
+    load();
+    
 
 }
 
@@ -198,7 +218,7 @@ function load(){
 }
 
 function demo(){
-    world = new DDLS.World(600,600);
+    /*world = new DDLS.World(600,600);
 
     var i = 50, x, y, w, h, r, d;
     while(i--) {
@@ -219,9 +239,12 @@ function demo(){
         scene.add( objects[i] );
     }
 
-    ddlsRender = new DDLS.ThreeView( scene, world );
+    ddlsRender = new DDLS.ThreeView( scene, world );*/
 
-    addHero(20,20,4);
+    var i = 29;
+    while(i--){
+         addHero(20 + (i*20) ,20,4);
+    }
 
     //h1 = world.addHeroe({x:20, y:20, r:4, speed:10});
 }
@@ -238,9 +261,10 @@ function addHero(x, y, r){
     var cont = new THREE.Mesh(new THREE.CircleGeometry(r), mat2);
     cont.geometry.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI*0.5));
 
-    var m =  heroModel.clone();
+    var m = heroModel.clone();
     m.scale.set(25,25,25);
     m.position.y = 7;
+    m.rotation.y = - Math.PI * 0.5;
     m.play("idle", .5);
 
     hero[id] = world.addHeroe({x:x, y:y, r:r, speed:1});
@@ -248,7 +272,9 @@ function addHero(x, y, r){
 
     hero[id].mesh = heroObj[id];
 
-
+    var p = hero[id].getPos();
+    hero[id].mesh.position.set( p.x, 0, p.y );
+    hero[id].mesh.rotation.y = p.r;
 
     heroObj[id].add(cont);
     heroObj[id].add(m)
@@ -283,6 +309,7 @@ function updateWorldMesh(id){
 
 
 function mouseUp(e){
+
     down = false;
     e.preventDefault();
     controls.enabled = true;
@@ -399,14 +426,27 @@ function animate() {
     var delta = clock.getDelta();
     THREE.SEA3D.AnimationHandler.update( delta*0.6 );
 
+  
+
+    ddlsRender.update();
+
+    tt++;
+
     var i = hero.length;
     while(i--){
-        if(hero[i].move) { hero[i].mesh.children[1].play("walk", .5); hero[i].inWalk = true;}
-        if(hero[i].inWalk && !hero[i].move){ hero[i].mesh.children[1].play("idle", .5); hero[i].inWalk = false;}
+
+       // random target
+       if(tt===1000) hero[i].setTarget(  DDLS.randInt(50, 950), DDLS.randInt(50, 950) );
+
+       // update animation
+       if( hero[i].isWalking )  hero[0].mesh.children[1].play("walk", 0.1);
+       else hero[i].mesh.children[1].play("idle", 0.1);
+    
     }
 
-    controls.update();
-    if(ddlsRender) ddlsRender.update();
+    if(tt===1000) tt = 0; 
+        
+    
     renderer.render( scene, camera );
 
 }

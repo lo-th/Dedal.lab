@@ -93,10 +93,11 @@ DDLS.World.prototype = {
     
     },
 
-    rebuild : function(){
+    rebuild : function( mesh ){
 
-        this.mesh.clear(true);
-        this.mesh = DDLS.RectMesh( this.w, this.h );
+        this.mesh.clear( true );
+        if( mesh !== undefined ) this.mesh = mesh;
+        else this.mesh = DDLS.RectMesh( this.w, this.h );
         this.pathFinder.mesh = this.mesh;
         //this.mesh._objects = [];
         var i = this.objects.length;

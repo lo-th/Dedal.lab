@@ -1,4 +1,4 @@
-DDLS.Mesh = function(width,height) {
+DDLS.Mesh = function( width, height ) {
     this.id = DDLS.MeshID;
     DDLS.MeshID++;
     this.__objectsUpdateInProgress = false;
@@ -23,7 +23,7 @@ DDLS.Mesh = function(width,height) {
 
 DDLS.Mesh.prototype = {
     constructor: DDLS.Mesh,
-    clear: function(notObjects) {
+    clear: function( notObjects ) {
         while(this._vertices.length > 0) this._vertices.pop().dispose();
         this._vertices = [];
         while(this._edges.length > 0) this._edges.pop().dispose();

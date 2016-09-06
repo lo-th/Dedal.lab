@@ -1,4 +1,4 @@
-DDLS.RectMesh = function(w,h) {
+DDLS.RectMesh = function( w, h ) {
 
     //  v0 +-----+ v1
     //     |    /|
@@ -20,8 +20,6 @@ DDLS.RectMesh = function(w,h) {
         s.push(new DDLS.Segment());
         e.push(new DDLS.Edge(), new DDLS.Edge(), new DDLS.Edge());
     }
-    //i = 4*3;
-    //while(i--) e.push(new DDLS.Edge());
 
     var boundShape = new DDLS.Shape();    
     var offset = 10;
@@ -88,5 +86,7 @@ DDLS.RectMesh = function(w,h) {
     mesh.clipping = false;
     mesh.insertConstraintShape( [ 0,0,w,0,  w,0,w,h,  w,h,0,h,  0,h,0,0 ] );
     mesh.clipping = true;
+
     return mesh;
+
 };

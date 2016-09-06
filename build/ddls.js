@@ -902,8 +902,8 @@ DDLS.Geom2D.locatePosition = function( p, mesh ) {
     this._randGen.seed = DDLS.int(p.x * 10 + 4 * p.y);
     var i;
     this.__samples.splice(0, this.__samples.length);
-    //var numSamples = DDLS.int(DDLS.pow(mesh._vertices.length,0.333333333333333315));
-    var numSamples = DDLS.int(DDLS.pow(mesh._vertices.length,1/3));
+    var numSamples = DDLS.int(DDLS.pow(mesh._vertices.length,0.333333334));
+    //var numSamples = DDLS.int(DDLS.pow(mesh._vertices.length,1/3));
     
     //console.log(numSamples, mesh._vertices.length);
 
@@ -1472,7 +1472,7 @@ DDLS.Geom2D.pathLength = function(path) {
     }
     return sumDistance;
 };
-DDLS.Mesh = function(width,height) {
+DDLS.Mesh = function( width, height ) {
     this.id = DDLS.MeshID;
     DDLS.MeshID++;
     this.__objectsUpdateInProgress = false;
@@ -1497,7 +1497,7 @@ DDLS.Mesh = function(width,height) {
 
 DDLS.Mesh.prototype = {
     constructor: DDLS.Mesh,
-    clear: function(notObjects) {
+    clear: function( notObjects ) {
         while(this._vertices.length > 0) this._vertices.pop().dispose();
         this._vertices = [];
         while(this._edges.length > 0) this._edges.pop().dispose();
@@ -2906,7 +2906,7 @@ DDLS.getWhite = function( bmpData, col, row ){
    // return hex;
 };*/
 
-DDLS.Potrace.buildShapes = function( bmpData, debugBmp, debugShape ) {
+DDLS.Potrace.buildShapes = function( bmpData ) {
 
     var shapes = [];
     //var dictPixelsDone = new DDLS.StringMap();
@@ -2921,7 +2921,7 @@ DDLS.Potrace.buildShapes = function( bmpData, debugBmp, debugShape ) {
             if ( DDLS.getWhite(bmpData, col, row) && !DDLS.getWhite( bmpData, col+1, row ) ){
             //if ( DDLS.getPixel(bmpData, col, row) === 0xFFFFFF && DDLS.getPixel( bmpData, col+1, row ) < 0xFFFFFF ){
                 if (!dictPixelsDone.get( (col+1) + "_" + row) )//[(col+1) + "_" + row])
-                    shapes.push( DDLS.Potrace.buildShape( bmpData, row, col + 1 , dictPixelsDone, debugBmp, debugShape ));
+                    shapes.push( DDLS.Potrace.buildShape( bmpData, row, col + 1 , dictPixelsDone ));
                     //shapes.push( buildShape(bmpData, row, col+1, dictPixelsDone, debugBmp, debugShape) );
             }
         }
@@ -2977,7 +2977,7 @@ DDLS.Potrace.buildShapes = function( bmpData, debugBmp, debugShape ) {
 
 
 
-DDLS.Potrace.buildShape = function( bmpData, fromPixelRow, fromPixelCol, dictPixelsDone, debugBmp, debugShape ) {
+DDLS.Potrace.buildShape = function( bmpData, fromPixelRow, fromPixelCol, dictPixelsDone ) {
     var newX = fromPixelCol;
     var newY = fromPixelRow;
     var path = [newX,newY];
@@ -3199,7 +3199,7 @@ DDLS.Potrace.buildGraph = function( shape ) {
     return graph;
 };
 
-DDLS.Potrace.buildPolygon = function(graph,debugShape) {
+DDLS.Potrace.buildPolygon = function(graph) {
     var polygon = [], p1, p2, p3;
     var currNode;
     var minNodeIndex = 2147483647;
@@ -4821,7 +4821,7 @@ DDLS.PathIterator.prototype = {
         this.entity.y = this._currentY;
     }
 };
-DDLS.RectMesh = function(w,h) {
+DDLS.RectMesh = function( w, h ) {
 
     //  v0 +-----+ v1
     //     |    /|
@@ -4843,8 +4843,6 @@ DDLS.RectMesh = function(w,h) {
         s.push(new DDLS.Segment());
         e.push(new DDLS.Edge(), new DDLS.Edge(), new DDLS.Edge());
     }
-    //i = 4*3;
-    //while(i--) e.push(new DDLS.Edge());
 
     var boundShape = new DDLS.Shape();    
     var offset = 10;
@@ -4911,7 +4909,9 @@ DDLS.RectMesh = function(w,h) {
     mesh.clipping = false;
     mesh.insertConstraintShape( [ 0,0,w,0,  w,0,w,h,  w,h,0,h,  0,h,0,0 ] );
     mesh.clipping = true;
+
     return mesh;
+
 };
 DDLS.BitmapObject = {};
 
@@ -4960,17 +4960,17 @@ DDLS.BitmapObject.buildFromBmpData = function(bmpData,simpleEpsilon,debugBmp,deb
         obj.coordinates.push(polygons[i4][j]);
         obj.coordinates.push(polygons[i4][j + 1]);
     }
-    console.log('build');
+    //console.log('build');
     return obj;
 };
 DDLS.BitmapMesh = {};
 
-DDLS.BitmapMesh.buildFromBmpData = function( bmpData, simpleEpsilon, debugBmp, debugShape ) {
+DDLS.BitmapMesh.buildFromBmpData = function ( bmpData, simpleEpsilon ) {
+
     simpleEpsilon = simpleEpsilon || 1;
     //if(simpleEpsilon == null) simpleEpsilon = 1;
     var i, j;
-    //DDLS.Debug.assertTrue(bmpData.width > 0 && bmpData.height > 0,"Invalid `bmpData` size (" + bmpData.width + ", " + bmpData.height + ")",{ fileName : "BitmapMesh.js", lineNumber : 24, className : "DDLS.BitmapMesh", methodName : "buildFromBmpData"});
-    var shapes = DDLS.Potrace.buildShapes(bmpData,debugBmp,debugShape);
+    var shapes = DDLS.Potrace.buildShapes( bmpData );
     if( simpleEpsilon >= 1 ) {
         var _g1 = 0;
         var _g = shapes.length;
@@ -4991,7 +4991,7 @@ DDLS.BitmapMesh.buildFromBmpData = function( bmpData, simpleEpsilon, debugBmp, d
     var _g3 = graphs.length;
     while(_g12 < _g3) {
         var i3 = _g12++;
-        polygons.push( DDLS.Potrace.buildPolygon( graphs[i3], debugShape ));
+        polygons.push( DDLS.Potrace.buildPolygon( graphs[i3] ));
     }
     var mesh = DDLS.RectMesh( bmpData.width, bmpData.height );
     var _g13 = 0;
@@ -5005,7 +5005,9 @@ DDLS.BitmapMesh.buildFromBmpData = function( bmpData, simpleEpsilon, debugBmp, d
         }
         mesh.insertConstraintSegment( polygons[i4][j], polygons[i4][j+1], polygons[i4][j+2], polygons[i4][j+3] );
     }
+
     return mesh;
+
 };
 DDLS.Heroe = function(s, world) {
     s = s || {};
@@ -5069,6 +5071,8 @@ DDLS.Heroe.prototype = {
         return { x:this.entity.position.x, y:this.entity.position.y, r:-this.entity.angle };
     },
     update:function(){
+
+        var p;
         /*if(this.mesh !== null){ 
             this.mesh.position.set( this.entity.position.x, 0, this.entity.position.y );
             this.mesh.rotation.y = -this.entity.angle;
@@ -5093,6 +5097,12 @@ DDLS.Heroe.prototype = {
 
         if(this.move && !this.isWalking) this.isWalking = true;
         if(!this.move && this.isWalking) this.isWalking = false;
+
+        if( this.mesh !== null ){
+            p = this.getPos();
+            this.mesh.position.set( p.x, 0, p.y );
+            this.mesh.rotation.y = p.r;
+        }
 
 
 
@@ -5193,10 +5203,11 @@ DDLS.World.prototype = {
     
     },
 
-    rebuild : function(){
+    rebuild : function( mesh ){
 
-        this.mesh.clear(true);
-        this.mesh = DDLS.RectMesh( this.w, this.h );
+        this.mesh.clear( true );
+        if( mesh !== undefined ) this.mesh = mesh;
+        else this.mesh = DDLS.RectMesh( this.w, this.h );
         this.pathFinder.mesh = this.mesh;
         //this.mesh._objects = [];
         var i = this.objects.length;

@@ -49,6 +49,7 @@ function init() {
 
     controls = new THREE.OrbitControls( camera, canvas );
     controls.target.set(300,0,300);
+    controls.update();
 
     scene = new THREE.Scene();
 
@@ -348,20 +349,15 @@ function animate() {
     var delta = clock.getDelta();
     THREE.SEA3D.AnimationHandler.update( delta*0.6 );
 
-    var i = hero.length, p;
+    if( ddlsRender ) ddlsRender.update();
+
+    var i = hero.length;
     while(i--){
-        if( hero[i].isWalking ) { 
-            hero[i].mesh.children[1].play("walk", 0.1);
-            p = hero[i].getPos();
-            hero[i].mesh.position.set( p.x, 0, p.y );
-            hero[i].mesh.rotation.y = p.r;
-        } else {
-            hero[i].mesh.children[1].play("idle", 0.1);
-        }
+        if( hero[i].isWalking ) hero[i].mesh.children[1].play("walk", 0.1);
+        else  hero[i].mesh.children[1].play("idle", 0.1);
     }
 
-    //controls.update();
-    if( ddlsRender ) ddlsRender.update();
+    
 
     renderer.render( scene, camera );
 

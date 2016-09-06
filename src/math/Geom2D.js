@@ -18,8 +18,8 @@ DDLS.Geom2D.locatePosition = function( p, mesh ) {
     this._randGen.seed = DDLS.int(p.x * 10 + 4 * p.y);
     var i;
     this.__samples.splice(0, this.__samples.length);
-    //var numSamples = DDLS.int(DDLS.pow(mesh._vertices.length,0.333333333333333315));
-    var numSamples = DDLS.int(DDLS.pow(mesh._vertices.length,1/3));
+    var numSamples = DDLS.int(DDLS.pow(mesh._vertices.length,0.333333334));
+    //var numSamples = DDLS.int(DDLS.pow(mesh._vertices.length,1/3));
     
     //console.log(numSamples, mesh._vertices.length);
 

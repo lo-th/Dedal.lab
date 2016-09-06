@@ -1,5 +1,7 @@
-<p align="center">DDLS Advanced pathfinding full javascript<br>
-start with hx version <a href="https://github.com/hxDaedalus/hxDaedalus">hxDaedalus</a><br><br>
+<p align="center">DDLS JS Advanced pathfinding<br><br>
+Deadalus lib is a AS3 library develop by totologic <a href="https://github.com/totologic/daedalus-lib">link</a><br>
+I start with hx version <a href="https://github.com/hxDaedalus/hxDaedalus">hxDaedalus</a><br>
+and convert to full javascript without extra lib<br><br>
 
 3D DEMOS<br>
 <a href="http://lo-th.github.io/Dedal.lab/">3d heroes</a><br>

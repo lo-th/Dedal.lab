@@ -51,7 +51,7 @@ DDLS.getWhite = function( bmpData, col, row ){
    // return hex;
 };*/
 
-DDLS.Potrace.buildShapes = function( bmpData, debugBmp, debugShape ) {
+DDLS.Potrace.buildShapes = function( bmpData ) {
 
     var shapes = [];
     //var dictPixelsDone = new DDLS.StringMap();
@@ -66,7 +66,7 @@ DDLS.Potrace.buildShapes = function( bmpData, debugBmp, debugShape ) {
             if ( DDLS.getWhite(bmpData, col, row) && !DDLS.getWhite( bmpData, col+1, row ) ){
             //if ( DDLS.getPixel(bmpData, col, row) === 0xFFFFFF && DDLS.getPixel( bmpData, col+1, row ) < 0xFFFFFF ){
                 if (!dictPixelsDone.get( (col+1) + "_" + row) )//[(col+1) + "_" + row])
-                    shapes.push( DDLS.Potrace.buildShape( bmpData, row, col + 1 , dictPixelsDone, debugBmp, debugShape ));
+                    shapes.push( DDLS.Potrace.buildShape( bmpData, row, col + 1 , dictPixelsDone ));
                     //shapes.push( buildShape(bmpData, row, col+1, dictPixelsDone, debugBmp, debugShape) );
             }
         }
@@ -122,7 +122,7 @@ DDLS.Potrace.buildShapes = function( bmpData, debugBmp, debugShape ) {
 
 
 
-DDLS.Potrace.buildShape = function( bmpData, fromPixelRow, fromPixelCol, dictPixelsDone, debugBmp, debugShape ) {
+DDLS.Potrace.buildShape = function( bmpData, fromPixelRow, fromPixelCol, dictPixelsDone ) {
     var newX = fromPixelCol;
     var newY = fromPixelRow;
     var path = [newX,newY];
@@ -344,7 +344,7 @@ DDLS.Potrace.buildGraph = function( shape ) {
     return graph;
 };
 
-DDLS.Potrace.buildPolygon = function(graph,debugShape) {
+DDLS.Potrace.buildPolygon = function(graph) {
     var polygon = [], p1, p2, p3;
     var currNode;
     var minNodeIndex = 2147483647;
