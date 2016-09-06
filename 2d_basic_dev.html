@@ -1,0 +1,111 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>DDLS basic</title>
+<style> 
+body { margin: 0px; background-color: #000000; overflow: hidden; }
+canvas { position:absolute; left:50%; top:50%; margin-left:-300px; margin-top:-300px; }
+</style>
+</head>
+<body>
+
+<script src="src/DDLS.js"></script>
+<script src="src/math/Point.js"></script>
+<script src="src/math/Matrix2D.js"></script>
+<script src="src/math/RandGenerator.js"></script>
+<script src="src/data/Edge.js"></script>
+<script src="src/data/Face.js"></script>
+<script src="src/data/Vertex.js"></script>
+<script src="src/data/Object.js"></script>
+<script src="src/data/Segment.js"></script>
+<script src="src/data/Shape.js"></script>
+<script src="src/data/Iterators.js"></script>
+<script src="src/math/Geom2D.js"></script>
+<script src="src/data/Mesh.js"></script>
+<script src="src/data/Graph.js"></script>
+<script src="src/math/Potrace.js"></script>
+<script src="src/math/Tools.js"></script>
+<script src="src/ai/AStar.js"></script>
+<script src="src/ai/EntityAI.js"></script>
+<script src="src/ai/Funnel.js"></script>
+<script src="src/ai/PathFinder.js"></script>
+<script src="src/ai/FieldOfView.js"></script>
+<script src="src/ai/trajectory/LinearPathSampler.js"></script>
+<script src="src/ai/trajectory/PathIterator.js"></script>
+<script src="src/factories/RectMesh.js"></script>
+<script src="src/factories/BitmapObject.js"></script>
+<script src="src/factories/BitmapMesh.js"></script>
+<script src="src/ai/Heroe.js"></script>
+<script src="src/ai/World.js"></script>
+
+<script src="src/view/SimpleView.js"></script>
+
+<script>
+var world, basicCanvas, view;
+
+init();
+render();
+
+function init() {
+    
+    //basicCanvas = new DDLS.BasicCanvas(600,600, '#000000', 60);
+    
+
+    world = new DDLS.World( 600, 600 );
+    view = new DDLS.SimpleView( world );
+
+    //var segment = world.mesh.insertConstraintSegment(70,300,530,320);
+
+    var i = 5;
+    while(i--){
+        world.addObject({x:DDLS.rand(50,600), y:DDLS.rand(50,600), w:DDLS.rand(10,100), h:DDLS.rand(10,100)})
+    }
+
+    view.drawMesh( world.mesh );
+
+    world.addHeroe({x:20, y:20, r:4, speed:10, see:true });
+
+    world.addHeroe({x:300, y:300, r:4, speed:10, see:true });
+    
+
+    view.domElement.onmousedown = onMouseDown;
+    
+};
+
+function onMouseDown (e) {
+    view.drawMesh(world.mesh,true);
+    var rect = e.target.getBoundingClientRect();
+    world.heroes[0].setTarget(e.clientX - rect.left, e.clientY - rect.top);
+};
+
+function render() {
+    requestAnimationFrame( render );
+
+    var i = world.objects.length, h;
+    while(i--){
+        world.objects[i].rotation += 0.001; 
+    }
+
+    world.updateMesh();
+
+    view.drawMesh( world.mesh, true );
+
+    world.update();
+
+    view.clear();
+
+    i = world.heroes.length, h;
+    while(i--){
+
+        h = world.heroes[i];
+        view.drawPath( h.tmppath );
+        view.drawEntity( h.entity );
+
+    }
+};
+        
+</script>
+</body>

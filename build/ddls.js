@@ -882,10 +882,10 @@ DDLS.FromVertexToNeighbourVertices.prototype = {
         return this._resultVertex;
     }
 };
-DDLS.Squared = function(a,b){
+DDLS.Squared = function ( a, b ) {
     return a * a + b * b;
 };
-DDLS.SquaredSqrt = function(a,b){
+DDLS.SquaredSqrt = function ( a, b ) {
     return DDLS.sqrt(a * a + b * b);
 };
 
@@ -894,15 +894,17 @@ DDLS.Geom2D.__samples = [];
 DDLS.Geom2D.__circumcenter = new DDLS.Point();
 DDLS.Geom2D._randGen = null;
 
-DDLS.Geom2D.locatePosition = function( p, mesh ) {
+DDLS.Geom2D.locatePosition = function ( p, mesh ) {
+
+    var i, numSamples;
 
     // jump and walk algorithm
 
     if(this._randGen == null) this._randGen = new DDLS.RandGenerator();
     this._randGen.seed = DDLS.int(p.x * 10 + 4 * p.y);
-    var i;
+    
     this.__samples.splice(0, this.__samples.length);
-    var numSamples = DDLS.int(DDLS.pow(mesh._vertices.length,0.333333334));
+    numSamples = DDLS.int(DDLS.pow(mesh._vertices.length,0.333333334));
     //var numSamples = DDLS.int(DDLS.pow(mesh._vertices.length,1/3));
     
     //console.log(numSamples, mesh._vertices.length);
@@ -910,20 +912,21 @@ DDLS.Geom2D.locatePosition = function( p, mesh ) {
     this._randGen.rangeMin = 0;
     this._randGen.rangeMax = mesh._vertices.length - 1;
 
-    //i = numSamples;
+    i = 0;
+    while( i < numSamples ) {
     //while(i--){
-    for ( i = 0 ; i < numSamples; i++ ){
-        this.__samples.push(mesh._vertices[this._randGen.next()]);
+    //for ( i = 0 ; i < numSamples; i++ ){
+        this.__samples.push( mesh._vertices[this._randGen.next()] );
+        i++;
     }
 
     var currVertex, currVertexPos, distSquared;
     var minDistSquared = DDLS.POSITIVE_INFINITY;
     var closedVertex = null;
-    //i = 0;
+    i = 0;
     //var n = 0
-    //while( n < numSamples ) {
-    for ( i = 0 ; i < numSamples; i++ ){
-        //i = n++;
+    while( i < numSamples ) {
+    //for ( i = 0 ; i < numSamples; i++ ){
         currVertex = this.__samples[i];
         currVertexPos = currVertex.pos;
         distSquared = DDLS.Squared(currVertexPos.x - p.x, currVertexPos.y - p.y);
@@ -931,6 +934,7 @@ DDLS.Geom2D.locatePosition = function( p, mesh ) {
             minDistSquared = distSquared;
             closedVertex = currVertex;
         }
+        i++;
     }
 
     //var currFace;
@@ -987,7 +991,8 @@ DDLS.Geom2D.locatePosition = function( p, mesh ) {
    
 };
 
-DDLS.Geom2D.isCircleIntersectingAnyConstraint = function(p,radius,mesh) {
+DDLS.Geom2D.isCircleIntersectingAnyConstraint = function ( p, radius, mesh ) {
+
     if(p.x <= 0 || p.x >= mesh.width || p.y <= 0 || p.y >= mesh.height) return true;
     var loc = DDLS.Geom2D.locatePosition(p,mesh);
     var face;
@@ -1036,9 +1041,11 @@ DDLS.Geom2D.isCircleIntersectingAnyConstraint = function(p,radius,mesh) {
     }
     //this.checkedEdges.dispose();
     return false;
+
 };
 
-DDLS.Geom2D.getDirection = function(p1,p2,p3) {
+DDLS.Geom2D.getDirection = function ( p1, p2, p3 ) {
+
     var dot = (p3.x - p1.x) * (p2.y - p1.y) + (p3.y - p1.y) * (-p2.x + p1.x);
     return (dot == 0) ? 0 : ((dot > 0) ? 1 : -1);
     /*if(dot == 0) return 0; 
@@ -1046,19 +1053,25 @@ DDLS.Geom2D.getDirection = function(p1,p2,p3) {
     else return -1;*/
 };
 
-DDLS.Geom2D.Orient2d = function (p1, p2, p3) {
+DDLS.Geom2D.Orient2d = function ( p1, p2, p3 ) {
+
     var val = (p1.x - p3.x) * (p2.y - p3.y) - (p1.y - p3.y) * (p2.x - p3.x);
     if (val > -DDLS.EPSILON_SQUARED && val < DDLS.EPSILON_SQUARED) return 0;// collinear
     else if (val > 0) return -1;// ccw
     else return 1;// cw
+
 }
 
-DDLS.Geom2D.getRelativePosition = function(p, eUp) {
+DDLS.Geom2D.getRelativePosition = function ( p, eUp ) {
+
     return DDLS.Geom2D.getDirection( eUp.originVertex.pos, eUp.destinationVertex.pos, p );
+
 };
 
-DDLS.Geom2D.getRelativePosition2 = function(p, eUp) {
+DDLS.Geom2D.getRelativePosition2 = function ( p, eUp ) {
+
     return DDLS.Geom2D.Orient2d( eUp.originVertex.pos, eUp.destinationVertex.pos, p );
+
 };
 
 // the function checks by priority:
@@ -1066,7 +1079,7 @@ DDLS.Geom2D.getRelativePosition2 = function(p, eUp) {
 // - if the (x, y) lies on a edge of the polygon, it will return this edge
 // - if the (x, y) lies inside the polygon, it will return the polygon
 // - if the (x, y) lies outside the polygon, it will return null
-DDLS.Geom2D.isInFace = function( p, polygon ) {
+DDLS.Geom2D.isInFace = function ( p, polygon ) {
 
     // remember polygons are triangle only,
     // and we suppose we have not degenerated flat polygons !
@@ -1117,7 +1130,8 @@ DDLS.Geom2D.isInFace = function( p, polygon ) {
     return result;
 };
 
-DDLS.Geom2D.clipSegmentByTriangle = function(s1, s2, t1, t2, t3, pResult1, pResult2) {
+DDLS.Geom2D.clipSegmentByTriangle = function ( s1, s2, t1, t2, t3, pResult1, pResult2 ) {
+
     var side1_1 = DDLS.Geom2D.getDirection(t1, t2, s1);
     var side1_2 = DDLS.Geom2D.getDirection(t1, t2, s2);
     if(side1_1 <= 0 && side1_2 <= 0) return false;
@@ -1153,6 +1167,7 @@ DDLS.Geom2D.clipSegmentByTriangle = function(s1, s2, t1, t2, t3, pResult1, pResu
     }
     if(n > 0) return true; 
     else return false;
+
 };
 
 /*DDLS.Geom2D.isSegmentIntersectingTriangle = function(s1, s2, t1, t2, t3) {
@@ -1186,7 +1201,8 @@ DDLS.Geom2D.clipSegmentByTriangle = function(s1, s2, t1, t2, t3, pResult1, pResu
     return false;
 };*/
 
-DDLS.Geom2D.isDelaunay = function(edge) {
+DDLS.Geom2D.isDelaunay = function ( edge ) {
+
     var vLeft = edge.originVertex;
     var vRight = edge.destinationVertex;
     var vCorner = edge.nextLeftEdge.destinationVertex;
@@ -1196,6 +1212,7 @@ DDLS.Geom2D.isDelaunay = function(edge) {
     var squaredRadius = (vCorner.pos.x - DDLS.Geom2D.__circumcenter.x) * (vCorner.pos.x - DDLS.Geom2D.__circumcenter.x) + (vCorner.pos.y - DDLS.Geom2D.__circumcenter.y) * (vCorner.pos.y - DDLS.Geom2D.__circumcenter.y);
     var squaredDistance = (vOpposite.pos.x - DDLS.Geom2D.__circumcenter.x) * (vOpposite.pos.x - DDLS.Geom2D.__circumcenter.x) + (vOpposite.pos.y - DDLS.Geom2D.__circumcenter.y) * (vOpposite.pos.y - DDLS.Geom2D.__circumcenter.y);
     return squaredDistance >= squaredRadius ? true : false;
+
 };
 
 /*DDLS.Geom2D.getCircumcenterOld = function(x1,y1,x2,y2,x3,y3,result) {
@@ -1210,7 +1227,8 @@ DDLS.Geom2D.isDelaunay = function(edge) {
     return result;
 };*/
 
-DDLS.Geom2D.getCircumcenter = function(p1, p2, p3, result) {
+DDLS.Geom2D.getCircumcenter = function ( p1, p2, p3, result ) {
+
     if(result == null) result = new DDLS.Point();
     var m1 = (p1.x + p2.x) * 0.5;
     var m2 = (p1.y + p2.y) * 0.5;
@@ -1220,9 +1238,11 @@ DDLS.Geom2D.getCircumcenter = function(p1, p2, p3, result) {
     result.x = m1 + t1 * (p2.y - p1.y);
     result.y = m2 - t1 * (p2.x - p1.x);
     return result;
+
 };
 
-DDLS.Geom2D.intersections2segments = function(s1p1, s1p2, s2p1, s2p2, posIntersection, paramIntersection, infiniteLineMode) {
+DDLS.Geom2D.intersections2segments = function ( s1p1, s1p2, s2p1, s2p2, posIntersection, paramIntersection, infiniteLineMode ) {
+
     if(infiniteLineMode == null) infiniteLineMode = false;
     var t1 = 0;
     var t2 = 0;
@@ -1248,14 +1268,18 @@ DDLS.Geom2D.intersections2segments = function(s1p1, s1p2, s2p1, s2p2, posInterse
         }
     }
     return result;
+
 };
 
-DDLS.Geom2D.intersections2edges = function(edge1,edge2,posIntersection,paramIntersection,infiniteLineMode) {
+DDLS.Geom2D.intersections2edges = function ( edge1, edge2, posIntersection, paramIntersection, infiniteLineMode ) {
+
     if(infiniteLineMode == null) infiniteLineMode = false;
     return DDLS.Geom2D.intersections2segments(edge1.originVertex.pos, edge1.destinationVertex.pos, edge2.originVertex.pos, edge2.destinationVertex.pos, posIntersection,paramIntersection,infiniteLineMode);
+
 };
 
-DDLS.Geom2D.isConvex = function(edge) {
+DDLS.Geom2D.isConvex = function ( edge ) {
+
     var result = true;
     var eLeft;
     var vRight;
@@ -1267,9 +1291,11 @@ DDLS.Geom2D.isConvex = function(edge) {
         if(DDLS.Geom2D.getRelativePosition(vRight.pos, eLeft) != -1) result = false;
     }
     return result;
+
 };
 
-DDLS.Geom2D.projectOrthogonaly = function(vertexPos,edge) {
+DDLS.Geom2D.projectOrthogonaly = function ( vertexPos, edge ) {
+
     var a = edge.originVertex.pos.x;
     var b = edge.originVertex.pos.y;
     var c = edge.destinationVertex.pos.x;
@@ -1279,6 +1305,7 @@ DDLS.Geom2D.projectOrthogonaly = function(vertexPos,edge) {
     var t1 = (a * a - a * c - a * e + b * b - b * d - b * f + c * e + d * f) / (a * a - 2 * a * c + b * b - 2 * b * d + c * c + d * d);
     vertexPos.x = a + t1 * (c - a);
     vertexPos.y = b + t1 * (d - b);
+
 };
 
 /*DDLS.Geom2D.projectOrthogonalyOnSegment = function(px, py, sp1x, sp1y, sp2x, sp2y, result) {
@@ -1293,7 +1320,8 @@ DDLS.Geom2D.projectOrthogonaly = function(vertexPos,edge) {
     result.y = b + t1*(d - b);
 };*/
 
-DDLS.Geom2D.intersections2Circles = function(c1, r1, c2, r2, result){
+DDLS.Geom2D.intersections2Circles = function (c1, r1, c2, r2, result){
+
     var factor, a, b, first, dist, invd, trans;
     dist = DDLS.Squared(c2.x - c1.x, c2.y - c1.y);
     invd = 1 / (2 * dist);
@@ -1318,9 +1346,11 @@ DDLS.Geom2D.intersections2Circles = function(c1, r1, c2, r2, result){
         }
         return true;
     } else return false;
+
 };
 
-DDLS.Geom2D.intersectionsSegmentCircle = function(p0, p1, c, r, result) {
+DDLS.Geom2D.intersectionsSegmentCircle = function ( p0, p1, c, r, result ) {
+
     var p0xSQD = p0.x * p0.x;
     var p0ySQD = p0.y * p0.y;
     var a = p1.y * p1.y - 2 * p1.y * p0.y + p0ySQD + p1.x * p1.x - 2 * p1.x * p0.x + p0xSQD;
@@ -1357,6 +1387,7 @@ DDLS.Geom2D.intersectionsSegmentCircle = function(p0, p1, c, r, result) {
         }
         return intersecting;
     }
+
 };
 
 /*DDLS.Geom2D.intersectionsLineCircle = function(p0x,p0y,p1x,p1y,cx,cy,r,result) {
@@ -1380,13 +1411,16 @@ DDLS.Geom2D.intersectionsSegmentCircle = function(p0, p1, c, r, result) {
     return true;
 };*/
 
-DDLS.Geom2D.tangentsPointToCircle = function(p, c, r, result) {
+DDLS.Geom2D.tangentsPointToCircle = function ( p, c, r, result ) {
+
     var c2 = p.clone().add(c).mul(0.5);
     var r2 = 0.5 * DDLS.SquaredSqrt(p.x - c.x, p.y - c.y);
     return DDLS.Geom2D.intersections2Circles(c2, r2, c, r, result);
+
 };
 
-DDLS.Geom2D.tangentsCrossCircleToCircle = function(r, c1, c2, result) {
+DDLS.Geom2D.tangentsCrossCircleToCircle = function ( r, c1, c2, result ) {
+
     var distance = DDLS.SquaredSqrt(c1.x - c2.x, c1.y - c2.y);
     var radius = distance * 0.25;
     var center = c2.clone().sub(c1).mul(0.25).add(c1);
@@ -1412,9 +1446,11 @@ DDLS.Geom2D.tangentsCrossCircleToCircle = function(r, c1, c2, result) {
         result.push( t3x, t3y, t4x, t4y );
         return true;
     } else return false;
+
 };
 
-DDLS.Geom2D.tangentsParalCircleToCircle = function(r, c1, c2, result) {
+DDLS.Geom2D.tangentsParalCircleToCircle = function ( r, c1, c2, result ) {
+
     var distance = DDLS.SquaredSqrt(c1.x - c2.x, c1.y - c2.y);
     var invD = 1 / distance;
     var t1x = c1.x + r * (c2.y - c1.y) * invD;
@@ -1426,6 +1462,7 @@ DDLS.Geom2D.tangentsParalCircleToCircle = function(r, c1, c2, result) {
     var t4x = t1x + c2.x - c1.x;
     var t4y = t1y + c2.y - c1.y;
     result.push( t1x, t1y, t2x, t2y, t3x, t3y, t4x, t4y );
+
 };
 
 /*DDLS.Geom2D.distanceSquaredPointToLine = function(p,a,b) {
@@ -1435,7 +1472,8 @@ DDLS.Geom2D.tangentsParalCircleToCircle = function(r, c1, c2, result) {
     return p_a_squared - dotProduct * dotProduct / a_b_squared;
 };*/
 
-DDLS.Geom2D.distanceSquaredPointToSegment = function(p, a, b) {
+DDLS.Geom2D.distanceSquaredPointToSegment = function ( p, a, b ) {
+
     var a_b_squared = DDLS.Squared(b.x - a.x, b.y - a.y);
     var dotProduct = ((p.x - a.x) * (b.x - a.x) + (p.y - a.y) * (b.y - a.y)) / a_b_squared;
     if(dotProduct < 0) return DDLS.Squared(p.x - a.x, p.y - a.y); 
@@ -1443,23 +1481,25 @@ DDLS.Geom2D.distanceSquaredPointToSegment = function(p, a, b) {
         var p_a_squared = DDLS.Squared(a.x - p.x, a.y - p.y);
         return p_a_squared - dotProduct * dotProduct * a_b_squared;
     } else return DDLS.Squared(p.x - b.x, p.y - b.y);
+
 };
 
-DDLS.Geom2D.distanceSquaredVertexToEdge = function(vertex,edge) {
+DDLS.Geom2D.distanceSquaredVertexToEdge = function ( vertex, edge ) {
+
     return DDLS.Geom2D.distanceSquaredPointToSegment(vertex.pos, edge.originVertex.pos, edge.destinationVertex.pos);
+
 };
 
-DDLS.Geom2D.pathLength = function(path) {
+DDLS.Geom2D.pathLength = function( path ) {
+
     var sumDistance = 0.;
     var fromX = path[0];
     var fromY = path[1];
-    var nextX;
-    var nextY;
-    var x;
-    var y;
-    var distance;
+    var nextX, nextY, x, y, distance;
     var i = 2;
-    while(i < path.length) {
+    var l = path.length;
+
+    while( i < l ) {
         nextX = path[i];
         nextY = path[i + 1];
         x = nextX - fromX;
@@ -1470,9 +1510,13 @@ DDLS.Geom2D.pathLength = function(path) {
         fromY = nextY;
         i += 2;
     }
+
     return sumDistance;
+
 };
+
 DDLS.Mesh = function( width, height ) {
+
     this.id = DDLS.MeshID;
     DDLS.MeshID++;
     this.__objectsUpdateInProgress = false;
@@ -1493,11 +1537,15 @@ DDLS.Mesh = function( width, height ) {
     this.AR_edge = null;
 
     this.isRedraw = true;
+
 };
 
 DDLS.Mesh.prototype = {
+
     constructor: DDLS.Mesh,
-    clear: function( notObjects ) {
+
+    clear: function ( notObjects ) {
+
         while(this._vertices.length > 0) this._vertices.pop().dispose();
         this._vertices = [];
         while(this._edges.length > 0) this._edges.pop().dispose();
@@ -1516,8 +1564,10 @@ DDLS.Mesh.prototype = {
 
         this.AR_vertex = null;
         this.AR_edge = null;
+
     },
-    dispose: function() {
+    dispose: function () {
+
         while(this._vertices.length > 0) this._vertices.pop().dispose();
         this._vertices = null;
         while(this._edges.length > 0) this._edges.pop().dispose();
@@ -1534,73 +1584,83 @@ DDLS.Mesh.prototype = {
 
         this.AR_vertex = null;
         this.AR_edge = null;
+
     },
-    get___constraintShapes: function() {
-        return this._constraintShapes;
-    },
-    buildFromRecord: function(rec) {
+
+    buildFromRecord: function ( rec ) {
+
         var positions = rec.split(";");
         var l = positions.length, i = 0;
         while(i < l) {
-        //for (i = 0; i<l; i+=4){
             this.insertConstraintSegment(parseFloat(positions[i]),parseFloat(positions[i + 1]),parseFloat(positions[i + 2]),parseFloat(positions[i + 3]));
             i += 4;
         }
+
     },
-    insertObject: function(object) {
-        if(object.constraintShape != null) this.deleteObject(object);
+
+    insertObject: function ( o ) {
+
+        if( o.constraintShape != null ) this.deleteObject( o );
+
         var shape = new DDLS.Shape();
         var segment;
-        var coordinates = object.coordinates;
+        var coordinates = o.coordinates;
         
-        object.updateMatrixFromValues();
-        var m = object.matrix;
+        o.updateMatrixFromValues();
+        var m = o.matrix;
         var p1 = new DDLS.Point();
         var p2 = new DDLS.Point();
 
         var l = coordinates.length, i = 0;
         while(i < l) {
         //for (i=0; i<l; i+=4){
-            p1.set(coordinates[i], coordinates[i+1]).transformMat2D(m);
-            p2.set(coordinates[i+2], coordinates[i+3]).transformMat2D(m);
-            segment = this.insertConstraintSegment(p1.x,p1.y,p2.x,p2.y);
+            p1.set( coordinates[i], coordinates[i+1] ).transformMat2D(m);
+            p2.set( coordinates[i+2], coordinates[i+3] ).transformMat2D(m);
+            segment = this.insertConstraintSegment( p1.x, p1.y, p2.x, p2.y );
             if(segment != null) {
                 segment.fromShape = shape;
                 shape.segments.push(segment);
             }
             i += 4;
         }
-        this._constraintShapes.push(shape);
-        object.constraintShape = shape;
-        if(!this.__objectsUpdateInProgress) this._objects.push(object);
+
+        this._constraintShapes.push( shape );
+        o.constraintShape = shape;
+
+        if( !this.__objectsUpdateInProgress ) this._objects.push( o );
+
     },
-    deleteObject: function(object) {
-        if(object.constraintShape == null) return;
-        this.deleteConstraintShape(object.constraintShape);
-        object.constraintShape = null;
+
+    deleteObject: function( o ) {
+
+        if( o.constraintShape == null ) return;
+        this.deleteConstraintShape( o.constraintShape );
+        o.constraintShape = null;
         if(!this.__objectsUpdateInProgress) {
-            var index = this._objects.indexOf(object);
-            this._objects.splice(index,1);
+            var index = this._objects.indexOf( o );
+            this._objects.splice( index, 1 );
         }
+
     },
 
     updateObjects: function() {
-        //var isRedraw = force || false;
-        //console.log("mmmm", isRedraw)
+
         this.__objectsUpdateInProgress = true;
-        var l = this._objects.length, n = 0, i = 0, o;
-        while(n<l) {
-            i = n++;
+        var l = this._objects.length, i = 0, o;
+        while( i < l ) {
+
             o = this._objects[i];
-            if(o.hasChanged) {
-                this.deleteObject(o);
-                this.insertObject(o);
+
+            if( o.hasChanged ) {
+                this.deleteObject( o );
+                this.insertObject( o );
                 o.hasChanged = false;
                 this.isRedraw = true;
             }
+            i++;
         }
         this.__objectsUpdateInProgress = false;
-        //return isRedraw;
+
     },
 
     // insert a new collection of constrained edges.
@@ -1609,13 +1669,14 @@ DDLS.Mesh.prototype = {
     // and where each couple sequence (xi, yi) is a point.
     // Segments are not necessary connected.
     // Segments can overlap (then they will be automaticaly subdivided).
-    insertConstraintShape: function(coordinates) {
+    insertConstraintShape: function( coordinates ) {
+
         var shape = new DDLS.Shape();
         var segment = null;
         var l = coordinates.length, i = 0;
-        //for (i=0; i<l; i+=4){
-        while(i < l) {
-            segment = this.insertConstraintSegment(coordinates[i],coordinates[i + 1],coordinates[i + 2],coordinates[i + 3]);
+
+        while( i < l ) {
+            segment = this.insertConstraintSegment( coordinates[i], coordinates[i + 1], coordinates[i + 2], coordinates[i + 3] );
             if(segment != null) {
                 segment.fromShape = shape;
                 shape.segments.push(segment);
@@ -1624,21 +1685,25 @@ DDLS.Mesh.prototype = {
         }
         this._constraintShapes.push(shape);
         return shape;
+
     },
-    deleteConstraintShape: function(shape) {
-        var n = 0, i = 0;
-        var l = shape.segments.length;
-        while(n < l) {
-            i = n++;
-        //for (var i=0 ; i<shape.segments.length ; i++){
+
+    deleteConstraintShape: function ( shape ) {
+
+        var i = 0, l = shape.segments.length;
+        while( i < l ) {
             this.deleteConstraintSegment(shape.segments[i]);
+            i++;
         }
         
         //console.log('yoch', this._constraintShapes.indexOf(shape))
         this._constraintShapes.splice(this._constraintShapes.indexOf(shape),1);
         shape.dispose();
+
     },
-    insertConstraintSegment: function(x1,y1,x2,y2) {
+
+    insertConstraintSegment: function ( x1, y1, x2, y2 ) {
+
         var newX1 = x1;
         var newY1 = y1;
         var newX2 = x2;
@@ -1881,7 +1946,7 @@ DDLS.Mesh.prototype = {
                             newEdgeUpDown.setDatas(currVertex, newEdgeDownUp, null, null, true, true);
                             leftBoundingEdges.push(newEdgeDownUp);
                             rightBoundingEdges.push(newEdgeUpDown);
-                            this.insertNewConstrainedEdge(segment, newEdgeDownUp, intersectedEdges, leftBoundingEdges, rightBoundingEdges);
+                            this.insertNewConstrainedEdge( segment, newEdgeDownUp, intersectedEdges, leftBoundingEdges, rightBoundingEdges );
                             
                             intersectedEdges.splice(0, intersectedEdges.length);
                             leftBoundingEdges.splice(0, leftBoundingEdges.length);
@@ -1901,75 +1966,83 @@ DDLS.Mesh.prototype = {
                 }
             }
         }
+
         //return segment;
+
     },
-    insertNewConstrainedEdge: function(fromSegment,edgeDownUp,intersectedEdges,leftBoundingEdges,rightBoundingEdges) {
-        this._edges.push(edgeDownUp);
-        this._edges.push(edgeDownUp.oppositeEdge);
-        edgeDownUp.addFromConstraintSegment(fromSegment);
-        edgeDownUp.oppositeEdge.fromConstraintSegments = edgeDownUp.fromConstraintSegments;
-        fromSegment.addEdge(edgeDownUp);
-        edgeDownUp.originVertex.addFromConstraintSegment(fromSegment);
-        edgeDownUp.destinationVertex.addFromConstraintSegment(fromSegment);
-        this.untriangulate(intersectedEdges);
-        this.triangulate(leftBoundingEdges,true);
-        this.triangulate(rightBoundingEdges,true);
+
+    // fromSegment, edgeDownUp, intersectedEdges, leftBoundingEdges, rightBoundingEdges
+    insertNewConstrainedEdge: function ( seg, edge, iEdge, lEdge, rEdge ) {
+
+        this._edges.push( edge );
+        this._edges.push( edge.oppositeEdge );
+        edge.addFromConstraintSegment( seg );
+        edge.oppositeEdge.fromConstraintSegments = edge.fromConstraintSegments;
+        seg.addEdge( edge );
+        edge.originVertex.addFromConstraintSegment( seg );
+        edge.destinationVertex.addFromConstraintSegment( seg );
+        this.untriangulate( iEdge );
+        this.triangulate( lEdge, true );
+        this.triangulate( rEdge, true );
+
     },
-    deleteConstraintSegment: function(segment) {
+
+    deleteConstraintSegment: function( segment ) {
+
         var vertexToDelete = [];
         var edge = null;
         var vertex;
-        var fromConstraintSegment;
-        var l = segment.edges.length, n=0, i;
-        while(n<l) {
-        //for (i=0 ; i<segment.edges.length ; i++){
-        //while(i--) {
-            i = n++;
+
+        var l = segment.edges.length, i = 0;
+        while( i < l ) {
             edge = segment.edges[i];
-            //edge = segment.edges[i];
             edge.removeFromConstraintSegment(segment);
             if(edge.fromConstraintSegments.length == 0) {
                 edge.isConstrained = false;
                 edge.oppositeEdge.isConstrained = false;
             }
             vertex = edge.originVertex;
-            vertex.removeFromConstraintSegment(segment);
-            vertexToDelete.push(vertex);
+            vertex.removeFromConstraintSegment( segment );
+            vertexToDelete.push( vertex );
+            i++;
+            
         }
+
         vertex = edge.destinationVertex;
-        vertex.removeFromConstraintSegment(segment);
+        vertex.removeFromConstraintSegment( segment );
         vertexToDelete.push(vertex);
-        //var _g11 = 0;
-        //var _g2 = vertexToDelete.length;
-        //i = vertexToDelete.length;
+
         l = vertexToDelete.length;
-        n = 0;
-        //while(i--) {
-        //while(_g11 < _g2) {
-        while(n<l) {
-        //for (i=0 ; i<vertexToDelete.length; i++){
-            i = n++;
-            this.deleteVertex(vertexToDelete[i]);
-            //this.deleteVertex(vertexToDelete[i]);
+        i = 0;
+
+        while( i < l ) {
+            this.deleteVertex( vertexToDelete[i] );
+            i++;
         }
 
         segment.dispose();
     },
-    check: function() {
-        var l = this._edges.length, n=0, i;
-        //var _g1 = 0;
-        //var _g = this._edges.length;
-        while(n<l) {
-        //for (var i = 0; i < this._edges.length; i++){
-            i = n++;
+
+    check: function () {
+
+        var l = this._edges.length, i = 0;
+
+        while( i < l ) {
+            
             if(this._edges[i].nextLeftEdge == null) {
-                DDLS.Log("!!! missing nextLeftEdge");
+                DDLS.Log( "!!! missing nextLeftEdge" );
                 return;
             }
+            i++;
+            
         }
-        DDLS.Log("check OK");
+
+        DDLS.Log( "check OK" );
+
     },
-    insertVertex: function(x,y) {
+
+    insertVertex: function ( x, y ) {
+
         if(x < 0 || y < 0 || x > this.width || y > this.height) return null;
         this.__edgesToCheck.splice(0,this.__edgesToCheck.length);
         var inObject = DDLS.Geom2D.locatePosition( new DDLS.Point(x,y), this);
@@ -1992,8 +2065,11 @@ DDLS.Mesh.prototype = {
         }
         this.restoreAsDelaunay();
         return newVertex;
+
     },
-    flipEdge: function(edge) {
+
+    flipEdge: function ( edge ) {
+
         var eBot_Top = edge;
         var eTop_Bot = edge.oppositeEdge;
         var eLeft_Right = new DDLS.Edge();
@@ -2051,9 +2127,12 @@ DDLS.Mesh.prototype = {
         fRight.dispose();
 
         return eRight_Left;
+
     },
-    splitEdge: function(edge,x,y) {
-        this.__edgesToCheck.splice(0,this.__edgesToCheck.length);
+
+    splitEdge: function ( edge, x, y ) {
+
+        this.__edgesToCheck.splice( 0, this.__edgesToCheck.length );
 
         var eLeft_Right = edge;
         var eRight_Left = eLeft_Right.oppositeEdge;
@@ -2106,10 +2185,10 @@ DDLS.Mesh.prototype = {
         this._faces.push(fBotLeft);
         this._faces.push(fTopLeft);
         // set pos and edge reference for the new CENTER vertex
-        vCenter.setDatas(fTop.isReal ? eCenter_Top : eCenter_Bot );
+        vCenter.setDatas( fTop.isReal ? eCenter_Top : eCenter_Bot );
         vCenter.pos.x = x;
         vCenter.pos.y = y;
-        DDLS.Geom2D.projectOrthogonaly(vCenter.pos,eLeft_Right);
+        DDLS.Geom2D.projectOrthogonaly( vCenter.pos, eLeft_Right );
 
         // set the new vertex, edge and face references for the new 8 center crossing edges
         eCenter_Top.setDatas(vCenter, eTop_Center, eTop_Left, fTopLeft, fTop.isReal);
@@ -2129,8 +2208,8 @@ DDLS.Mesh.prototype = {
         // check the edge references of LEFT and RIGHT vertices
         //if(vLeft.edge === eLeft_Right) vLeft.setDatas(eLeft_Center);
         //if(vRight.edge === eRight_Left) vRight.setDatas(eRight_Center);
-        if(vLeft.edge.id == eLeft_Right.id) vLeft.setDatas(eLeft_Center);
-        if(vRight.edge.id == eRight_Left.id) vRight.setDatas(eRight_Center);
+        if( vLeft.edge.id === eLeft_Right.id ) vLeft.setDatas(eLeft_Center);
+        if( vRight.edge.id === eRight_Left.id ) vRight.setDatas(eRight_Center);
         // set the new edge and face references for the 4 bounding edges
         eTop_Left.nextLeftEdge = eLeft_Center;
         eTop_Left.leftFace = fTopLeft;
@@ -2146,6 +2225,7 @@ DDLS.Mesh.prototype = {
         // - update the segments the edge is from by deleting the old edge and inserting the 2 new
         // - add the segments the edge is from to the new vertex
         if(eLeft_Right.isConstrained) {
+
             var fromSegments = eLeft_Right.fromConstraintSegments;
             eLeft_Center.fromConstraintSegments = fromSegments.slice(0);
             eCenter_Left.fromConstraintSegments = eLeft_Center.fromConstraintSegments;
@@ -2153,51 +2233,47 @@ DDLS.Mesh.prototype = {
             eRight_Center.fromConstraintSegments = eCenter_Right.fromConstraintSegments;
             var edges;
             var index;
-            var n = 0;
-            var l = eLeft_Right.fromConstraintSegments.length;
-            while(n < l) {
-                var i = n++;
+            //var n = 0;
+            var l = eLeft_Right.fromConstraintSegments.length, i = 0;
+            while(i < l) {
+                //i = n++;
                 edges = eLeft_Right.fromConstraintSegments[i].edges;
                 index = edges.indexOf(eLeft_Right);
                 if(index != -1) {
                     edges.splice(index, 1, eLeft_Center, eCenter_Right);
-                    /*edges.splice(index,1);
-                    edges.splice(index,0,eLeft_Center);
-                    edges.splice(index + 1,0,eCenter_Right);*/
                 } else {
                     edges.splice(edges.indexOf(eRight_Left), 1, eRight_Center, eCenter_Left);
-                    /*index = edges.indexOf(eRight_Left );
-                    edges.splice( index, 1);
-                    edges.splice( index, eRight_Center );
-                    edges.splice( index+1, eCenter_Left )*/
-                    /*var index2 = edges.indexOf(eRight_Left);
-                    edges.splice(index2,1);
-                    edges.splice(index2,0,eRight_Center);
-                    edges.splice(index2,0,eCenter_Left);*/
                 }
+                i++;
             }
             vCenter.fromConstraintSegments = fromSegments.slice(0);
         }
-        // remove the old LEFT-RIGHT and RIGHT-LEFT edges
-        
+
+        // remove the old LEFT-RIGHT and RIGHT-LEFT edges        
         this._edges.splice(this._edges.indexOf(eLeft_Right),1);
         this._edges.splice(this._edges.indexOf(eRight_Left),1);
         eLeft_Right.dispose();
         eRight_Left.dispose();
+
         // remove the old TOP and BOTTOM faces
         this._faces.splice(this._faces.indexOf(fTop),1);
         this._faces.splice(this._faces.indexOf(fBot),1);
         fTop.dispose();
         fBot.dispose();
+
         // add new bounds references for Delaunay restoring
         this.__centerVertex = vCenter;
         this.__edgesToCheck.push(eTop_Left);
         this.__edgesToCheck.push(eLeft_Bot);
         this.__edgesToCheck.push(eBot_Right);
         this.__edgesToCheck.push(eRight_Top);
+
         return vCenter;
+
     },
-    splitFace: function(face,x,y) {
+
+    splitFace: function ( face, x, y ) {
+
         this.__edgesToCheck.splice(0,this.__edgesToCheck.length);
         var eTop_Left = face.edge;
         var eLeft_Right = eTop_Left.nextLeftEdge;
@@ -2205,16 +2281,21 @@ DDLS.Mesh.prototype = {
         var vTop = eTop_Left.originVertex;
         var vLeft = eLeft_Right.originVertex;
         var vRight = eRight_Top.originVertex;
+
+        // create new objects
         var vCenter = new DDLS.Vertex();
+
         var eTop_Center = new DDLS.Edge();
         var eCenter_Top = new DDLS.Edge();
         var eLeft_Center = new DDLS.Edge();
         var eCenter_Left = new DDLS.Edge();
         var eRight_Center = new DDLS.Edge();
         var eCenter_Right = new DDLS.Edge();
+
         var fTopLeft = new DDLS.Face();
         var fBot = new DDLS.Face();
         var fTopRight = new DDLS.Face();
+
         // add the new vertex
         this._vertices.push(vCenter);
         // add the new edges
@@ -2266,14 +2347,16 @@ DDLS.Mesh.prototype = {
         this.__edgesToCheck.push(eRight_Top);
 
         return vCenter;
+
     },
-    restoreAsDelaunay: function() {
+
+    restoreAsDelaunay: function () {
         var edge;
         while(this.__edgesToCheck.length > 0) {
             edge = this.__edgesToCheck.shift();
             if(edge.isReal && !edge.isConstrained && !DDLS.Geom2D.isDelaunay(edge)) {
                 //if(edge.nextLeftEdge.destinationVertex == this.__centerVertex) {
-                if(edge.nextLeftEdge.destinationVertex.id == this.__centerVertex.id) {
+                if(edge.nextLeftEdge.destinationVertex.id === this.__centerVertex.id) {
                     this.__edgesToCheck.push(edge.nextRightEdge);
                     this.__edgesToCheck.push(edge.prevRightEdge);
                 } else {
@@ -2284,11 +2367,12 @@ DDLS.Mesh.prototype = {
             }
         }
     },
+
     // Delete a vertex IF POSSIBLE and then fill the hole with a new triangulation.
     // A vertex can be deleted if:
     // - it is free of constraint segment (no adjacency to any constrained edge)
     // - it is adjacent to exactly 2 contrained edges and is not an end point of any constraint segment
-    deleteVertex: function(vertex) {
+    deleteVertex: function ( vertex ) {
         var i;
         var freeOfConstraint;
         var iterEdges = new DDLS.FromVertexToOutgoingEdges();
@@ -2415,7 +2499,7 @@ DDLS.Mesh.prototype = {
     },
     // untriangulate is usually used while a new edge insertion in order to delete the intersected edges
     // edgesList is a list of chained edges oriented from right to left
-    untriangulate: function(edgesList) {
+    untriangulate: function ( edgesList ) {
         // we clean useless faces and adjacent vertices
         var i;
         var verticesCleaned = new DDLS.Dictionary(1);
@@ -2457,18 +2541,20 @@ DDLS.Mesh.prototype = {
 
     // triangulate is usually used to fill the hole after deletion of a vertex from mesh or after untriangulation
     // - bounds is the list of edges in CCW bounding the surface to retriangulate,
-    triangulate: function(bound,isReal) {
+    triangulate: function ( bound, isReal ) {
+
         if(bound.length < 2) {
             DDLS.Log("BREAK ! the hole has less than 2 edges");
             return;
         // if the hole is a 2 edges polygon, we have a big problem
-        } else if(bound.length == 2) {
+        } else if(bound.length === 2) {
             DDLS.Log("BREAK ! the hole has only 2 edges");
            // DDLS.Debug.trace("  - edge0: " + bound[0].originVertex.id + " -> " + bound[0].destinationVertex.id,{ fileName : "Mesh.hx", lineNumber : 1404, className : "DDLS.Mesh", methodName : "triangulate"});
            // DDLS.Debug.trace("  - edge1: " + bound[1].originVertex.id + " -> " + bound[1].destinationVertex.id,{ fileName : "Mesh.hx", lineNumber : 1405, className : "DDLS.Mesh", methodName : "triangulate"});
             return;
         // if the hole is a 3 edges polygon:
-        } else if(bound.length == 3) {
+        } else if(bound.length === 3) {
+
             var f = new DDLS.Face();
             f.setDatas(bound[0], isReal);
             this._faces.push(f);
@@ -2535,17 +2621,13 @@ DDLS.Mesh.prototype = {
                 }*/
                 index = 2;
             }
-            var edgeA = null;
-            var edgeAopp = null;
-            var edgeB = null;
-            var edgeBopp;
-            var boundA;
-            
-            var boundB;
+
+            var edgeA, edgeAopp, edgeB, edgeBopp, boundA, boundB, boundM = [];
+
             if(index < (bound.length - 1)) {
                 edgeA = new DDLS.Edge();
                 edgeAopp = new DDLS.Edge();
-                this._edges.push(edgeA, edgeAopp);
+                this._edges.push( edgeA, edgeAopp );
                 //this._edges.push(edgeAopp);
                 edgeA.setDatas(vertexA,edgeAopp,null,null,isReal,false);
                 edgeAopp.setDatas(bound[index].originVertex,edgeA,null,null,isReal,false);
@@ -2564,14 +2646,19 @@ DDLS.Mesh.prototype = {
                 boundB.push(edgeBopp);
                 this.triangulate(boundB,isReal);
             }
-            var boundM = [];
-            if(index == 2) boundM.push(baseEdge, bound[1], edgeAopp);//boundM = [baseEdge,bound[1],edgeAopp]; 
-            else if(index == (bound.length - 1)) boundM.push(baseEdge, edgeB, bound[index]);//boundM = [baseEdge,edgeB,bound[index]]; 
-            else boundM.push(baseEdge, edgeB, edgeAopp );//boundM = [baseEdge,edgeB,edgeAopp];
-            this.triangulate(boundM,isReal);
+            
+            if( index === 2 ) boundM.push( baseEdge, bound[1], edgeAopp ); 
+            else if( index === (bound.length - 1) ) boundM.push(baseEdge, edgeB, bound[index]); 
+            else boundM.push(baseEdge, edgeB, edgeAopp );
+            
+            this.triangulate( boundM, isReal );
+
         }
+
     },
-    findPositionFromBounds: function(x,y) {
+
+    findPositionFromBounds: function ( x, y ) {
+
         if(x <= 0) {
             if(y <= 0) return 1; 
             else if(y >= this.height) return 7; 
@@ -2583,28 +2670,11 @@ DDLS.Mesh.prototype = {
         } else if(y <= 0) return 2; 
         else if(y >= this.height) return 6; 
         else return 0;
+
     },
-    /*debug: function() {
-        var i;
-        var _g1 = 0;
-        var _g = this._vertices.length;
-        while(_g1 < _g) {
-            var i1 = _g1++;
-            DDLS.Debug.trace("-- vertex " + this._vertices[i1].id,{ fileName : "Mesh.hx", lineNumber : 1568, className : "DDLS.Mesh", methodName : "debug"});
-            DDLS.Debug.trace("  edge " + this._vertices[i1].edge.id + " - " + (this._vertices[i1].edge).toString(),{ fileName : "Mesh.hx", lineNumber : 1569, className : "DDLS.Mesh", methodName : "debug"});
-            DDLS.Debug.trace("  edge isReal: " + (this._vertices[i1].edge.isReal).toString(),{ fileName : "Mesh.hx", lineNumber : 1570, className : "DDLS.Mesh", methodName : "debug"});
-        }
-        var _g11 = 0;
-        var _g2 = this._edges.length;
-        while(_g11 < _g2) {
-            var i2 = _g11++;
-            DDLS.Debug.trace("-- edge " + (this._edges[i2]).toString(),{ fileName : "Mesh.hx", lineNumber : 1573, className : "DDLS.Mesh", methodName : "debug"});
-            DDLS.Debug.trace("  isReal " + this._edges[i2].id + " - " + (this._edges[i2].isReal).toString(),{ fileName : "Mesh.hx", lineNumber : 1574, className : "DDLS.Mesh", methodName : "debug"});
-            DDLS.Debug.trace("  nextLeftEdge " + (this._edges[i2].nextLeftEdge).toString(),{ fileName : "Mesh.hx", lineNumber : 1575, className : "DDLS.Mesh", methodName : "debug"});
-            DDLS.Debug.trace("  oppositeEdge " + (this._edges[i2].oppositeEdge).toString(),{ fileName : "Mesh.hx", lineNumber : 1576, className : "DDLS.Mesh", methodName : "debug"});
-        }
-    },*/
-    compute_Data : function(){
+
+    compute_Data: function () {
+
         var data_vertex = [];
         var data_edges = [];
         var vertex;
@@ -2636,12 +2706,15 @@ DDLS.Mesh.prototype = {
         this.data_vertex = null;
         this.data_edges = null;
 
-        
     },
-    vertexIsInsideAABB: function(vertex,mesh) {
+
+    vertexIsInsideAABB: function ( vertex, mesh ) {
+
         if(vertex.pos.x < 0 || vertex.pos.x > mesh.width || vertex.pos.y < 0 || vertex.pos.y > mesh.height) return false; 
         else return true;
+
     }
+
 };
 DDLS.Graph = function() {
     this.id = DDLS.GraphID;
@@ -4821,6 +4894,121 @@ DDLS.PathIterator.prototype = {
         this.entity.y = this._currentY;
     }
 };
+DDLS.CircleMesh = function( x, y, r, n ) {
+
+    r = r || 100;
+    x = x || r;
+    y = y || r;
+    n = n || 8;
+    
+
+    var v = [];
+    var e = [];
+    var f = [];
+    var s = [];
+    var coord = [];
+
+    var i = n;
+
+    while(i--){
+        f.push(new DDLS.Face());
+        v.push(new DDLS.Vertex());
+        s.push(new DDLS.Segment());
+        e.push(new DDLS.Edge(), new DDLS.Edge(), new DDLS.Edge());
+    }
+
+    var boundShape = new DDLS.Shape();    
+    var offset = 10;
+    
+    var ndiv = 1/n;
+    i = 0;
+    while( i < n ) {
+
+        v[i].pos.set( x + ((r+offset) * DDLS.cos(DDLS.TwoPI * i * ndiv)), y + ((r+offset) * DDLS.sin(DDLS.TwoPI * i * ndiv)) );
+        v[i].setDatas(e[i*2]);
+        i++;
+
+    }
+
+    // TODO edge ? face ?
+
+    /*
+    v[0].pos.set(0 - offset,0 - offset);
+    v[1].pos.set(w + offset,0 - offset);
+    v[2].pos.set(w + offset,h + offset);
+    v[3].pos.set(0 - offset,h + offset);
+    v[0].setDatas(e[0]);
+    v[1].setDatas(e[2]);
+    v[2].setDatas(e[4]);
+    v[3].setDatas(e[6]);
+    e[0].setDatas(v[0],e[1],e[2],f[3],true,true);
+    e[1].setDatas(v[1],e[0],e[7],f[0],true,true);
+    e[2].setDatas(v[1],e[3],e[11],f[3],true,true);
+    e[3].setDatas(v[2],e[2],e[8],f[1],true,true);
+    e[4].setDatas(v[2],e[5],e[6],f[2],true,true);
+    e[5].setDatas(v[3],e[4],e[3],f[1],true,true);
+    e[6].setDatas(v[3],e[7],e[10],f[2],true,true);
+    e[7].setDatas(v[0],e[6],e[9],f[0],true,true);
+    e[8].setDatas(v[1],e[9],e[5],f[1],true,false);
+    e[9].setDatas(v[3],e[8],e[1],f[0],true,false);
+    e[10].setDatas(v[0],e[11],e[4],f[2],false,false);
+    e[11].setDatas(v[2],e[10],e[0],f[3],false,false);
+    f[0].setDatas(e[9]);
+    f[1].setDatas(e[8]);
+    f[2].setDatas(e[4],false);
+    f[3].setDatas(e[2],false);
+    v[0].fromConstraintSegments = [s[0],s[3]];
+    v[1].fromConstraintSegments = [s[0],s[1]];
+    v[2].fromConstraintSegments = [s[1],s[2]];
+    v[3].fromConstraintSegments = [s[2],s[3]];
+    e[0].fromConstraintSegments.push(s[0]);
+    e[1].fromConstraintSegments.push(s[0]);
+    e[2].fromConstraintSegments.push(s[1]);
+    e[3].fromConstraintSegments.push(s[1]);
+    e[4].fromConstraintSegments.push(s[2]);
+    e[5].fromConstraintSegments.push(s[2]);
+    e[6].fromConstraintSegments.push(s[3]);
+    e[7].fromConstraintSegments.push(s[3]);
+    s[0].edges.push(e[0]);
+    s[1].edges.push(e[2]);
+    s[2].edges.push(e[4]);
+    s[3].edges.push(e[6]);
+    s[0].fromShape = boundShape;
+    s[1].fromShape = boundShape;
+    s[2].fromShape = boundShape;
+    s[3].fromShape = boundShape;
+    boundShape.segments.push(s[0], s[1], s[2], s[3]);// = s;*/
+    /*this.tmpObj = new DDLS.Object();
+    this.tmpObj.matrix.translate(x || 0,y || 0);
+    var coordinates = [];
+    this.tmpObj.coordinates = coordinates;
+    */
+    
+    i = 0;
+    while( i < n ) {
+
+        coord.push(x+(r * DDLS.cos(DDLS.TwoPI * i * ndiv)));
+        coord.push(y+(r * DDLS.sin(DDLS.TwoPI * i * ndiv)));
+        coord.push(x+(r * DDLS.cos(DDLS.TwoPI * (i + 1) * ndiv)));
+        coord.push(y+(r * DDLS.sin(DDLS.TwoPI * (i + 1) * ndiv)));
+        i++;
+
+    }
+
+
+    var mesh = new DDLS.Mesh( r*2, r*2 );
+    mesh._vertices = v;
+    mesh._edges = e;
+    mesh._faces = f;
+    mesh._constraintShapes.push( boundShape );
+
+    mesh.clipping = false;
+    mesh.insertConstraintShape( coord );
+    mesh.clipping = true;
+
+    return mesh;
+
+};
 DDLS.RectMesh = function( w, h ) {
 
     //  v0 +-----+ v1
@@ -4837,11 +5025,14 @@ DDLS.RectMesh = function( w, h ) {
     var f = [];
     var s = [];
     var i = 4;
+
     while(i--){
+
         f.push(new DDLS.Face());
         v.push(new DDLS.Vertex());
         s.push(new DDLS.Segment());
         e.push(new DDLS.Edge(), new DDLS.Edge(), new DDLS.Edge());
+
     }
 
     var boundShape = new DDLS.Shape();    
@@ -4867,13 +5058,13 @@ DDLS.RectMesh = function( w, h ) {
     e[7].setDatas(v[0],e[6],e[9],f[0], true, true);   // v0--v3
     e[8].setDatas(v[1],e[9],e[5],f[1], true, false);  // v1--v3 diagonal edge
     e[9].setDatas(v[3],e[8],e[1],f[0], true, false);  // v3--v1 diagonal edge
-    e[10].setDatas(v[0],e[11],e[4],f[2],false,false); // v0--v2 imaginary edge
-    e[11].setDatas(v[2],e[10],e[0],f[3],false,false); // v2--v0 imaginary edge
+    e[10].setDatas(v[0],e[11],e[4],f[2], false, false); // v0--v2 imaginary edge
+    e[11].setDatas(v[2],e[10],e[0],f[3], false, false); // v2--v0 imaginary edge
 
     f[0].setDatas(e[9], true); // v0-v3-v1
     f[1].setDatas(e[8], true); // v1-v3-v2
-    f[2].setDatas(e[4],false); // v0-v2-v3
-    f[3].setDatas(e[2],false); // v0-v1-v2
+    f[2].setDatas(e[4], false); // v0-v2-v3
+    f[3].setDatas(e[2], false); // v0-v1-v2
 
     // constraint relations datas
     v[0].fromConstraintSegments = [s[0],s[3]];
@@ -4962,52 +5153,6 @@ DDLS.BitmapObject.buildFromBmpData = function(bmpData,simpleEpsilon,debugBmp,deb
     }
     //console.log('build');
     return obj;
-};
-DDLS.BitmapMesh = {};
-
-DDLS.BitmapMesh.buildFromBmpData = function ( bmpData, simpleEpsilon ) {
-
-    simpleEpsilon = simpleEpsilon || 1;
-    //if(simpleEpsilon == null) simpleEpsilon = 1;
-    var i, j;
-    var shapes = DDLS.Potrace.buildShapes( bmpData );
-    if( simpleEpsilon >= 1 ) {
-        var _g1 = 0;
-        var _g = shapes.length;
-        while(_g1 < _g) {
-            var i1 = _g1++;
-            shapes[i1] = DDLS.ShapeSimplifier( shapes[i1], simpleEpsilon );
-        }
-    }
-    var graphs = [];
-    var _g11 = 0;
-    var _g2 = shapes.length;
-    while(_g11 < _g2) {
-        var i2 = _g11++;
-        graphs.push( DDLS.Potrace.buildGraph( shapes[i2] ) );
-    }
-    var polygons = [];
-    var _g12 = 0;
-    var _g3 = graphs.length;
-    while(_g12 < _g3) {
-        var i3 = _g12++;
-        polygons.push( DDLS.Potrace.buildPolygon( graphs[i3] ));
-    }
-    var mesh = DDLS.RectMesh( bmpData.width, bmpData.height );
-    var _g13 = 0;
-    var _g4 = polygons.length;
-    while(_g13 < _g4) {
-        var i4 = _g13++;
-        j = 0;
-        while(j < polygons[i4].length - 2) {
-            mesh.insertConstraintSegment( polygons[i4][j], polygons[i4][j+1], polygons[i4][j+2], polygons[i4][j+3] );
-            j += 2;
-        }
-        mesh.insertConstraintSegment( polygons[i4][j], polygons[i4][j+1], polygons[i4][j+2], polygons[i4][j+3] );
-    }
-
-    return mesh;
-
 };
 DDLS.Heroe = function(s, world) {
     s = s || {};
@@ -5338,6 +5483,195 @@ DDLS.Cell = function(col,row) {
     }
     this.walls = _g;
 };
+DDLS.Dungeon = function( w, h, min, max ) {
+
+
+    //this.callback  = callback;
+    this.generate( w, h, min, max);
+    
+
+};
+
+DDLS.Dungeon.prototype = {
+    constructor: DDLS.Dungeon,
+
+    generate: function ( w, h, min, max ) {
+
+        this.w = w/10;
+        this.h = h/10;
+        this.rooms = [];
+        this.map = [];
+
+        
+        for (var x = 0; x < this.w; x++) {
+            this.map[x] = [];
+            for (var y = 0; y < this.h; y++) {
+                this.map[x][y] = 0;
+            }
+        }
+
+        var room_count = DDLS.randInt(10, 20);
+        var min_size = min || 5;
+        var max_size = max || 15;
+
+        for (var i = 0; i < room_count; i++) {
+            var room = {};
+
+            room.x = DDLS.randInt(1, this.w - max_size - 1);
+            room.y = DDLS.randInt(1, this.h - max_size - 1);
+            room.w = DDLS.randInt(min_size, max_size);
+            room.h = DDLS.randInt(min_size, max_size);
+
+            if (this.DoesCollide(room)) {
+                i--;
+                continue;
+            }
+            room.w--;
+            room.h--;
+
+            this.rooms.push(room);
+        }
+
+        this.SquashRooms();
+
+        for (i = 0; i < room_count; i++) {
+            var roomA = this.rooms[i];
+            var roomB = this.FindClosestRoom(roomA);
+
+            var pointA = {
+                x: DDLS.randInt(roomA.x, roomA.x + roomA.w),
+                y: DDLS.randInt(roomA.y, roomA.y + roomA.h)
+            };
+            var pointB = {
+                x: DDLS.randInt(roomB.x, roomB.x + roomB.w),
+                y: DDLS.randInt(roomB.y, roomB.y + roomB.h)
+            };
+
+            while ((pointB.x != pointA.x) || (pointB.y != pointA.y)) {
+                if (pointB.x != pointA.x) {
+                    if (pointB.x > pointA.x) pointB.x--;
+                    else pointB.x++;
+                } else if (pointB.y != pointA.y) {
+                    if (pointB.y > pointA.y) pointB.y--;
+                    else pointB.y++;
+                }
+
+                this.map[pointB.x][pointB.y] = 1;
+            }
+        }
+
+        for (i = 0; i < room_count; i++) {
+            var room = this.rooms[i];
+            for (var x = room.x; x < room.x + room.w; x++) {
+                for (var y = room.y; y < room.y + room.h; y++) {
+                    this.map[x][y] = 1;
+                }
+            }
+        }
+
+        for (var x = 0; x < this.w; x++) {
+            for (var y = 0; y < this.h; y++) {
+                if (this.map[x][y] == 1) {
+                    for (var xx = x - 1; xx <= x + 1; xx++) {
+                        for (var yy = y - 1; yy <= y + 1; yy++) {
+                            if (this.map[xx][yy] == 0) this.map[xx][yy] = 2;
+                        }
+                    }
+                }
+            }
+        }
+
+        this.populateObject();
+    },
+    FindClosestRoom: function (room) {
+        var mid = {
+            x: room.x + (room.w / 2),
+            y: room.y + (room.h / 2)
+        };
+        var closest = null;
+        var closest_distance = 1000;
+        for (var i = 0; i < this.rooms.length; i++) {
+            var check = this.rooms[i];
+            if (check == room) continue;
+            var check_mid = {
+                x: check.x + (check.w / 2),
+                y: check.y + (check.h / 2)
+            };
+            var distance = Math.min(Math.abs(mid.x - check_mid.x) - (room.w / 2) - (check.w / 2), Math.abs(mid.y - check_mid.y) - (room.h / 2) - (check.h / 2));
+            if (distance < closest_distance) {
+                closest_distance = distance;
+                closest = check;
+            }
+        }
+        return closest;
+    },
+    SquashRooms: function () {
+        for (var i = 0; i < 10; i++) {
+            for (var j = 0; j < this.rooms.length; j++) {
+                var room = this.rooms[j];
+                while (true) {
+                    var old_position = {
+                        x: room.x,
+                        y: room.y
+                    };
+                    if (room.x > 1) room.x--;
+                    if (room.y > 1) room.y--;
+                    if ((room.x == 1) && (room.y == 1)) break;
+                    if (this.DoesCollide(room, j)) {
+                        room.x = old_position.x;
+                        room.y = old_position.y;
+                        break;
+                    }
+                }
+            }
+        }
+    },
+    DoesCollide: function (room, ignore) {
+        for (var i = 0; i < this.rooms.length; i++) {
+            if (i == ignore) continue;
+            var check = this.rooms[i];
+            if (!((room.x + room.w < check.x) || (room.x > check.x + check.w) || (room.y + room.h < check.y) || (room.y > check.y + check.h))) return true;
+        }
+
+        return false;
+    },
+    populateObject : function() {
+
+        
+        //this.object = new DDLS.Object();
+        //var coords = [];
+        var canvas = document.createElement('canvas');
+        canvas.width = this.w * 10;
+        canvas.height = this.h * 10;
+
+        var scale = 10;//canvas.width / this.w;
+        var ctx = canvas.getContext('2d')
+        ctx.fillStyle = '#FFF';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        for (var y = 0; y < this.h; y++) {
+            for (var x = 0; x < this.w; x++) {
+                var tile = this.map[x][y];
+                //console.log(tile)
+                if (tile === 0) ctx.fillStyle = '#000000';
+                else if (tile === 1) ctx.fillStyle = '#FFFFFF';
+                else ctx.fillStyle = '#000000';
+                ctx.fillRect(x * scale, y * scale, scale, scale);
+            }
+        }
+
+
+
+        var pixels = DDLS.fromImageData(null, ctx.getImageData(0,0,this.w* 10,this.h* 10));
+        this.object = DDLS.BitmapObject.buildFromBmpData( pixels, 1.8 );
+
+        //this.callback( this.object );
+//console.log('creat', this.map )
+        //canvas.style.cssText = 'position:absolute; left:0 top:0;';
+        //document.body.appendChild( canvas );
+
+    }
+}
 //var DDLS = DDLS || {};
 
 DDLS.SimpleView = function( world ) {
@@ -5351,6 +5685,7 @@ DDLS.SimpleView = function( world ) {
     this.g = new DDLS.BasicCanvas( world.w, world.h );
 
     this.g.canvas.style.pointerEvents = 'none';
+    this.g0.canvas.style.pointerEvents = 'auto';
 
 
 
@@ -5503,6 +5838,9 @@ DDLS.BasicCanvas = function( w, h ) {
     this.canvas.width = this.w;
     this.canvas.height = this.h;
     this.ctx = this.canvas.getContext("2d");
+
+    this.canvas.style.cssText = 'position:absolute; left:50%; top:50%; margin-left:'+(-this.w*0.5)+'px; margin-top:'+(-this.h*0.5)+'px;';
+
     document.body.appendChild( this.canvas );
 
 };

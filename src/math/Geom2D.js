@@ -1,7 +1,7 @@
-DDLS.Squared = function(a,b){
+DDLS.Squared = function ( a, b ) {
     return a * a + b * b;
 };
-DDLS.SquaredSqrt = function(a,b){
+DDLS.SquaredSqrt = function ( a, b ) {
     return DDLS.sqrt(a * a + b * b);
 };
 
@@ -10,15 +10,17 @@ DDLS.Geom2D.__samples = [];
 DDLS.Geom2D.__circumcenter = new DDLS.Point();
 DDLS.Geom2D._randGen = null;
 
-DDLS.Geom2D.locatePosition = function( p, mesh ) {
+DDLS.Geom2D.locatePosition = function ( p, mesh ) {
+
+    var i, numSamples;
 
     // jump and walk algorithm
 
     if(this._randGen == null) this._randGen = new DDLS.RandGenerator();
     this._randGen.seed = DDLS.int(p.x * 10 + 4 * p.y);
-    var i;
+    
     this.__samples.splice(0, this.__samples.length);
-    var numSamples = DDLS.int(DDLS.pow(mesh._vertices.length,0.333333334));
+    numSamples = DDLS.int(DDLS.pow(mesh._vertices.length,0.333333334));
     //var numSamples = DDLS.int(DDLS.pow(mesh._vertices.length,1/3));
     
     //console.log(numSamples, mesh._vertices.length);
@@ -26,20 +28,21 @@ DDLS.Geom2D.locatePosition = function( p, mesh ) {
     this._randGen.rangeMin = 0;
     this._randGen.rangeMax = mesh._vertices.length - 1;
 
-    //i = numSamples;
+    i = 0;
+    while( i < numSamples ) {
     //while(i--){
-    for ( i = 0 ; i < numSamples; i++ ){
-        this.__samples.push(mesh._vertices[this._randGen.next()]);
+    //for ( i = 0 ; i < numSamples; i++ ){
+        this.__samples.push( mesh._vertices[this._randGen.next()] );
+        i++;
     }
 
     var currVertex, currVertexPos, distSquared;
     var minDistSquared = DDLS.POSITIVE_INFINITY;
     var closedVertex = null;
-    //i = 0;
+    i = 0;
     //var n = 0
-    //while( n < numSamples ) {
-    for ( i = 0 ; i < numSamples; i++ ){
-        //i = n++;
+    while( i < numSamples ) {
+    //for ( i = 0 ; i < numSamples; i++ ){
         currVertex = this.__samples[i];
         currVertexPos = currVertex.pos;
         distSquared = DDLS.Squared(currVertexPos.x - p.x, currVertexPos.y - p.y);
@@ -47,6 +50,7 @@ DDLS.Geom2D.locatePosition = function( p, mesh ) {
             minDistSquared = distSquared;
             closedVertex = currVertex;
         }
+        i++;
     }
 
     //var currFace;
@@ -103,7 +107,8 @@ DDLS.Geom2D.locatePosition = function( p, mesh ) {
    
 };
 
-DDLS.Geom2D.isCircleIntersectingAnyConstraint = function(p,radius,mesh) {
+DDLS.Geom2D.isCircleIntersectingAnyConstraint = function ( p, radius, mesh ) {
+
     if(p.x <= 0 || p.x >= mesh.width || p.y <= 0 || p.y >= mesh.height) return true;
     var loc = DDLS.Geom2D.locatePosition(p,mesh);
     var face;
@@ -152,9 +157,11 @@ DDLS.Geom2D.isCircleIntersectingAnyConstraint = function(p,radius,mesh) {
     }
     //this.checkedEdges.dispose();
     return false;
+
 };
 
-DDLS.Geom2D.getDirection = function(p1,p2,p3) {
+DDLS.Geom2D.getDirection = function ( p1, p2, p3 ) {
+
     var dot = (p3.x - p1.x) * (p2.y - p1.y) + (p3.y - p1.y) * (-p2.x + p1.x);
     return (dot == 0) ? 0 : ((dot > 0) ? 1 : -1);
     /*if(dot == 0) return 0; 
@@ -162,19 +169,25 @@ DDLS.Geom2D.getDirection = function(p1,p2,p3) {
     else return -1;*/
 };
 
-DDLS.Geom2D.Orient2d = function (p1, p2, p3) {
+DDLS.Geom2D.Orient2d = function ( p1, p2, p3 ) {
+
     var val = (p1.x - p3.x) * (p2.y - p3.y) - (p1.y - p3.y) * (p2.x - p3.x);
     if (val > -DDLS.EPSILON_SQUARED && val < DDLS.EPSILON_SQUARED) return 0;// collinear
     else if (val > 0) return -1;// ccw
     else return 1;// cw
+
 }
 
-DDLS.Geom2D.getRelativePosition = function(p, eUp) {
+DDLS.Geom2D.getRelativePosition = function ( p, eUp ) {
+
     return DDLS.Geom2D.getDirection( eUp.originVertex.pos, eUp.destinationVertex.pos, p );
+
 };
 
-DDLS.Geom2D.getRelativePosition2 = function(p, eUp) {
+DDLS.Geom2D.getRelativePosition2 = function ( p, eUp ) {
+
     return DDLS.Geom2D.Orient2d( eUp.originVertex.pos, eUp.destinationVertex.pos, p );
+
 };
 
 // the function checks by priority:
@@ -182,7 +195,7 @@ DDLS.Geom2D.getRelativePosition2 = function(p, eUp) {
 // - if the (x, y) lies on a edge of the polygon, it will return this edge
 // - if the (x, y) lies inside the polygon, it will return the polygon
 // - if the (x, y) lies outside the polygon, it will return null
-DDLS.Geom2D.isInFace = function( p, polygon ) {
+DDLS.Geom2D.isInFace = function ( p, polygon ) {
 
     // remember polygons are triangle only,
     // and we suppose we have not degenerated flat polygons !
@@ -233,7 +246,8 @@ DDLS.Geom2D.isInFace = function( p, polygon ) {
     return result;
 };
 
-DDLS.Geom2D.clipSegmentByTriangle = function(s1, s2, t1, t2, t3, pResult1, pResult2) {
+DDLS.Geom2D.clipSegmentByTriangle = function ( s1, s2, t1, t2, t3, pResult1, pResult2 ) {
+
     var side1_1 = DDLS.Geom2D.getDirection(t1, t2, s1);
     var side1_2 = DDLS.Geom2D.getDirection(t1, t2, s2);
     if(side1_1 <= 0 && side1_2 <= 0) return false;
@@ -269,6 +283,7 @@ DDLS.Geom2D.clipSegmentByTriangle = function(s1, s2, t1, t2, t3, pResult1, pResu
     }
     if(n > 0) return true; 
     else return false;
+
 };
 
 /*DDLS.Geom2D.isSegmentIntersectingTriangle = function(s1, s2, t1, t2, t3) {
@@ -302,7 +317,8 @@ DDLS.Geom2D.clipSegmentByTriangle = function(s1, s2, t1, t2, t3, pResult1, pResu
     return false;
 };*/
 
-DDLS.Geom2D.isDelaunay = function(edge) {
+DDLS.Geom2D.isDelaunay = function ( edge ) {
+
     var vLeft = edge.originVertex;
     var vRight = edge.destinationVertex;
     var vCorner = edge.nextLeftEdge.destinationVertex;
@@ -312,6 +328,7 @@ DDLS.Geom2D.isDelaunay = function(edge) {
     var squaredRadius = (vCorner.pos.x - DDLS.Geom2D.__circumcenter.x) * (vCorner.pos.x - DDLS.Geom2D.__circumcenter.x) + (vCorner.pos.y - DDLS.Geom2D.__circumcenter.y) * (vCorner.pos.y - DDLS.Geom2D.__circumcenter.y);
     var squaredDistance = (vOpposite.pos.x - DDLS.Geom2D.__circumcenter.x) * (vOpposite.pos.x - DDLS.Geom2D.__circumcenter.x) + (vOpposite.pos.y - DDLS.Geom2D.__circumcenter.y) * (vOpposite.pos.y - DDLS.Geom2D.__circumcenter.y);
     return squaredDistance >= squaredRadius ? true : false;
+
 };
 
 /*DDLS.Geom2D.getCircumcenterOld = function(x1,y1,x2,y2,x3,y3,result) {
@@ -326,7 +343,8 @@ DDLS.Geom2D.isDelaunay = function(edge) {
     return result;
 };*/
 
-DDLS.Geom2D.getCircumcenter = function(p1, p2, p3, result) {
+DDLS.Geom2D.getCircumcenter = function ( p1, p2, p3, result ) {
+
     if(result == null) result = new DDLS.Point();
     var m1 = (p1.x + p2.x) * 0.5;
     var m2 = (p1.y + p2.y) * 0.5;
@@ -336,9 +354,11 @@ DDLS.Geom2D.getCircumcenter = function(p1, p2, p3, result) {
     result.x = m1 + t1 * (p2.y - p1.y);
     result.y = m2 - t1 * (p2.x - p1.x);
     return result;
+
 };
 
-DDLS.Geom2D.intersections2segments = function(s1p1, s1p2, s2p1, s2p2, posIntersection, paramIntersection, infiniteLineMode) {
+DDLS.Geom2D.intersections2segments = function ( s1p1, s1p2, s2p1, s2p2, posIntersection, paramIntersection, infiniteLineMode ) {
+
     if(infiniteLineMode == null) infiniteLineMode = false;
     var t1 = 0;
     var t2 = 0;
@@ -364,14 +384,18 @@ DDLS.Geom2D.intersections2segments = function(s1p1, s1p2, s2p1, s2p2, posInterse
         }
     }
     return result;
+
 };
 
-DDLS.Geom2D.intersections2edges = function(edge1,edge2,posIntersection,paramIntersection,infiniteLineMode) {
+DDLS.Geom2D.intersections2edges = function ( edge1, edge2, posIntersection, paramIntersection, infiniteLineMode ) {
+
     if(infiniteLineMode == null) infiniteLineMode = false;
     return DDLS.Geom2D.intersections2segments(edge1.originVertex.pos, edge1.destinationVertex.pos, edge2.originVertex.pos, edge2.destinationVertex.pos, posIntersection,paramIntersection,infiniteLineMode);
+
 };
 
-DDLS.Geom2D.isConvex = function(edge) {
+DDLS.Geom2D.isConvex = function ( edge ) {
+
     var result = true;
     var eLeft;
     var vRight;
@@ -383,9 +407,11 @@ DDLS.Geom2D.isConvex = function(edge) {
         if(DDLS.Geom2D.getRelativePosition(vRight.pos, eLeft) != -1) result = false;
     }
     return result;
+
 };
 
-DDLS.Geom2D.projectOrthogonaly = function(vertexPos,edge) {
+DDLS.Geom2D.projectOrthogonaly = function ( vertexPos, edge ) {
+
     var a = edge.originVertex.pos.x;
     var b = edge.originVertex.pos.y;
     var c = edge.destinationVertex.pos.x;
@@ -395,6 +421,7 @@ DDLS.Geom2D.projectOrthogonaly = function(vertexPos,edge) {
     var t1 = (a * a - a * c - a * e + b * b - b * d - b * f + c * e + d * f) / (a * a - 2 * a * c + b * b - 2 * b * d + c * c + d * d);
     vertexPos.x = a + t1 * (c - a);
     vertexPos.y = b + t1 * (d - b);
+
 };
 
 /*DDLS.Geom2D.projectOrthogonalyOnSegment = function(px, py, sp1x, sp1y, sp2x, sp2y, result) {
@@ -409,7 +436,8 @@ DDLS.Geom2D.projectOrthogonaly = function(vertexPos,edge) {
     result.y = b + t1*(d - b);
 };*/
 
-DDLS.Geom2D.intersections2Circles = function(c1, r1, c2, r2, result){
+DDLS.Geom2D.intersections2Circles = function (c1, r1, c2, r2, result){
+
     var factor, a, b, first, dist, invd, trans;
     dist = DDLS.Squared(c2.x - c1.x, c2.y - c1.y);
     invd = 1 / (2 * dist);
@@ -434,9 +462,11 @@ DDLS.Geom2D.intersections2Circles = function(c1, r1, c2, r2, result){
         }
         return true;
     } else return false;
+
 };
 
-DDLS.Geom2D.intersectionsSegmentCircle = function(p0, p1, c, r, result) {
+DDLS.Geom2D.intersectionsSegmentCircle = function ( p0, p1, c, r, result ) {
+
     var p0xSQD = p0.x * p0.x;
     var p0ySQD = p0.y * p0.y;
     var a = p1.y * p1.y - 2 * p1.y * p0.y + p0ySQD + p1.x * p1.x - 2 * p1.x * p0.x + p0xSQD;
@@ -473,6 +503,7 @@ DDLS.Geom2D.intersectionsSegmentCircle = function(p0, p1, c, r, result) {
         }
         return intersecting;
     }
+
 };
 
 /*DDLS.Geom2D.intersectionsLineCircle = function(p0x,p0y,p1x,p1y,cx,cy,r,result) {
@@ -496,13 +527,16 @@ DDLS.Geom2D.intersectionsSegmentCircle = function(p0, p1, c, r, result) {
     return true;
 };*/
 
-DDLS.Geom2D.tangentsPointToCircle = function(p, c, r, result) {
+DDLS.Geom2D.tangentsPointToCircle = function ( p, c, r, result ) {
+
     var c2 = p.clone().add(c).mul(0.5);
     var r2 = 0.5 * DDLS.SquaredSqrt(p.x - c.x, p.y - c.y);
     return DDLS.Geom2D.intersections2Circles(c2, r2, c, r, result);
+
 };
 
-DDLS.Geom2D.tangentsCrossCircleToCircle = function(r, c1, c2, result) {
+DDLS.Geom2D.tangentsCrossCircleToCircle = function ( r, c1, c2, result ) {
+
     var distance = DDLS.SquaredSqrt(c1.x - c2.x, c1.y - c2.y);
     var radius = distance * 0.25;
     var center = c2.clone().sub(c1).mul(0.25).add(c1);
@@ -528,9 +562,11 @@ DDLS.Geom2D.tangentsCrossCircleToCircle = function(r, c1, c2, result) {
         result.push( t3x, t3y, t4x, t4y );
         return true;
     } else return false;
+
 };
 
-DDLS.Geom2D.tangentsParalCircleToCircle = function(r, c1, c2, result) {
+DDLS.Geom2D.tangentsParalCircleToCircle = function ( r, c1, c2, result ) {
+
     var distance = DDLS.SquaredSqrt(c1.x - c2.x, c1.y - c2.y);
     var invD = 1 / distance;
     var t1x = c1.x + r * (c2.y - c1.y) * invD;
@@ -542,6 +578,7 @@ DDLS.Geom2D.tangentsParalCircleToCircle = function(r, c1, c2, result) {
     var t4x = t1x + c2.x - c1.x;
     var t4y = t1y + c2.y - c1.y;
     result.push( t1x, t1y, t2x, t2y, t3x, t3y, t4x, t4y );
+
 };
 
 /*DDLS.Geom2D.distanceSquaredPointToLine = function(p,a,b) {
@@ -551,7 +588,8 @@ DDLS.Geom2D.tangentsParalCircleToCircle = function(r, c1, c2, result) {
     return p_a_squared - dotProduct * dotProduct / a_b_squared;
 };*/
 
-DDLS.Geom2D.distanceSquaredPointToSegment = function(p, a, b) {
+DDLS.Geom2D.distanceSquaredPointToSegment = function ( p, a, b ) {
+
     var a_b_squared = DDLS.Squared(b.x - a.x, b.y - a.y);
     var dotProduct = ((p.x - a.x) * (b.x - a.x) + (p.y - a.y) * (b.y - a.y)) / a_b_squared;
     if(dotProduct < 0) return DDLS.Squared(p.x - a.x, p.y - a.y); 
@@ -559,23 +597,25 @@ DDLS.Geom2D.distanceSquaredPointToSegment = function(p, a, b) {
         var p_a_squared = DDLS.Squared(a.x - p.x, a.y - p.y);
         return p_a_squared - dotProduct * dotProduct * a_b_squared;
     } else return DDLS.Squared(p.x - b.x, p.y - b.y);
+
 };
 
-DDLS.Geom2D.distanceSquaredVertexToEdge = function(vertex,edge) {
+DDLS.Geom2D.distanceSquaredVertexToEdge = function ( vertex, edge ) {
+
     return DDLS.Geom2D.distanceSquaredPointToSegment(vertex.pos, edge.originVertex.pos, edge.destinationVertex.pos);
+
 };
 
-DDLS.Geom2D.pathLength = function(path) {
+DDLS.Geom2D.pathLength = function( path ) {
+
     var sumDistance = 0.;
     var fromX = path[0];
     var fromY = path[1];
-    var nextX;
-    var nextY;
-    var x;
-    var y;
-    var distance;
+    var nextX, nextY, x, y, distance;
     var i = 2;
-    while(i < path.length) {
+    var l = path.length;
+
+    while( i < l ) {
         nextX = path[i];
         nextY = path[i + 1];
         x = nextX - fromX;
@@ -586,5 +626,7 @@ DDLS.Geom2D.pathLength = function(path) {
         fromY = nextY;
         i += 2;
     }
+
     return sumDistance;
+
 };

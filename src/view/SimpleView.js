@@ -11,6 +11,7 @@ DDLS.SimpleView = function( world ) {
     this.g = new DDLS.BasicCanvas( world.w, world.h );
 
     this.g.canvas.style.pointerEvents = 'none';
+    this.g0.canvas.style.pointerEvents = 'auto';
 
 
 
@@ -163,6 +164,9 @@ DDLS.BasicCanvas = function( w, h ) {
     this.canvas.width = this.w;
     this.canvas.height = this.h;
     this.ctx = this.canvas.getContext("2d");
+
+    this.canvas.style.cssText = 'position:absolute; left:50%; top:50%; margin-left:'+(-this.w*0.5)+'px; margin-top:'+(-this.h*0.5)+'px;';
+
     document.body.appendChild( this.canvas );
 
 };

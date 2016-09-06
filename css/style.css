@@ -1,0 +1,28 @@
+*{ 
+    padding:0; margin:0;
+    -o-user-select:none; -ms-user-select:none; -khtml-user-select:none; 
+    -webkit-user-select:none; -moz-user-select: none;/* pointer-events:none; */
+    box-sizing:border-box; -moz-box-sizing:border-box; -webkit-box-sizing:border-box;
+}
+
+html, body {
+    font-family: "Consolas", "Lucida Console", Monaco, monospace;
+    font-size: 12px;
+    font-style: normal;
+    font-variant: normal;
+    font-weight: 400;
+    /*line-height: 23px;*/
+    height:100%;
+    background:#1e1e1e;
+    color:#d0d0d0;
+    /*color:#bebebe;text-shadow: 1px 1px 1px rgba(0,0,0,0.3);*/
+    overflow:hidden;
+    font-smooth: never;
+    -webkit-font-smoothing : none;
+    pointer-events:none;
+    /*text-shadow: 0.5px 0.5px 2px #000000;*/
+}
+
+body{
+    background-image:url(../assets/cartographer.png);
+}

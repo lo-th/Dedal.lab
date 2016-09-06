@@ -21,14 +21,11 @@ DDLS.Mesh = function( width, height ) {
     this.AR_edge = null;
 
     this.isRedraw = true;
-
 };
 
 DDLS.Mesh.prototype = {
-
     constructor: DDLS.Mesh,
-
-    clear: function ( notObjects ) {
+    clear: function( notObjects ) {
 
         while(this._vertices.length > 0) this._vertices.pop().dispose();
         this._vertices = [];
@@ -50,7 +47,7 @@ DDLS.Mesh.prototype = {
         this.AR_edge = null;
 
     },
-    dispose: function () {
+    dispose: function() {
 
         while(this._vertices.length > 0) this._vertices.pop().dispose();
         this._vertices = null;
@@ -71,7 +68,7 @@ DDLS.Mesh.prototype = {
 
     },
 
-    buildFromRecord: function ( rec ) {
+    buildFromRecord: function( rec ) {
 
         var positions = rec.split(";");
         var l = positions.length, i = 0;
@@ -82,69 +79,66 @@ DDLS.Mesh.prototype = {
 
     },
 
-    insertObject: function ( o ) {
+    insertObject: function( object ) {
 
-        if( o.constraintShape != null ) this.deleteObject( o );
+        if( object.constraintShape != null ) this.deleteObject( object );
 
         var shape = new DDLS.Shape();
         var segment;
-        var coordinates = o.coordinates;
+        var coordinates = object.coordinates;
         
-        o.updateMatrixFromValues();
-        var m = o.matrix;
+        object.updateMatrixFromValues();
+        var m = object.matrix;
         var p1 = new DDLS.Point();
         var p2 = new DDLS.Point();
 
         var l = coordinates.length, i = 0;
         while(i < l) {
         //for (i=0; i<l; i+=4){
-            p1.set( coordinates[i], coordinates[i+1] ).transformMat2D(m);
-            p2.set( coordinates[i+2], coordinates[i+3] ).transformMat2D(m);
-            segment = this.insertConstraintSegment( p1.x, p1.y, p2.x, p2.y );
+            p1.set(coordinates[i], coordinates[i+1]).transformMat2D(m);
+            p2.set(coordinates[i+2], coordinates[i+3]).transformMat2D(m);
+            segment = this.insertConstraintSegment(p1.x,p1.y,p2.x,p2.y);
             if(segment != null) {
                 segment.fromShape = shape;
                 shape.segments.push(segment);
             }
             i += 4;
         }
-
         this._constraintShapes.push( shape );
-        o.constraintShape = shape;
-
-        if( !this.__objectsUpdateInProgress ) this._objects.push( o );
+        object.constraintShape = shape;
+        if(!this.__objectsUpdateInProgress) this._objects.push( object );
 
     },
 
-    deleteObject: function( o ) {
+    deleteObject: function( object ) {
 
-        if( o.constraintShape == null ) return;
-        this.deleteConstraintShape( o.constraintShape );
-        o.constraintShape = null;
+        if( object.constraintShape == null ) return;
+        this.deleteConstraintShape( object.constraintShape );
+        object.constraintShape = null;
         if(!this.__objectsUpdateInProgress) {
-            var index = this._objects.indexOf( o );
-            this._objects.splice( index, 1 );
+            var index = this._objects.indexOf(object);
+            this._objects.splice(index,1);
         }
 
     },
 
     updateObjects: function() {
-
+        //var isRedraw = force || false;
+        //console.log("mmmm", isRedraw)
         this.__objectsUpdateInProgress = true;
-        var l = this._objects.length, i = 0, o;
-        while( i < l ) {
-
+        var l = this._objects.length, n = 0, i = 0, o;
+        while(n<l) {
+            i = n++;
             o = this._objects[i];
-
-            if( o.hasChanged ) {
-                this.deleteObject( o );
-                this.insertObject( o );
+            if(o.hasChanged) {
+                this.deleteObject(o);
+                this.insertObject(o);
                 o.hasChanged = false;
                 this.isRedraw = true;
             }
-            i++;
         }
         this.__objectsUpdateInProgress = false;
-
+        //return isRedraw;
     },
 
     // insert a new collection of constrained edges.
@@ -158,9 +152,9 @@ DDLS.Mesh.prototype = {
         var shape = new DDLS.Shape();
         var segment = null;
         var l = coordinates.length, i = 0;
-
-        while( i < l ) {
-            segment = this.insertConstraintSegment( coordinates[i], coordinates[i + 1], coordinates[i + 2], coordinates[i + 3] );
+        //for (i=0; i<l; i+=4){
+        while(i < l) {
+            segment = this.insertConstraintSegment(coordinates[i],coordinates[i + 1],coordinates[i + 2],coordinates[i + 3]);
             if(segment != null) {
                 segment.fromShape = shape;
                 shape.segments.push(segment);
@@ -171,13 +165,14 @@ DDLS.Mesh.prototype = {
         return shape;
 
     },
+    deleteConstraintShape: function( shape ) {
 
-    deleteConstraintShape: function ( shape ) {
-
-        var i = 0, l = shape.segments.length;
-        while( i < l ) {
+        var n = 0, i = 0;
+        var l = shape.segments.length;
+        while(n < l) {
+            i = n++;
+        //for (var i=0 ; i<shape.segments.length ; i++){
             this.deleteConstraintSegment(shape.segments[i]);
-            i++;
         }
         
         //console.log('yoch', this._constraintShapes.indexOf(shape))
@@ -186,7 +181,7 @@ DDLS.Mesh.prototype = {
 
     },
 
-    insertConstraintSegment: function ( x1, y1, x2, y2 ) {
+    insertConstraintSegment: function( x1, y1, x2, y2 ) {
 
         var newX1 = x1;
         var newY1 = y1;
@@ -430,7 +425,7 @@ DDLS.Mesh.prototype = {
                             newEdgeUpDown.setDatas(currVertex, newEdgeDownUp, null, null, true, true);
                             leftBoundingEdges.push(newEdgeDownUp);
                             rightBoundingEdges.push(newEdgeUpDown);
-                            this.insertNewConstrainedEdge( segment, newEdgeDownUp, intersectedEdges, leftBoundingEdges, rightBoundingEdges );
+                            this.insertNewConstrainedEdge(segment, newEdgeDownUp, intersectedEdges, leftBoundingEdges, rightBoundingEdges);
                             
                             intersectedEdges.splice(0, intersectedEdges.length);
                             leftBoundingEdges.splice(0, leftBoundingEdges.length);
@@ -455,19 +450,18 @@ DDLS.Mesh.prototype = {
 
     },
 
-    // fromSegment, edgeDownUp, intersectedEdges, leftBoundingEdges, rightBoundingEdges
-    insertNewConstrainedEdge: function ( seg, edge, iEdge, lEdge, rEdge ) {
+    insertNewConstrainedEdge: function( fromSegment, edgeDownUp, intersectedEdges, leftBoundingEdges, rightBoundingEdges ) {
 
-        this._edges.push( edge );
-        this._edges.push( edge.oppositeEdge );
-        edge.addFromConstraintSegment( seg );
-        edge.oppositeEdge.fromConstraintSegments = edge.fromConstraintSegments;
-        seg.addEdge( edge );
-        edge.originVertex.addFromConstraintSegment( seg );
-        edge.destinationVertex.addFromConstraintSegment( seg );
-        this.untriangulate( iEdge );
-        this.triangulate( lEdge, true );
-        this.triangulate( rEdge, true );
+        this._edges.push(edgeDownUp);
+        this._edges.push(edgeDownUp.oppositeEdge);
+        edgeDownUp.addFromConstraintSegment(fromSegment);
+        edgeDownUp.oppositeEdge.fromConstraintSegments = edgeDownUp.fromConstraintSegments;
+        fromSegment.addEdge(edgeDownUp);
+        edgeDownUp.originVertex.addFromConstraintSegment(fromSegment);
+        edgeDownUp.destinationVertex.addFromConstraintSegment(fromSegment);
+        this.untriangulate(intersectedEdges);
+        this.triangulate(leftBoundingEdges,true);
+        this.triangulate(rightBoundingEdges,true);
 
     },
 
@@ -476,56 +470,60 @@ DDLS.Mesh.prototype = {
         var vertexToDelete = [];
         var edge = null;
         var vertex;
-
-        var l = segment.edges.length, i = 0;
-        while( i < l ) {
+        var fromConstraintSegment;
+        var l = segment.edges.length, n=0, i;
+        while(n<l) {
+        //for (i=0 ; i<segment.edges.length ; i++){
+        //while(i--) {
+            i = n++;
             edge = segment.edges[i];
+            //edge = segment.edges[i];
             edge.removeFromConstraintSegment(segment);
             if(edge.fromConstraintSegments.length == 0) {
                 edge.isConstrained = false;
                 edge.oppositeEdge.isConstrained = false;
             }
             vertex = edge.originVertex;
-            vertex.removeFromConstraintSegment( segment );
-            vertexToDelete.push( vertex );
-            i++;
-            
+            vertex.removeFromConstraintSegment(segment);
+            vertexToDelete.push(vertex);
         }
-
         vertex = edge.destinationVertex;
-        vertex.removeFromConstraintSegment( segment );
+        vertex.removeFromConstraintSegment(segment);
         vertexToDelete.push(vertex);
-
+        //var _g11 = 0;
+        //var _g2 = vertexToDelete.length;
+        //i = vertexToDelete.length;
         l = vertexToDelete.length;
-        i = 0;
-
-        while( i < l ) {
-            this.deleteVertex( vertexToDelete[i] );
-            i++;
+        n = 0;
+        //while(i--) {
+        //while(_g11 < _g2) {
+        while(n<l) {
+        //for (i=0 ; i<vertexToDelete.length; i++){
+            i = n++;
+            this.deleteVertex(vertexToDelete[i]);
+            //this.deleteVertex(vertexToDelete[i]);
         }
 
         segment.dispose();
     },
 
-    check: function () {
-
-        var l = this._edges.length, i = 0;
-
-        while( i < l ) {
-            
+    check: function() {
+        var l = this._edges.length, n=0, i;
+        //var _g1 = 0;
+        //var _g = this._edges.length;
+        while(n<l) {
+        //for (var i = 0; i < this._edges.length; i++){
+            i = n++;
             if(this._edges[i].nextLeftEdge == null) {
-                DDLS.Log( "!!! missing nextLeftEdge" );
+                DDLS.Log("!!! missing nextLeftEdge");
                 return;
             }
-            i++;
-            
         }
-
-        DDLS.Log( "check OK" );
+        DDLS.Log("check OK");
 
     },
 
-    insertVertex: function ( x, y ) {
+    insertVertex: function( x, y ) {
 
         if(x < 0 || y < 0 || x > this.width || y > this.height) return null;
         this.__edgesToCheck.splice(0,this.__edgesToCheck.length);
@@ -552,7 +550,7 @@ DDLS.Mesh.prototype = {
 
     },
 
-    flipEdge: function ( edge ) {
+    flipEdge: function( edge ) {
 
         var eBot_Top = edge;
         var eTop_Bot = edge.oppositeEdge;
@@ -614,9 +612,9 @@ DDLS.Mesh.prototype = {
 
     },
 
-    splitEdge: function ( edge, x, y ) {
+    splitEdge: function( edge, x, y ) {
 
-        this.__edgesToCheck.splice( 0, this.__edgesToCheck.length );
+        this.__edgesToCheck.splice(0,this.__edgesToCheck.length);
 
         var eLeft_Right = edge;
         var eRight_Left = eLeft_Right.oppositeEdge;
@@ -669,10 +667,10 @@ DDLS.Mesh.prototype = {
         this._faces.push(fBotLeft);
         this._faces.push(fTopLeft);
         // set pos and edge reference for the new CENTER vertex
-        vCenter.setDatas( fTop.isReal ? eCenter_Top : eCenter_Bot );
+        vCenter.setDatas(fTop.isReal ? eCenter_Top : eCenter_Bot );
         vCenter.pos.x = x;
         vCenter.pos.y = y;
-        DDLS.Geom2D.projectOrthogonaly( vCenter.pos, eLeft_Right );
+        DDLS.Geom2D.projectOrthogonaly(vCenter.pos,eLeft_Right);
 
         // set the new vertex, edge and face references for the new 8 center crossing edges
         eCenter_Top.setDatas(vCenter, eTop_Center, eTop_Left, fTopLeft, fTop.isReal);
@@ -692,8 +690,8 @@ DDLS.Mesh.prototype = {
         // check the edge references of LEFT and RIGHT vertices
         //if(vLeft.edge === eLeft_Right) vLeft.setDatas(eLeft_Center);
         //if(vRight.edge === eRight_Left) vRight.setDatas(eRight_Center);
-        if( vLeft.edge.id === eLeft_Right.id ) vLeft.setDatas(eLeft_Center);
-        if( vRight.edge.id === eRight_Left.id ) vRight.setDatas(eRight_Center);
+        if(vLeft.edge.id == eLeft_Right.id) vLeft.setDatas(eLeft_Center);
+        if(vRight.edge.id == eRight_Left.id) vRight.setDatas(eRight_Center);
         // set the new edge and face references for the 4 bounding edges
         eTop_Left.nextLeftEdge = eLeft_Center;
         eTop_Left.leftFace = fTopLeft;
@@ -709,7 +707,6 @@ DDLS.Mesh.prototype = {
         // - update the segments the edge is from by deleting the old edge and inserting the 2 new
         // - add the segments the edge is from to the new vertex
         if(eLeft_Right.isConstrained) {
-
             var fromSegments = eLeft_Right.fromConstraintSegments;
             eLeft_Center.fromConstraintSegments = fromSegments.slice(0);
             eCenter_Left.fromConstraintSegments = eLeft_Center.fromConstraintSegments;
@@ -717,34 +714,42 @@ DDLS.Mesh.prototype = {
             eRight_Center.fromConstraintSegments = eCenter_Right.fromConstraintSegments;
             var edges;
             var index;
-            //var n = 0;
-            var l = eLeft_Right.fromConstraintSegments.length, i = 0;
-            while(i < l) {
-                //i = n++;
+            var n = 0;
+            var l = eLeft_Right.fromConstraintSegments.length;
+            while(n < l) {
+                var i = n++;
                 edges = eLeft_Right.fromConstraintSegments[i].edges;
                 index = edges.indexOf(eLeft_Right);
                 if(index != -1) {
                     edges.splice(index, 1, eLeft_Center, eCenter_Right);
+                    /*edges.splice(index,1);
+                    edges.splice(index,0,eLeft_Center);
+                    edges.splice(index + 1,0,eCenter_Right);*/
                 } else {
                     edges.splice(edges.indexOf(eRight_Left), 1, eRight_Center, eCenter_Left);
+                    /*index = edges.indexOf(eRight_Left );
+                    edges.splice( index, 1);
+                    edges.splice( index, eRight_Center );
+                    edges.splice( index+1, eCenter_Left )*/
+                    /*var index2 = edges.indexOf(eRight_Left);
+                    edges.splice(index2,1);
+                    edges.splice(index2,0,eRight_Center);
+                    edges.splice(index2,0,eCenter_Left);*/
                 }
-                i++;
             }
             vCenter.fromConstraintSegments = fromSegments.slice(0);
         }
-
-        // remove the old LEFT-RIGHT and RIGHT-LEFT edges        
+        // remove the old LEFT-RIGHT and RIGHT-LEFT edges
+        
         this._edges.splice(this._edges.indexOf(eLeft_Right),1);
         this._edges.splice(this._edges.indexOf(eRight_Left),1);
         eLeft_Right.dispose();
         eRight_Left.dispose();
-
         // remove the old TOP and BOTTOM faces
         this._faces.splice(this._faces.indexOf(fTop),1);
         this._faces.splice(this._faces.indexOf(fBot),1);
         fTop.dispose();
         fBot.dispose();
-
         // add new bounds references for Delaunay restoring
         this.__centerVertex = vCenter;
         this.__edgesToCheck.push(eTop_Left);
@@ -753,10 +758,10 @@ DDLS.Mesh.prototype = {
         this.__edgesToCheck.push(eRight_Top);
 
         return vCenter;
-
+        
     },
 
-    splitFace: function ( face, x, y ) {
+    splitFace: function( face, x, y ) {
 
         this.__edgesToCheck.splice(0,this.__edgesToCheck.length);
         var eTop_Left = face.edge;
@@ -856,7 +861,7 @@ DDLS.Mesh.prototype = {
     // A vertex can be deleted if:
     // - it is free of constraint segment (no adjacency to any constrained edge)
     // - it is adjacent to exactly 2 contrained edges and is not an end point of any constraint segment
-    deleteVertex: function ( vertex ) {
+    deleteVertex: function( vertex ) {
         var i;
         var freeOfConstraint;
         var iterEdges = new DDLS.FromVertexToOutgoingEdges();
@@ -983,7 +988,7 @@ DDLS.Mesh.prototype = {
     },
     // untriangulate is usually used while a new edge insertion in order to delete the intersected edges
     // edgesList is a list of chained edges oriented from right to left
-    untriangulate: function ( edgesList ) {
+    untriangulate: function( edgesList ) {
         // we clean useless faces and adjacent vertices
         var i;
         var verticesCleaned = new DDLS.Dictionary(1);
@@ -1025,7 +1030,7 @@ DDLS.Mesh.prototype = {
 
     // triangulate is usually used to fill the hole after deletion of a vertex from mesh or after untriangulation
     // - bounds is the list of edges in CCW bounding the surface to retriangulate,
-    triangulate: function ( bound, isReal ) {
+    triangulate: function( bound, isReal ) {
 
         if(bound.length < 2) {
             DDLS.Log("BREAK ! the hole has less than 2 edges");
@@ -1141,7 +1146,7 @@ DDLS.Mesh.prototype = {
 
     },
 
-    findPositionFromBounds: function ( x, y ) {
+    findPositionFromBounds: function( x, y ) {
 
         if(x <= 0) {
             if(y <= 0) return 1; 
@@ -1157,7 +1162,7 @@ DDLS.Mesh.prototype = {
 
     },
 
-    compute_Data: function () {
+    compute_Data : function(){
 
         var data_vertex = [];
         var data_edges = [];
@@ -1192,7 +1197,7 @@ DDLS.Mesh.prototype = {
 
     },
 
-    vertexIsInsideAABB: function ( vertex, mesh ) {
+    vertexIsInsideAABB : function( vertex, mesh ) {
 
         if(vertex.pos.x < 0 || vertex.pos.x > mesh.width || vertex.pos.y < 0 || vertex.pos.y > mesh.height) return false; 
         else return true;

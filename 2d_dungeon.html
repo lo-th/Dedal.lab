@@ -4,7 +4,7 @@
 <html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>DDLS dungeon</title>
+<title>DDLS gridmaze</title>
 
 <link rel="stylesheet" href="css/style.css">
 
@@ -19,28 +19,30 @@
 var world, view, grid, stats;
 
 init();
-render();
+
 
 function init() {
 
     world = new DDLS.World( 600,600 );
     view = new DDLS.SimpleView( world );
 
-    grid  = new DDLS.GridMaze( 600,600, 15, 15 );
+    grid = new DDLS.Dungeon( 600,600, 5, 15 );
+
     world.mesh.insertObject( grid.object );
 
     view.drawMesh( world.mesh );
 
 
-    world.addHeroe({x:grid.tileWidth * 0.5, y:grid.tileHeight * 0.5, r:grid.tileWidth * .27, speed:10});
+    world.addHeroe({x:40, y:40, r:5, speed:10});
 
     view.domElement.onmousedown = onMouseDown;
     window.document.onkeydown = onKeyDown;
 
     stats = new Stats();
     document.body.appendChild( stats.dom );
+    render();
 
-};
+}
 
 function onMouseDown (e) {
 
@@ -69,25 +71,19 @@ function render() {
 };
 
 function reset(newMaze) {
-
     newMaze = newMaze || false;
-    
-    world.reset();
-    if(newMaze) {
-        var seed = parseInt(Math.random() * 10000 + 1000);
-        grid.generate(600,600,30,30,seed);
-        grid.object.scaleX = (.92);
-        grid.object.scaleY = (.92);
-        grid.object.x = (23);
-        grid.object.y = (23);
-        world.mesh.insertObject(grid.object);
 
+    world.reset();
+
+    if(newMaze) {
+        grid.generate(600,600,5, 20);
+        world.mesh.insertObject( grid.object );
+        
     }
     
     view.drawMesh(world.mesh,true);
-
-    world.heroes[0].entity.radius = grid.tileWidth * .27;
-    world.heroes[0].entity.position.set(grid.tileWidth * 0.5, grid.tileHeight * 0.5 );
+    world.heroes[0].entity.radius = 5;
+    world.heroes[0].entity.position.set( 40, 40 );
 }
 
 function onKeyDown(e) {

@@ -5,15 +5,17 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <title>DDLS Pathfinding</title>
-<style> 
-body { margin: 0px; background-color: #000000; overflow: hidden; }
-canvas { position:absolute; left:50%; top:50%; margin-left:-300px; margin-top:-300px; }
-</style>
-</head>
-<body>
+
+<link rel="stylesheet" href="css/style.css">
+
+<script src="js/libs/stats.min.js"></script>
 <script src="build/ddls.min.js"></script>
+
+</head>
+
+<body>
 <script>
-var world, basicCanvas, view;
+var world, basicCanvas, view, stats;
 
 init();
 render();
@@ -35,6 +37,9 @@ function init(){
         });
     }
 
+    //world.addObject( new DDLS.CircleMesh( 200, 200, 20 ) );
+
+
     world.addHeroe({x:20, y:20, r:4, speed:10, see:true });
 
     world.addHeroe({x:40, y:20, r:4, speed:10, see:true });
@@ -42,6 +47,9 @@ function init(){
     view.drawMesh(world.mesh);
 
     view.domElement.onmousedown = onMouseDown;
+
+    stats = new Stats();
+    document.body.appendChild( stats.dom );
     
 };
 
@@ -67,6 +75,8 @@ function render() {
         view.drawEntity( h.entity );
         
     }
+    
+    stats.update();
 
 };
 

@@ -22,12 +22,13 @@
     "src/ai/FieldOfView.js",
     "src/ai/trajectory/LinearPathSampler.js",
     "src/ai/trajectory/PathIterator.js",
+    "src/factories/CircleMesh.js",
     "src/factories/RectMesh.js",
     "src/factories/BitmapObject.js",
-    "src/factories/BitmapMesh.js",
     "src/ai/Heroe.js",
     "src/ai/World.js",
     "src/maze/GridMaze.js",
+    "src/maze/Dungeon.js",
     "src/view/SimpleView.js",
     "src/view/ThreeView.js"
 ]

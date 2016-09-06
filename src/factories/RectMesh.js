@@ -14,11 +14,14 @@ DDLS.RectMesh = function( w, h ) {
     var f = [];
     var s = [];
     var i = 4;
+
     while(i--){
+
         f.push(new DDLS.Face());
         v.push(new DDLS.Vertex());
         s.push(new DDLS.Segment());
         e.push(new DDLS.Edge(), new DDLS.Edge(), new DDLS.Edge());
+
     }
 
     var boundShape = new DDLS.Shape();    
@@ -44,13 +47,13 @@ DDLS.RectMesh = function( w, h ) {
     e[7].setDatas(v[0],e[6],e[9],f[0], true, true);   // v0--v3
     e[8].setDatas(v[1],e[9],e[5],f[1], true, false);  // v1--v3 diagonal edge
     e[9].setDatas(v[3],e[8],e[1],f[0], true, false);  // v3--v1 diagonal edge
-    e[10].setDatas(v[0],e[11],e[4],f[2],false,false); // v0--v2 imaginary edge
-    e[11].setDatas(v[2],e[10],e[0],f[3],false,false); // v2--v0 imaginary edge
+    e[10].setDatas(v[0],e[11],e[4],f[2], false, false); // v0--v2 imaginary edge
+    e[11].setDatas(v[2],e[10],e[0],f[3], false, false); // v2--v0 imaginary edge
 
     f[0].setDatas(e[9], true); // v0-v3-v1
     f[1].setDatas(e[8], true); // v1-v3-v2
-    f[2].setDatas(e[4],false); // v0-v2-v3
-    f[3].setDatas(e[2],false); // v0-v1-v2
+    f[2].setDatas(e[4], false); // v0-v2-v3
+    f[3].setDatas(e[2], false); // v0-v1-v2
 
     // constraint relations datas
     v[0].fromConstraintSegments = [s[0],s[3]];

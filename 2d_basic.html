@@ -5,63 +5,42 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <title>DDLS basic</title>
-<style> 
-body { margin: 0px; background-color: #000000; overflow: hidden; }
-canvas { position:absolute; left:50%; top:50%; margin-left:-300px; margin-top:-300px; }
-</style>
+
+<link rel="stylesheet" href="css/style.css">
+
+<script src="js/libs/stats.min.js"></script>
+<script src="build/ddls.js"></script>
+
 </head>
 <body>
-
-<script src="src/DDLS.js"></script>
-<script src="src/math/Point.js"></script>
-<script src="src/math/Matrix2D.js"></script>
-<script src="src/math/RandGenerator.js"></script>
-<script src="src/data/Edge.js"></script>
-<script src="src/data/Face.js"></script>
-<script src="src/data/Vertex.js"></script>
-<script src="src/data/Object.js"></script>
-<script src="src/data/Segment.js"></script>
-<script src="src/data/Shape.js"></script>
-<script src="src/data/Iterators.js"></script>
-<script src="src/math/Geom2D.js"></script>
-<script src="src/data/Mesh.js"></script>
-<script src="src/data/Graph.js"></script>
-<script src="src/math/Potrace.js"></script>
-<script src="src/math/Tools.js"></script>
-<script src="src/ai/AStar.js"></script>
-<script src="src/ai/EntityAI.js"></script>
-<script src="src/ai/Funnel.js"></script>
-<script src="src/ai/PathFinder.js"></script>
-<script src="src/ai/FieldOfView.js"></script>
-<script src="src/ai/trajectory/LinearPathSampler.js"></script>
-<script src="src/ai/trajectory/PathIterator.js"></script>
-<script src="src/factories/RectMesh.js"></script>
-<script src="src/factories/BitmapObject.js"></script>
-<script src="src/factories/BitmapMesh.js"></script>
-<script src="src/ai/Heroe.js"></script>
-<script src="src/ai/World.js"></script>
-
-<script src="src/view/SimpleView.js"></script>
-
 <script>
-var world, basicCanvas, view;
+var world, view, stats;
+
+/*var l = 10, n=0, i = 0;
+while( i < l ) {
+    //i = n++;
+
+    console.log( i );
+    i++;
+    
+}*/
+
 
 init();
-render();
 
 function init() {
     
     //basicCanvas = new DDLS.BasicCanvas(600,600, '#000000', 60);
     
 
-    world = new DDLS.World( 600, 600 );
+    world = new DDLS.World( 465, 465 );
     view = new DDLS.SimpleView( world );
 
     //var segment = world.mesh.insertConstraintSegment(70,300,530,320);
 
     var i = 5;
     while(i--){
-        world.addObject({x:DDLS.rand(50,600), y:DDLS.rand(50,600), w:DDLS.rand(10,100), h:DDLS.rand(10,100)})
+        world.addObject({x:DDLS.rand(50,415), y:DDLS.rand(50,415), w:DDLS.rand(4,60), h:DDLS.rand(4,60)})
     }
 
     view.drawMesh( world.mesh );
@@ -72,6 +51,11 @@ function init() {
     
 
     view.domElement.onmousedown = onMouseDown;
+
+    stats = new Stats();
+    document.body.appendChild( stats.dom );
+
+    render();
     
 };
 
@@ -105,6 +89,8 @@ function render() {
         view.drawEntity( h.entity );
 
     }
+
+    stats.update();
 };
         
 </script>

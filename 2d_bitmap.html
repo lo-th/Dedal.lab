@@ -5,17 +5,17 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <title>DDLS bitmap</title>
-<style> 
-body { margin: 0px; background-color: #000000; overflow: hidden; }
-canvas { position:absolute; left:50%; top:50%; margin-left:-512px; margin-top:-390px; }
-</style>
+<link rel="stylesheet" href="css/style.css">
+
+<script src="js/libs/stats.min.js"></script>
 <script src="build/ddls.min.js"></script>
+
 </head>
 <body>
 
 <script>
 
-var world, view, loader;
+var world, view, loader, stats;
 
 loader = new DDLS.ImageLoader(["assets/galapagosBW.png","assets/galapagosColor.png"], init );
 
@@ -41,6 +41,9 @@ function init (){
     world.addHeroe({ x:50, y:50, r:4, speed:10 });
 
     view.domElement.onmousedown = onMouseDown;
+
+    stats = new Stats();
+    document.body.appendChild( stats.dom );
 
     render();
 
@@ -69,6 +72,8 @@ function render() {
         view.drawEntity( h.entity );
 
     }
+
+    stats.update();
 };
         
 </script>

@@ -90,35 +90,12 @@ DrawCanvas.prototype = {
         this.update();
     },
     update:function(){
+        
         var pixels = DDLS.fromImageData(null, this.ctx.getImageData(0,0,1024,1024));
-
-        //world.reset()
-        //world.objects = [];
-        //world.mesh.insertObject( DDLS.BitmapMesh.buildFromBmpData(pixels,1.8) );
-        //world.mesh.insertObject( DDLS.BitmapObject.buildFromBmpData(pixels,1.8) );
-
         var m = DDLS.BitmapObject.buildFromBmpData( pixels, 1.8 );
         world.reset();
         world.mesh.insertObject( m );
-       //
 
-        //world.rebuild( DDLS.BitmapMesh.buildFromBmpData( pixels, 1 ) );
-
-
-        //world.mesh.dispose();
-        //world.mesh = DDLS.BitmapMesh.buildFromBmpData( pixels, 1.8 );
-
-        //world.mesh.isRedraw = true;
-        
-       // 
-        /*this.object = DDLS.BitmapObject.buildFromBmpData(pixels,1.8);
-
-        if(world.objects[0]){ 
-            world.objects[0] = this.object;
-            world.rebuild();
-        }else{
-            world.add(this.object);
-        }*/
 
     }
 }

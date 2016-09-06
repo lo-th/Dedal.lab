@@ -1,6 +1,6 @@
 <p align="center">DDLS JS Advanced pathfinding<br><br>
 Deadalus lib is a AS3 library develop by totologic <a href="https://github.com/totologic/daedalus-lib">link</a><br>
-I start with hx version <a href="https://github.com/hxDaedalus/hxDaedalus">hxDaedalus</a><br>
+I start with haxe version <a href="https://github.com/hxDaedalus/hxDaedalus">hxDaedalus</a><br>
 and convert to full javascript without extra lib<br><br>
 
 3D DEMOS<br>
