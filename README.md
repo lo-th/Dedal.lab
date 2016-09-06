@@ -13,5 +13,6 @@ and convert to full javascript without extra lib<br><br>
 <a href="http://lo-th.github.io/Dedal.lab/2d_bitmap2.html">2d bitmap 2</a><br>
 <a href="http://lo-th.github.io/Dedal.lab/2d_bitmap3.html">2d bitmap 3</a><br>
 <a href="http://lo-th.github.io/Dedal.lab/2d_GridMaze.html">2d gridmaze</a><br>
+<a href="http://lo-th.github.io/Dedal.lab/2d_dungeon.html">2d dungeon</a><br>
 <a href="http://lo-th.github.io/Dedal.lab/2d_Pathfinding .html">2d path finding</a><br>
 </p>
