@@ -1,10 +1,12 @@
-
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
-"http://www.w3.org/TR/html4/strict.dtd">
-<html lang="en">
+<!DOCTYPE html>
+<!-- saved from url=(0014)about:internet -->
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <title>DDLS gridmaze</title>
+<meta name="Description" content="" />
+<meta name="Keywords"  content="" />
+<meta http-equiv="X-UA-Compatible" content="IE=11" />
+<meta http-equiv="Pragma" content="no-cache">
+<link rel="shortcut icon" href="favicon.ico">
 
 <link rel="stylesheet" href="css/style.css">
 
@@ -20,35 +22,34 @@ var world, view, grid, stats;
 
 init();
 
-
 function init() {
 
-    world = new DDLS.World( 600,600 );
+    world = new DDLS.World( 600, 600 );
     view = new DDLS.SimpleView( world );
-
     grid = new DDLS.Dungeon( 600,600, 5, 15 );
 
     world.mesh.insertObject( grid.object );
 
     view.drawMesh( world.mesh );
 
-
-    world.addHeroe({x:40, y:40, r:5, speed:10});
+    world.addHeroe({ x:40, y:40, r:5, speed:10 });
 
     view.domElement.onmousedown = onMouseDown;
     window.document.onkeydown = onKeyDown;
 
     stats = new Stats();
     document.body.appendChild( stats.dom );
+    
     render();
 
-}
+};
 
-function onMouseDown (e) {
+function onMouseDown ( e ) {
 
     view.drawMesh( world.mesh , true );
     var rect = e.target.getBoundingClientRect();
-    world.heroes[0].setTarget(e.clientX - rect.left, e.clientY - rect.top);
+    world.heroes[0].setTarget( e.clientX - rect.left, e.clientY - rect.top );
+
 };
 
 function render() {
@@ -70,13 +71,15 @@ function render() {
     
 };
 
-function reset(newMaze) {
+function reset( newMaze ) {
+
     newMaze = newMaze || false;
 
     world.reset();
 
-    if(newMaze) {
-        grid.generate(600,600,5, 20);
+    if( newMaze ) {
+
+        grid.generate( 600, 600, 5, 20 );
         world.mesh.insertObject( grid.object );
         
     }
@@ -84,17 +87,16 @@ function reset(newMaze) {
     view.drawMesh(world.mesh,true);
     world.heroes[0].entity.radius = 5;
     world.heroes[0].entity.position.set( 40, 40 );
-}
 
-function onKeyDown(e) {
+};
+
+function onKeyDown( e ) {
+
     e.preventDefault();
-    if(e.keyCode == 32) {
-        reset(true);
-        
-    } else if(e.keyCode == 16) {
-        reset(false);
-    }
-}
+    if(e.keyCode === 32) reset(true);
+    else if(e.keyCode === 16) reset(false);
+    
+};
 
 </script>
 </body>
