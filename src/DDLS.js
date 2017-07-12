@@ -31,6 +31,7 @@ export { World } from './ai/World.js'
 export { RectMesh } from './factories/RectMesh.js';
 export { CircleMesh } from './factories/CircleMesh.js';
 export { BitmapObject } from './factories/BitmapObject.js';
+export { BitmapMesh } from './factories/BitmapMesh.js';
 
 export { GridMaze } from './maze/GridMaze.js';
 export { Dungeon } from './maze/Dungeon.js';
