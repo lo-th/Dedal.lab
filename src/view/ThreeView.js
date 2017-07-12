@@ -1,6 +1,6 @@
 import { Main } from '../constants';
 import { Mesh2D } from '../core/Mesh2D';
-import { Heroe } from '../ai/Heroe';
+import { Entity } from '../ai/Entity';
 
 
 //var THREE;
@@ -207,6 +207,6 @@ Mesh2D.prototype.draw = function(){
 
 }
 
-Heroe.prototype.draw = function(){
+/*Entity.prototype.draw = function(){
 
-}
+}*/

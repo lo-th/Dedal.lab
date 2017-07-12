@@ -1,7 +1,7 @@
 import { RectMesh } from '../factories/RectMesh';
 import { PathFinder } from '../ai/PathFinder';
-import { Heroe } from '../ai/Heroe';
 import { Object2D } from '../core/Object2D';
+import { Entity } from '../ai/Entity';
 
 
 function World ( w, h ) {
@@ -25,13 +25,13 @@ World.prototype = {
 
     constructor: World,
 
-    getMesh:function(){
+    getMesh: function () {
 
         return this.mesh;
 
     },
 
-    update:function(){
+    update: function () {
 
         var lng = this.heroes.length;
 
@@ -47,7 +47,8 @@ World.prototype = {
                 j = lng;
                 while( j-- ){
                     if( i !== j ) {
-                        this.heroes[i].entity.isSee = this.heroes[i].fov.isInField( this.heroes[j].entity );
+                        //this.heroes[i].entity.isSee = this.heroes[i].fov.isInField( this.heroes[j].entity );
+                        this.heroes[i].isSee = this.heroes[i].fov.isInField( this.heroes[j] );
                     }
                 }
             }
@@ -56,28 +57,29 @@ World.prototype = {
 
     },
 
-    updateMesh : function(){
+    updateMesh: function () {
 
        this.mesh.updateObjects();
 
     },
     
-    add : function ( o ) {
+    add: function ( o ) {
 
         this.mesh.insertObject(o);
         this.objects.push(o);
 
     },
 
-    addHeroe : function( s ){
+    addHeroe: function ( s ) {
 
-        var h = new Heroe( s, this );
+        //var h = new Heroe( s, this );
+        var h = new Entity( s, this );
         this.heroes.push( h );
         return h;
         
     },
 
-    addObject : function( s ){
+    addObject: function ( s ) {
 
         s = s || {};
         var o = new Object2D();
@@ -90,9 +92,10 @@ World.prototype = {
         this.mesh.insertObject(o);
         this.objects.push(o);
         return o;
+
     },
 
-    reset : function(w,h){
+    reset: function ( w, h ) {
 
         this.mesh.dispose();
         if(w) this.w = w;
@@ -102,7 +105,7 @@ World.prototype = {
     
     },
 
-    rebuild : function( mesh ){
+    rebuild: function ( mesh ) {
 
         this.mesh.clear( true );
         if( mesh !== undefined ) this.mesh = mesh;
@@ -114,6 +117,7 @@ World.prototype = {
             this.objects[i]._constraintShape = null;
             this.mesh.insertObject(this.objects[i]);
         }
+
     },
     
 

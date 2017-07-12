@@ -5,10 +5,9 @@ import { Matrix2D } from '../math/Matrix2D';
 function Object2D() {
 
     this.id = _Math.generateUUID();
-    //DDLS.ObjectID++;
     this._pivot = new Point();
     this._position = new Point();
-    this._scale = new Point(1,1);
+    this._scale = new Point( 1, 1 );
     this._matrix = new Matrix2D();
     this._rotation = 0;
     this._constraintShape = null;
@@ -60,28 +59,28 @@ Object2D.prototype = {
 
     constructor: Object2D,
 
-    position:function( x, y ){
+    position: function ( x, y ) {
 
-        this._position.set(x,y);
+        this._position.set( x, y );
         this.hasChanged = true;
 
     },
 
-    scale:function( w, h ){
+    scale: function ( w, h ) {
 
         this._scale.set(w,h);
         this.hasChanged = true;
 
     },
 
-    pivot:function( x, y ){
+    pivot: function ( x, y ) {
 
         this._pivot.set(x,y);
         this.hasChanged = true;
 
     },
 
-    dispose: function() {
+    dispose: function () {
 
         this._matrix = null;
         this._coordinates = null;
@@ -89,11 +88,11 @@ Object2D.prototype = {
 
     },
 
-    updateValuesFromMatrix: function() {
+    updateValuesFromMatrix: function () {
 
     },
 
-    updateMatrixFromValues: function() {
+    updateMatrixFromValues: function () {
 
         this._matrix.identity().translate(this._pivot.negate()).scale(this._scale).rotate(this._rotation).translate(this._position);
 

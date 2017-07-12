@@ -25,7 +25,7 @@ export { TwoPI, rand, randInt, ImageLoader, fromImageData } from './core/Tools.j
 //export { LinearPathSampler } from './ai/LinearPathSampler.js';
 //export { FieldOfView } from './ai/FieldOfView.js';
 
-export { Heroe } from './ai/Heroe.js';
+export { Entity } from './ai/Entity.js';
 export { World } from './ai/World.js'
 
 export { RectMesh } from './factories/RectMesh.js';

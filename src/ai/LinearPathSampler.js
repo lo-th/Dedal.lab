@@ -1,7 +1,7 @@
 import { _Math } from '../math/Math';
 import { Point } from '../math/Point';
 
-function LinearPathSampler() {
+function LinearPathSampler () {
 
     this.entity = null;
     this._path = null;
@@ -57,20 +57,24 @@ function LinearPathSampler() {
             this.reset();
         }
     });
-
     
 };
 
 LinearPathSampler.prototype = {
 
-    dispose: function() {
+    constructor: LinearPathSampler,
+
+    dispose: function () {
+
         this.entity = null;
         this._path = null;
         this._preCompX = null;
         this._preCompY = null;
+
     },
 
-    reset: function() {
+    reset: function () {
+
         if(this._path.length > 0) {
             this.pos.x = this._path[0];
             this.pos.y = this._path[1];
@@ -86,9 +90,11 @@ LinearPathSampler.prototype = {
             this._count = 0;
             //this._path = [];
         }
+
     },
 
-    preCompute: function() {
+    preCompute: function () {
+
         this._preCompX.splice(0,this._preCompX.length);
         this._preCompY.splice(0,this._preCompY.length);
         this._count = 0;
@@ -101,9 +107,11 @@ LinearPathSampler.prototype = {
         }
         this.reset();
         this._preComputed = true;
+
     },
 
-    prev: function() {
+    prev: function () {
+
         if(!this.hasPrev) return false;
         this.hasNext = true;
         if(this._preComputed) {
@@ -144,9 +152,11 @@ LinearPathSampler.prototype = {
             this.updateEntity();
             return true;
         }
+
     },
 
-    next: function() {
+    next: function () {
+
         if(!this.hasNext) return false;
         this.hasPrev = true;
         if(this._preComputed) {
@@ -188,13 +198,17 @@ LinearPathSampler.prototype = {
             this.updateEntity();
             return true;
         }
+
     },
 
-    applyLast:function(){
+    applyLast: function () {
+
         this.pos.set(this._preCompX[this._count], this._preCompY[this._count]);
+
     },
 
-    updateEntity: function() {
+    updateEntity: function () {
+
         if(this.entity == null) return;
         this.entity.angle = _Math.atan2( this.pos.y - this.entity.position.y, this.pos.x - this.entity.position.x );//*_Math.todeg;
         this.entity.direction.angular( this.entity.angle );

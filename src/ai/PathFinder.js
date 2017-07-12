@@ -13,13 +13,20 @@ function PathFinder() {
     this.entity = null;
 
     Object.defineProperty(this, 'mesh', {
+
         get: function() { return this._mesh; },
         set: function(value) { this._mesh = value; this.astar.mesh = value; }
+
     });
+    
 };
 
 PathFinder.prototype = {
-    dispose: function() {
+
+    constructor: PathFinder,
+
+    dispose: function () {
+
         this._mesh = null;
         this.astar.dispose();
         this.astar = null;
@@ -28,7 +35,9 @@ PathFinder.prototype = {
         this.listEdges = null;
         this.listFaces = null;
     },
+
     findPath: function( target, resultPath ) {
+
         //resultPath = [];
         resultPath.splice(0,resultPath.length);
         //DDLS.Debug.assertFalse(this._mesh == null,"Mesh missing",{ fileName : "PathFinder.hx", lineNumber : 51, className : "DDLS.PathFinder", methodName : "findPath"});
@@ -47,6 +56,7 @@ PathFinder.prototype = {
             return;
         }
         this.funnel.findPath( start, target, this.listFaces, this.listEdges, resultPath );
+
     }
 };
 

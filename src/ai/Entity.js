@@ -1,51 +1,70 @@
+import { _Math } from '../math/Math';
 import { Point } from '../math/Point';
-import { EntityAI } from '../ai/EntityAI';
 import { FieldOfView } from '../ai/FieldOfView';
 import { LinearPathSampler } from '../ai/LinearPathSampler';
 
-function Heroe ( s, world ) {
-    s = s || {};
-    
+function Entity ( s, world ) {
+
+    this.isSee = false;
+    this.isWalking = false;
+    this.isSelected = false;
+    this.isMove = false;
+
     this.world = world;
 
+    s = s || {};
+
+    
+    this.position = new Point( s.x || 0, s.y || 0 );
+    this.direction = new Point(1,0);
+    this.radius = s.r || 10;
+    //this.radiusSquared = 10*10;
+    //this.x = this.y = 0;
+    //this.dirNormX = 1;
+    //this.dirNormY = 0;
+    this.angle = 0;
+    this.angleFOV = ( s.fov || 120 ) * _Math.torad;
+    this.radiusFOV = s.distance || 200;
+    this.testSee = s.see || false;
+
+
     this.path = [];
-    //this._path = [];
     this.tmppath = [];
 
     this.target = new Point();
-    this.move = false;
+    
     this.newPath = false;
 
     this.mesh = null;
-    this.isSelected = false;
-    this.isWalking = false;
 
-    this.testSee = s.see || false;
-
-    this.entity = new EntityAI( s.x || 0, s.y || 0, s.r || 4 );
-
-    this.fov = new FieldOfView( this.entity, this.world );
+    this.fov = new FieldOfView( this , this.world );
 
     this.pathSampler = new LinearPathSampler();
-    this.pathSampler.entity = this.entity;
+    this.pathSampler.entity = this;
     this.pathSampler.path = this.tmppath;
     this.pathSampler.samplingDistance = s.speed || 10;
 
+    // compatibility issue
+    this.entity = this;
+
 };
 
-Heroe.prototype = {
+Entity.prototype = {
+
+    constructor: Entity,
     
-    setTarget:function(x, y){
+    setTarget: function ( x, y ) {
 
         this.path = []
         this.target.set( x, y );
-        this.world.pathFinder.entity = this.entity;
-        //this.world.pathFinder.findPath( this.target, this.path );
+        this.world.pathFinder.entity = this;
         this.world.pathFinder.findPath( this.target, this.path );
         this.testPath();
 
     },
-    testPath:function(){
+
+    testPath: function () {
+
         if( !this.path ) return;
         if( this.path.length > 0 ){
         //if( this.path.length > 0 ){
@@ -62,36 +81,32 @@ Heroe.prototype = {
             this.newPath = true;
         }
     },
-    getPos:function(){
-        return { x:this.entity.position.x, y:this.entity.position.y, r:-this.entity.angle };
+
+    getPos: function () {
+
+        return { x:this.position.x, y:this.position.y, r:-this.angle };
+
     },
-    update:function(){
+
+    update: function () {
 
         var p;
-        /*if(this.mesh !== null){ 
-            this.mesh.position.set( this.entity.position.x, 0, this.entity.position.y );
-            this.mesh.rotation.y = -this.entity.angle;
-        }*/
-        //if(this.newPath){
-            //console.log(this.path);
-            ////this.newPath = false;
-            //this.pathSampler.reset();
-            //this.pathSampler.path = this._path;
-        //}
       
         if( this.pathSampler.hasNext ){
 
             this.newPath = false;
-            this.move = true;
+            this.isMove = true;
             this.pathSampler.next();
 
         } else {
-            this.move = false;
+
+            this.isMove = false;
             this.tmppath = [];
+
         }
 
-        if(this.move && !this.isWalking) this.isWalking = true;
-        if(!this.move && this.isWalking) this.isWalking = false;
+        if( this.isMove && !this.isWalking ) this.isWalking = true;
+        if( !this.isMove && this.isWalking ) this.isWalking = false;
 
         if( this.mesh !== null ){
             p = this.getPos();
@@ -99,9 +114,7 @@ Heroe.prototype = {
             this.mesh.rotation.y = p.r;
         }
 
-
-
     }
 };
 
-export { Heroe };
+export { Entity };

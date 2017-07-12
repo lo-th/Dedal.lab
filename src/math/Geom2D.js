@@ -287,6 +287,39 @@ var Geom2D = {
 
     },
 
+    /*isSegmentIntersectingTriangle: function( s1, s2, t1, t2, t3 ) {
+
+        var side1_1 = Geom2D.getDirection(t1, t2, s1);
+        var side1_2 = Geom2D.getDirection(t1, t2, s2);
+        if(side1_1 <= 0 && side1_2 <= 0) return false;
+        var side2_1 = Geom2D.getDirection(t2, t3, s1);
+        var side2_2 = Geom2D.getDirection(t2, t3, s2);
+        if(side2_1 <= 0 && side2_2 <= 0) return false;
+        var side3_1 = Geom2D.getDirection(t3, t1, s1);
+        var side3_2 = Geom2D.getDirection(t3, t1, s2);
+        if(side3_1 <= 0 && side3_2 <= 0) return false;
+        if(side1_1 == 1 && side2_1 == 1 && side3_1 == 1) return true;
+        if(side1_1 == 1 && side2_1 == 1 && side3_1 == 1) return true;
+        var side1, side2;
+        if(side1_1 == 1 && side1_2 <= 0 || side1_1 <= 0 && side1_2 == 1) {
+            side1 = Geom2D.getDirection(s1, s2, t1);
+            side2 = Geom2D.getDirection(s1, s2, t2);
+            if(side1 == 1 && side2 <= 0 || side1 <= 0 && side2 == 1) return true;
+        }
+        if(side2_1 == 1 && side2_2 <= 0 || side2_1 <= 0 && side2_2 == 1) {
+            side1 = Geom2D.getDirection(s1, s2, t2);
+            side2 = Geom2D.getDirection(s1, s2, t3);
+            if(side1 == 1 && side2 <= 0 || side1 <= 0 && side2 == 1) return true;
+        }
+        if(side3_1 == 1 && side3_2 <= 0 || side3_1 <= 0 && side3_2 == 1) {
+            side1 = Geom2D.getDirection(s1, s2, t3);
+            side2 = Geom2D.getDirection(s1, s2, t1);
+            if(side1 == 1 && side2 <= 0 || side1 <= 0 && side2 == 1) return true;
+        }
+        return false;
+
+    },*/
+
     isDelaunay: function ( edge ) {
 
         var vLeft = edge.originVertex;
@@ -394,7 +427,7 @@ var Geom2D = {
         result.y = b + t1*(d - b);
     },*/
 
-    intersections2Circles: function (c1, r1, c2, r2, result){
+    intersections2Circles: function ( c1, r1, c2, r2, result ){
 
         var factor, a, b, first, dist, invd, trans;
         dist = _Math.Squared(c2.x - c1.x, c2.y - c1.y);
@@ -498,17 +531,15 @@ var Geom2D = {
         var distance = _Math.SquaredSqrt(c1.x - c2.x, c1.y - c2.y);
         var radius = distance * 0.25;
         var center = c2.clone().sub(c1).mul(0.25).add(c1);
-        //var center = new Point();
-        //center.x = c1.x + (c2.x - c1.x) * 0.25;
-        //center.y = c1.y + (c2.y - c1.y) * 0.25;
-        if( Geom2D.intersections2Circles(c1, r, center, radius, result)) {
+
+        if( Geom2D.intersections2Circles( c1, r, center, radius, result )) {
+
             var t1x = result[0];
             var t1y = result[1];
             var t2x = result[2];
             var t2y = result[3];
             var mid = c1.clone().add(c2).mul(0.5);
-            //var midX = (c1.x + c2.x) * 0.5;
-            //var midY = (c1.y + c2.y) * 0.5;
+
             var dotProd = (t1x - mid.x) * (c2.y - c1.y) + (t1y - mid.y) * (-c2.x + c1.x);
             var tproj = dotProd / (distance * distance);
             var projx = mid.x + tproj * (c2.y - c1.y);
@@ -519,6 +550,7 @@ var Geom2D = {
             var t3y = t2y + t4y - t1y;
             result.push( t3x, t3y, t4x, t4y );
             return true;
+            
         } else return false;
 
     },

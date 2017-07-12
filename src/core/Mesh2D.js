@@ -15,7 +15,6 @@ import { Vertex } from '../core/Vertex';
 function Mesh2D( width, height ) {
 
     this.id = _Math.generateUUID();
-    //DDLS.MeshID++;
     this.__objectsUpdateInProgress = false;
     this.__centerVertex = null;
     this.width = width;
@@ -63,6 +62,7 @@ Mesh2D.prototype = {
         this.AR_edge = null;
 
     },
+    
     dispose: function () {
 
         while(this._vertices.length > 0) this._vertices.pop().dispose();
@@ -128,7 +128,7 @@ Mesh2D.prototype = {
 
     },
 
-    deleteObject: function( o ) {
+    deleteObject: function ( o ) {
 
         if( o.constraintShape == null ) return;
         this.deleteConstraintShape( o.constraintShape );
@@ -484,7 +484,7 @@ Mesh2D.prototype = {
 
     },
 
-    deleteConstraintSegment: function( segment ) {
+    deleteConstraintSegment: function ( segment ) {
 
         var vertexToDelete = [];
         var edge = null;
@@ -848,6 +848,7 @@ Mesh2D.prototype = {
     },
 
     restoreAsDelaunay: function () {
+
         var edge;
         while(this.__edgesToCheck.length > 0) {
             edge = this.__edgesToCheck.shift();
@@ -863,6 +864,7 @@ Mesh2D.prototype = {
                 this.flipEdge(edge);
             }
         }
+
     },
 
     // Delete a vertex IF POSSIBLE and then fill the hole with a new triangulation.
@@ -870,6 +872,7 @@ Mesh2D.prototype = {
     // - it is free of constraint segment (no adjacency to any constrained edge)
     // - it is adjacent to exactly 2 contrained edges and is not an end point of any constraint segment
     deleteVertex: function ( vertex ) {
+
         var i;
         var freeOfConstraint;
         var iterEdges = new FromVertexToOutgoingEdges();
@@ -1207,8 +1210,10 @@ Mesh2D.prototype = {
 
     vertexIsInsideAABB: function ( vertex, mesh ) {
 
-        if(vertex.pos.x < 0 || vertex.pos.x > mesh.width || vertex.pos.y < 0 || vertex.pos.y > mesh.height) return false; 
-        else return true;
+        return !(vertex.pos.x < 0 || vertex.pos.x > mesh.width || vertex.pos.y < 0 || vertex.pos.y > mesh.height); 
+
+        //if(vertex.pos.x < 0 || vertex.pos.x > mesh.width || vertex.pos.y < 0 || vertex.pos.y > mesh.height) return false; 
+        //else return true;
 
     }
 

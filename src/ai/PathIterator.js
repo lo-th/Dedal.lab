@@ -1,4 +1,6 @@
+
 function PathIterator() {
+
     this.entity = null;
     this.hasPrev = false;
     this.hasNext = false;
@@ -24,9 +26,12 @@ function PathIterator() {
             this.reset();
         }
     });
+
 };
 
 PathIterator.prototype = {
+
+    constructor: PathIterator,
 
     reset: function () {
 
@@ -59,7 +64,7 @@ PathIterator.prototype = {
 
     next: function () {
 
-        if (! this.hasNext) return false;
+        if ( !this.hasNext ) return false;
         this.hasPrev = true;
             
         this.count++;
@@ -75,7 +80,7 @@ PathIterator.prototype = {
 
     updateEntity: function () {
 
-        if (!this.entity) return;
+        if ( !this.entity ) return;
         this.entity.x = this._currentX;
         this.entity.y = this._currentY;
 

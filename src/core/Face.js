@@ -5,16 +5,17 @@ function Face() {
 
     this.type = FACE;
     this.id = _Math.generateUUID();
-    //DDLS.FaceID ++;
+
     this.isReal = false;
     this.edge = null;
+    
 };
 
 Face.prototype = {
 
     constructor: Face,
 
-    setDatas: function(edge, isReal) {
+    setDatas: function( edge, isReal ) {
 
         this.isReal = isReal !== undefined ? isReal : true;
         this.edge = edge;

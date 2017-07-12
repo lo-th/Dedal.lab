@@ -4,7 +4,7 @@ import { Point } from '../math/Point';
 import { Geom2D } from '../math/Geom2D';
 
 
-function FieldOfView( entity, world ) {
+function FieldOfView ( entity, world ) {
 
     this.entity = entity || null;
     this.world = world || null;
@@ -13,7 +13,10 @@ function FieldOfView( entity, world ) {
 
 FieldOfView.prototype = {
 
-    isInField:function( targetEntity ){
+    constructor: FieldOfView,
+
+    isInField: function ( targetEntity ) {
+
         if (!this.world) return;//throw new Error("Mesh missing");
         if (!this.entity) return;//throw new Error("From entity missing");
 
@@ -73,11 +76,11 @@ FieldOfView.prototype = {
             this._debug.graphics.drawCircle(rightTargetX, rightTargetY, 2);
         }*/
         
-        var dotProdMin = _Math.cos( this.entity.angleFOV*0.5 );
+        var dotProdMin = Math.cos( this.entity.angleFOV*0.5 );
 
         // we compare the dots for the left point
         var left = leftTarget.clone().sub(pos);
-        var lengthLeft = _Math.sqrt( left.x*left.x + left.y*left.y );
+        var lengthLeft = Math.sqrt( left.x*left.x + left.y*left.y );
         var dotLeft = (left.x/lengthLeft)*direction.x + (left.y/lengthLeft)*direction.y;
         // if the left point is in field
         if (dotLeft > dotProdMin) leftTargetInField = true;
@@ -86,7 +89,7 @@ FieldOfView.prototype = {
         
         // we compare the dots for the right point
         var right = rightTarget.clone().sub(pos);
-        var lengthRight = _Math.sqrt( right.x*right.x + right.y*right.y );
+        var lengthRight = Math.sqrt( right.x*right.x + right.y*right.y );
         var dotRight = (right.x/lengthRight)*direction.x + (right.y/lengthRight)*direction.y;
         // if the right point is in field
         if (dotRight > dotProdMin) rightTargetInField = true;
@@ -252,6 +255,7 @@ FieldOfView.prototype = {
         //console.log(wall)
         
         return true;
+
     }
 
 }

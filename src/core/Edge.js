@@ -5,7 +5,7 @@ function Edge () {
 
     this.type = EDGE;
     this.id = _Math.generateUUID();
-    //DDLS.EdgeID ++;
+
     this.fromConstraintSegments = [];
     this.isConstrained = false;
     this.isReal = false;
@@ -49,39 +49,50 @@ Edge.prototype = {
 
     constructor: Edge,
 
-    setDatas: function(originVertex, oppositeEdge, nextLeftEdge, leftFace, isReal, isConstrained) {
+    setDatas: function( originVertex, oppositeEdge, nextLeftEdge, leftFace, isReal, isConstrained ) {
+
         this.isConstrained = isReal !== undefined ? isConstrained : false;
         this.isReal = isReal !== undefined ? isReal : true;
         this.originVertex = originVertex;
         this.oppositeEdge = oppositeEdge;
         this.nextLeftEdge = nextLeftEdge;
         this.leftFace = leftFace;
+
     },
 
     getDatas:function(){
-        return [this.originVertex.pos.x, this.originVertex.pos.y, this.destinationVertex.pos.x, this.destinationVertex.pos.y, this.isConstrained ? 1:0 ];
+
+        return [ this.originVertex.pos.x, this.originVertex.pos.y, this.destinationVertex.pos.x, this.destinationVertex.pos.y, this.isConstrained ? 1:0 ];
+
     },
 
-    addFromConstraintSegment: function(segment) {
-        if ( this.fromConstraintSegments.indexOf(segment) == -1 ) this.fromConstraintSegments.push(segment);
+    addFromConstraintSegment: function( segment ) {
+
+        if ( this.fromConstraintSegments.indexOf(segment) === -1 ) this.fromConstraintSegments.push(segment);
+
     },
 
-    removeFromConstraintSegment: function(segment) {
-        //if(this.fromConstraintSegments == null) return;
-        var index = this.fromConstraintSegments.indexOf(segment);
-        if ( index != -1 ) this.fromConstraintSegments.splice(index, 1);
+    removeFromConstraintSegment: function( segment ) {
+
+        var index = this.fromConstraintSegments.indexOf( segment );
+        if ( index !== -1 ) this.fromConstraintSegments.splice(index, 1);
+
     },
 
     dispose: function() {
+
         this.originVertex = null;
         this.oppositeEdge = null;
         this.nextLeftEdge = null;
         this.leftFace = null;
         this.fromConstraintSegments = null;
+
     },
 
     toString: function() {
+
         return "edge " + this.originVertex.id + " - " + this.destinationVertex.id;
+
     }
 
 };

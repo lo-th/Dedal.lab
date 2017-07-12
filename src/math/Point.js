@@ -1,24 +1,16 @@
-import { _Math } from '../math/Math';
 
 function Point ( x, y ) {
 
     this.x = x || 0;
     this.y = y || 0;
-    return this;
+
 };
 
 Point.prototype = {
 
     constructor: Point,
 
-    transform: function( matrix ) {
-
-        matrix.tranform(this);
-        return this;
-
-    },
-
-    set: function(x,y) {
+    set: function ( x, y ) {
 
         this.x = x;
         this.y = y;
@@ -26,7 +18,14 @@ Point.prototype = {
 
     },
 
-    copy: function(p) {
+    transform: function ( matrix ) {
+
+        matrix.tranform( this );
+        return this;
+
+    },
+    
+    copy: function ( p ) {
 
         this.x = p.x;
         this.y = p.y;
@@ -34,13 +33,13 @@ Point.prototype = {
 
     },
 
-    clone: function() {
+    clone: function () {
 
-        return new Point(this.x,this.y);
+        return new Point( this.x, this.y );
 
     },
 
-    sub: function(p) {
+    sub: function ( p ) {
 
         this.x -= p.x;
         this.y -= p.y;
@@ -48,7 +47,7 @@ Point.prototype = {
 
     },
 
-    mul : function(s) {
+    mul: function ( s ) {
 
         this.x *= s;
         this.y *= s;
@@ -56,7 +55,7 @@ Point.prototype = {
 
     },
 
-    add : function(n) {
+    add: function( n ) {
 
         this.x += n.x;
         this.y += n.y;
@@ -64,7 +63,7 @@ Point.prototype = {
 
     },
 
-    div : function(s) {
+    div: function ( s ) {
 
         var v = 1/s;
         this.x *= v;
@@ -73,13 +72,13 @@ Point.prototype = {
 
     },
 
-    negate:function(){
+    negate: function () {
 
-        return new Point(-this.x,-this.y);
+        return new Point( -this.x, -this.y );
     
     },
 
-    transformMat2D: function ( matrix ){
+    transformMat2D: function ( matrix ) {
 
         var x = this.x, y = this.y, n = matrix.n;
         this.x = n[0] * x + n[2] * y + n[4];
@@ -88,50 +87,51 @@ Point.prototype = {
 
     },
 
-    get_length: function() {
+    length: function () {
 
-        return _Math.sqrt( this.x * this.x + this.y * this.y );
+        return Math.sqrt( this.x * this.x + this.y * this.y );
 
     },
 
-    angular:function( a ){
+    angular: function ( a ) {
 
-        this.x = _Math.cos( a );
-        this.y = _Math.sin( a );
+        this.x = Math.cos( a );
+        this.y = Math.sin( a );
         return this;
 
     },
 
-    normalize: function() {
+    normalize: function () {
 
-        var norm = this.get_length();
+        var norm = this.length();
         this.x /= norm;
         this.y /= norm;
         return norm;
 
     },
 
-    distanceTo: function(p) {
+    distanceTo: function ( p ) {
 
         var diffX = this.x - p.x;
         var diffY = this.y - p.y;
-        return _Math.sqrt( diffX * diffX + diffY * diffY );
+        return Math.sqrt( diffX * diffX + diffY * diffY );
 
     },
 
-    distanceSquaredTo: function( p ) {
+    distanceSquaredTo: function ( p ) {
 
         var diffX = this.x - p.x;
         var diffY = this.y - p.y;
-        return diffX*diffX + diffY*diffY;
+        return diffX * diffX + diffY * diffY;
 
     },
 
-    equals: function( p ) {
+    equals: function ( p ) {
 
         return this.x === p.x && this.y === p.y;
     
     }
+
 };
 
 export { Point };

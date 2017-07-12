@@ -1,93 +1,109 @@
-import { _Math } from '../math/Math';
 
-function Matrix2D (a,b,c,d,e,f) {
+function Matrix2D ( a, b, c, d, e, f ) {
 
-    this.n = new _Math.ARRAY(6);
-    this.n[0] = a || 1;
-    this.n[1] = b || 0;
-    this.n[2] = c || 0;
-    this.n[3] = d || 1;
-    this.n[4] = e || 0;
-    this.n[5] = f || 0;
+    this.n = [ a || 1, b || 0, c || 0, d || 1, e || 0, f || 0 ];
 
 };
 
 Matrix2D.prototype = {
+
     constructor: Matrix2D,
 
-    identity: function() {
-        this.n[0] = 1;
-        this.n[1] = 0;
-        this.n[2] = 0;
-        this.n[3] = 1;
-        this.n[4] = 0;
-        this.n[5] = 0;
+    identity: function () {
+
+        this.n = [ 1, 0, 0, 1, 0, 0 ];
         return this;
+
     },
 
-    translate: function(p) {
-        this.n[4] = this.n[4] + p.x;
-        this.n[5] = this.n[5] + p.y;
+    translate: function ( p ) {
+
+        var n = this.n;
+        n[4] += p.x;
+        n[5] += p.y;
         return this;
+
     },
 
-    scale: function(p) {
-        this.n[0] *= p.x;
-        this.n[1] *= p.y;
-        this.n[2] *= p.x;
-        this.n[3] *= p.y;
-        this.n[4] *= p.x;
-        this.n[5] *= p.y;
+    scale: function ( p ) {
+
+        var n = this.n;
+        n[0] *= p.x;
+        n[1] *= p.y;
+        n[2] *= p.x;
+        n[3] *= p.y;
+        n[4] *= p.x;
+        n[5] *= p.y;
         return this;
+
     },
 
-    rotate: function(rad) {
-        var aa = this.n[0], ab = this.n[1],
-        ac = this.n[2], ad = this.n[3],
-        atx = this.n[4], aty = this.n[5],
-        st = _Math.sin(rad), ct = _Math.cos(rad);
-        this.n[0] = aa*ct + ab*st;
-        this.n[1] = -aa*st + ab*ct;
-        this.n[2] = ac*ct + ad*st;
-        this.n[3] = -ac*st + ct*ad;
-        this.n[4] = ct*atx + st*aty;
-        this.n[5] = ct*aty - st*atx;
+    rotate: function ( rad ) {
+
+        var n = this.n;
+        var aa = n[0], ab = n[1],
+        ac = n[2], ad = n[3],
+        atx = n[4], aty = n[5],
+        st = Math.sin( rad ), ct = Math.cos( rad );
+        n[0] = aa*ct + ab*st;
+        n[1] = -aa*st + ab*ct;
+        n[2] = ac*ct + ad*st;
+        n[3] = -ac*st + ct*ad;
+        n[4] = ct*atx + st*aty;
+        n[5] = ct*aty - st*atx;
         return this;
+
     },
 
-    clone: function() {
-        return new Matrix2D(this.n[0],this.n[1],this.n[2],this.n[3],this.n[4],this.n[5]);
+    tranform: function ( p ) {
+
+        var n = this.n;
+        var x = n[0] * p.x + n[2] * p.y + n[4];
+        var y = n[1] * p.x + n[3] * p.y + n[5];
+        p.x = x;
+        p.y = y;
+
     },
 
-    tranform: function(point) {
-        var x = this.n[0] * point.x + this.n[2] * point.y + this.n[4];
-        var y = this.n[1] * point.x + this.n[3] * point.y + this.n[5];
-        point.x = x;
-        point.y = y;
+    transformX: function ( x, y ) {
+
+        var n = this.n;
+        return n[0] * x + n[2] * y + n[4];
+
     },
 
-    transformX: function(x,y) {
-        return this.n[0] * x + this.n[2] * y + this.n[4];
+    transformY: function ( x, y ) {
+
+        var n = this.n;
+        return n[1] * x + n[3] * y + n[5];
+
     },
 
-    transformY: function(x,y) {
-        return this.n[1] * x + this.n[3] * y + this.n[5];
-    },
+    concat: function ( matrix ) { // multiply
 
-    concat: function(matrix) {// multiply
-        var a = this.n[0] * matrix.n[0] + this.n[1] * matrix.n[2];
-        var b = this.n[0] * matrix.n[1] + this.n[1] * matrix.n[3];
-        var c = this.n[2] * matrix.n[0] + this.n[3] * matrix.n[2];
-        var d = this.n[2] * matrix.n[1] + this.n[3] * matrix.n[3];
-        var e = this.n[4] * matrix.n[0] + this.n[5] * matrix.n[2] + matrix.n[4];
-        var f = this.n[4] * matrix.n[1] + this.n[5] * matrix.n[3] + matrix.n[5];
-        this.n[0] = a;
-        this.n[1] = b;
-        this.n[2] = c;
-        this.n[3] = d;
-        this.n[4] = e;
-        this.n[5] = f;
+        var n = this.n;
+        var m = matrix.n;
+        var a = n[0] * m[0] + n[1] * m[2];
+        var b = n[0] * m[1] + n[1] * m[3];
+        var c = n[2] * m[0] + n[3] * m[2];
+        var d = n[2] * m[1] + n[3] * m[3];
+        var e = n[4] * m[0] + n[5] * m[2] + m[4];
+        var f = n[4] * m[1] + n[5] * m[3] + m[5];
+        n[0] = a;
+        n[1] = b;
+        n[2] = c;
+        n[3] = d;
+        n[4] = e;
+        n[5] = f;
         return this;
+
+    },
+
+    clone: function () {
+
+        var n = this.n;
+        return new Matrix2D( n[0], n[1], n[2], n[3], n[4], n[5] );
+
     }
 
 };

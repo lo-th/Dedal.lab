@@ -4,7 +4,7 @@ import { Dictionary, Log } from '../constants';
 function Graph () {
 
     this.id = _Math.generateUUID();
-    //DDLS.GraphID++;
+
     this.edge = null;
     this.node = null;
 
@@ -12,13 +12,15 @@ function Graph () {
 
 Graph.prototype = {
 
+    constructor: Graph,
+
     dispose: function() {
 
         while( this.node != null ) this.deleteNode(this.node);
 
     },
 
-    insertNode: function() {
+    insertNode: function () {
 
         var node = new GraphNode();
         if(this.node != null) {
@@ -27,9 +29,10 @@ Graph.prototype = {
         }
         this.node = node;
         return node;
+
     },
 
-    deleteNode: function(node) {
+    deleteNode: function ( node ) {
 
         while(node.outgoingEdge != null) {
             if(node.outgoingEdge.oppositeEdge != null) this.deleteEdge(node.outgoingEdge.oppositeEdge);
@@ -55,10 +58,12 @@ Graph.prototype = {
 
     },
 
-    insertEdge: function(fromNode,toNode) {
+    insertEdge: function( fromNode, toNode ) {
 
-        if(fromNode.successorNodes.get(toNode) != null) return null;
+        if( fromNode.successorNodes.get( toNode ) != null ) return null;
+
         var edge = new GraphEdge();
+
         if(this.edge != null) {
             this.edge.prev = edge;
             edge.next = this.edge;
@@ -82,7 +87,7 @@ Graph.prototype = {
 
     },
     
-    deleteEdge: function(edge) {
+    deleteEdge: function( edge ) {
 
         if(this.edge == edge) {
             if(edge.next != null) {

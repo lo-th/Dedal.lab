@@ -64,7 +64,7 @@ function render() {
     while(i--){
         h = world.heroes[i];
         view.drawPath( h.tmppath );
-        view.drawEntity( h.entity );
+        view.drawEntity( h );
     }
 
     stats.update();
@@ -85,8 +85,8 @@ function reset( newMaze ) {
     }
     
     view.drawMesh(world.mesh,true);
-    world.heroes[0].entity.radius = 5;
-    world.heroes[0].entity.position.set( 40, 40 );
+    world.heroes[0].radius = 5;
+    world.heroes[0].position.set( 40, 40 );
 
 };
 

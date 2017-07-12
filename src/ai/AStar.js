@@ -27,7 +27,11 @@ function AStar () {
 };
 
 AStar.prototype = {
+
+    constructor: AStar,
+
     dispose: function() {
+
         this.mesh = null;
         this.closedFaces.dispose();
         this.openedFaces.dispose();
@@ -50,7 +54,9 @@ AStar.prototype = {
         this.scoreH = null;
         this.predecessor = null;
     },
-    findPath: function( from, target, resultListFaces, resultListEdges ) {
+
+    findPath: function ( from, target, resultListFaces, resultListEdges ) {
+
         this.sortedOpenedFaces = [];
         this.closedFaces = new Dictionary(1);
         this.openedFaces = new Dictionary(1);
@@ -166,10 +172,10 @@ AStar.prototype = {
                     entryPoint.y = (innerEdge.originVertex.pos.y + innerEdge.destinationVertex.pos.y) * 0.5;
                     distancePoint.x = entryPoint.x - target.x;
                     distancePoint.y = entryPoint.y - target.y;
-                    h = distancePoint.get_length();
+                    h = distancePoint.length();
                     distancePoint.x = fromPoint.x - entryPoint.x;
                     distancePoint.y = fromPoint.y - entryPoint.y;
-                    g = this.scoreG.get(this.curFace) + distancePoint.get_length();
+                    g = this.scoreG.get(this.curFace) + distancePoint.length();
                     f = h + g;
                     fillDatas = false;
                     if(this.openedFaces.get(neighbourFace) == null || !this.openedFaces.get(neighbourFace)) {
@@ -212,7 +218,8 @@ AStar.prototype = {
         else if(this.scoreF.get(a) < this.scoreF.get(b)) return 1; 
         else return -1;
     },*/
-    isWalkableByRadius: function(fromEdge,throughFace,toEdge) {
+    isWalkableByRadius: function ( fromEdge, throughFace, toEdge ) {
+        
         var vA = null; // the vertex on fromEdge not on toEdge
         var vB = null; // the vertex on toEdge not on fromEdge
         var vC = null; // the common vertex of the 2 edges (pivot)

@@ -340,21 +340,14 @@ function Point ( x, y ) {
 
     this.x = x || 0;
     this.y = y || 0;
-    return this;
+
 }
 
 Point.prototype = {
 
     constructor: Point,
 
-    transform: function( matrix ) {
-
-        matrix.tranform(this);
-        return this;
-
-    },
-
-    set: function(x,y) {
+    set: function ( x, y ) {
 
         this.x = x;
         this.y = y;
@@ -362,7 +355,14 @@ Point.prototype = {
 
     },
 
-    copy: function(p) {
+    transform: function ( matrix ) {
+
+        matrix.tranform( this );
+        return this;
+
+    },
+    
+    copy: function ( p ) {
 
         this.x = p.x;
         this.y = p.y;
@@ -370,13 +370,13 @@ Point.prototype = {
 
     },
 
-    clone: function() {
+    clone: function () {
 
-        return new Point(this.x,this.y);
+        return new Point( this.x, this.y );
 
     },
 
-    sub: function(p) {
+    sub: function ( p ) {
 
         this.x -= p.x;
         this.y -= p.y;
@@ -384,7 +384,7 @@ Point.prototype = {
 
     },
 
-    mul : function(s) {
+    mul: function ( s ) {
 
         this.x *= s;
         this.y *= s;
@@ -392,7 +392,7 @@ Point.prototype = {
 
     },
 
-    add : function(n) {
+    add: function( n ) {
 
         this.x += n.x;
         this.y += n.y;
@@ -400,7 +400,7 @@ Point.prototype = {
 
     },
 
-    div : function(s) {
+    div: function ( s ) {
 
         var v = 1/s;
         this.x *= v;
@@ -409,13 +409,13 @@ Point.prototype = {
 
     },
 
-    negate:function(){
+    negate: function () {
 
-        return new Point(-this.x,-this.y);
+        return new Point( -this.x, -this.y );
     
     },
 
-    transformMat2D: function ( matrix ){
+    transformMat2D: function ( matrix ) {
 
         var x = this.x, y = this.y, n = matrix.n;
         this.x = n[0] * x + n[2] * y + n[4];
@@ -424,62 +424,65 @@ Point.prototype = {
 
     },
 
-    get_length: function() {
+    length: function () {
 
-        return _Math.sqrt( this.x * this.x + this.y * this.y );
+        return Math.sqrt( this.x * this.x + this.y * this.y );
 
     },
 
-    angular:function( a ){
+    angular: function ( a ) {
 
-        this.x = _Math.cos( a );
-        this.y = _Math.sin( a );
+        this.x = Math.cos( a );
+        this.y = Math.sin( a );
         return this;
 
     },
 
-    normalize: function() {
+    normalize: function () {
 
-        var norm = this.get_length();
+        var norm = this.length();
         this.x /= norm;
         this.y /= norm;
         return norm;
 
     },
 
-    distanceTo: function(p) {
+    distanceTo: function ( p ) {
 
         var diffX = this.x - p.x;
         var diffY = this.y - p.y;
-        return _Math.sqrt( diffX * diffX + diffY * diffY );
+        return Math.sqrt( diffX * diffX + diffY * diffY );
 
     },
 
-    distanceSquaredTo: function( p ) {
+    distanceSquaredTo: function ( p ) {
 
         var diffX = this.x - p.x;
         var diffY = this.y - p.y;
-        return diffX*diffX + diffY*diffY;
+        return diffX * diffX + diffY * diffY;
 
     },
 
-    equals: function( p ) {
+    equals: function ( p ) {
 
         return this.x === p.x && this.y === p.y;
     
     }
+
 };
 
-function RandGenerator ( seed, rangeMin, rangeMax ) {
+function RandGenerator ( seed, min, max ) {
 
-    this.rangeMin = rangeMin || 0;
-    this.rangeMax = rangeMax || 1;
+    this.rangeMin = min || 0;
+    this.rangeMax = max || 1;
     this._originalSeed = this._currSeed = seed || 1234;
     this._numIter = 0;
 
-    Object.defineProperty(this, 'seed', {
+    Object.defineProperty( this, 'seed', {
+
         get: function() { return this._originalSeed; },
-        set: function(value) { this._originalSeed = this._currSeed = value; }
+        set: function( value ) { this._originalSeed = this._currSeed = value; }
+
     });
 
 }
@@ -487,36 +490,54 @@ function RandGenerator ( seed, rangeMin, rangeMax ) {
 RandGenerator.prototype = {
 
     constructor: RandGenerator,
+
     reset: function() {
+
         this._currSeed = this._originalSeed;
         this._numIter = 0;
+
     },
-    next: function() {
+
+    next: function () {
+
         var tmp = this._currSeed * 1;
-        this._tempString = (tmp*tmp).toString();//Std.string(_floatSeed * _floatSeed);
-        while(this._tempString.length < 8) this._tempString = "0" + this._tempString;
-        this._currSeed = parseInt(this._tempString.substr( 1 , 5 ));//Std.parseInt(HxOverrides.substr(this._tempString,1,5));
-        var res = _Math.round(this.rangeMin + (this._currSeed / 99999) * (this.rangeMax - this.rangeMin));
-        if(this._currSeed == 0) this._currSeed = this._originalSeed + this._numIter;
+        this._tempString = (tmp*tmp).toString();
+        while( this._tempString.length < 8 ) this._tempString = "0" + this._tempString;
+
+        this._currSeed = parseInt( this._tempString.substr( 1 , 5 ) );
+        var res = Math.round( this.rangeMin + ( this._currSeed / 99999 ) * ( this.rangeMax - this.rangeMin ));
+        if( this._currSeed === 0 ) this._currSeed = this._originalSeed + this._numIter;
         this._numIter++;
-        if(this._numIter == 200) this.reset();
+        if( this._numIter === 200 ) this.reset();
+
         return res;
+
     },
-    nextInRange: function(rangeMin,rangeMax) {
-        this.rangeMin = rangeMin;
-        this.rangeMax = rangeMax;
+
+    nextInRange: function( min, max ) {
+
+        this.rangeMin = min;
+        this.rangeMax = max;
         return this.next();
+
     },
-    shuffle: function(array) {
-        var currIdx = array.length;
-        while(currIdx > 0) {
-            var rndIdx = this.nextInRange(0,currIdx - 1);
-            currIdx--;
-            var tmp = array[currIdx];
-            array[currIdx] = array[rndIdx];
-            array[rndIdx] = tmp;
+
+    shuffle: function( ar ) {
+
+        var i = ar.length, n, t;
+
+        while( i > 0 ) {
+
+            n = this.nextInRange( 0, i - 1 );
+            i--;
+            t = ar[i];
+            ar[i] = ar[n];
+            ar[n] = t;
+
         }
+
     }
+
 };
 
 //-------------------------
@@ -531,13 +552,8 @@ RandGenerator.prototype = {
 //     FACE
 //-------------------------
 
-//!\\ not used
-
-
-//
-
 function FromFaceToInnerEdges () {
-    //
+
     this._fromFace = null;
     this._nextEdge = null;
     
@@ -550,11 +566,7 @@ function FromFaceToInnerEdges () {
 }
 
 FromFaceToInnerEdges.prototype = {
-    /*set_fromFace: function(value) {
-        this._fromFace = value;
-        this._nextEdge = this._fromFace.edge;
-        return value;
-    },*/
+
     next: function() {
         if(this._nextEdge != null) {
             this._resultEdge = this._nextEdge;
@@ -563,31 +575,97 @@ FromFaceToInnerEdges.prototype = {
         } else this._resultEdge = null;
         return this._resultEdge;
     }
+
 };
 
+//!\\ not used
+/*
+function FromFaceToInnerVertices() {
 
+    this._fromFace = null;
+    this._nextEdge = null;
+
+    Object.defineProperty(this, 'fromFace', {
+        set: function(value) { 
+            this._fromFace = value;
+            this._nextEdge = this._fromFace.edge;
+        }
+    });
+
+};
+
+FromFaceToInnerVertices.prototype = {
+
+    next: function() {
+        if(this._nextEdge != null) {
+            this._resultVertex = this._nextEdge.originVertex;
+            this._nextEdge = this._nextEdge.nextLeftEdge;
+            if(this._nextEdge == this._fromFace.edge) this._nextEdge = null;
+        } else this._resultVertex = null;
+        return this._resultVertex;
+    }
+
+};
+
+export { FromFaceToInnerVertices };
+*/
+
+//
+
+//!\\ not used
+/*
+function FromFaceToNeighbourFaces () {
+   // this._fromFace = null;
+   // this._nextEdge = null;
+    Object.defineProperty(this, 'fromFace', {
+        set: function(value) { 
+            this._fromFace = value;
+            this._nextEdge = this._fromFace.edge;
+        }
+    });
+};
+
+FromFaceToNeighbourFaces.prototype = {
+
+    next: function() {
+        if(this._nextEdge != null) {
+            do{
+                this._resultFace = this._nextEdge.rightFace;
+                this._nextEdge = this._nextEdge.nextLeftEdge;
+                if(this._nextEdge == this._fromFace.edge){
+                    this._nextEdge = null;
+                    if ( ! this._resultFace.isReal ) this._resultFace = null;
+                    break;
+                }
+            } while ( ! this._resultFace.isReal )
+        } else this._resultFace = null;
+        return this._resultFace;
+    }
+};
+
+export { FromFaceToNeighbourFaces };
+*/
 
 //-------------------------
 //     MESH
 //-------------------------
 
 function FromMeshToVertices () {
-    //this._fromMesh = null;
-    //this._currIndex = 0;
+
+    this._fromMesh = null;
+    this._currIndex = 0;
+
     Object.defineProperty(this, 'fromMesh', {
         set: function(value) { 
             this._fromMesh = value;
             this._currIndex = 0;
         }
     });
+
 }
 
 FromMeshToVertices.prototype = {
-    /*set_fromMesh: function(value) {
-        this._fromMesh = value;
-        this._currIndex = 0;
-        return value;
-    },*/
+
     next: function() {
         do if(this._currIndex < this._fromMesh._vertices.length) {
             this._resultVertex = this._fromMesh._vertices[this._currIndex];
@@ -598,9 +676,41 @@ FromMeshToVertices.prototype = {
         } while(!this._resultVertex.isReal);
         return this._resultVertex;
     }
+
 };
 
+//!\\ not used
+/*
+function FromMeshToFaces () {
 
+    this._fromMesh = null;
+    this._currIndex = 0;
+
+    Object.defineProperty(this, 'fromMesh', {
+        set: function(value) { 
+            this._fromMesh = value;
+            this._currIndex = 0;
+        }
+    });
+};
+
+FromMeshToFaces.prototype = {
+
+    next: function() {
+        do if(this._currIndex < this._fromMesh._faces.length) {
+            this._resultFace = this._fromMesh._faces[this._currIndex];
+            this._currIndex++;
+        } else {
+            this._resultFace = null;
+            break;
+        } while(!this._resultFace.isReal);
+        return this._resultFace;
+    }
+
+};
+
+export { FromMeshToFaces };
+*/
 
 //-------------------------
 //     VERTEX
@@ -610,9 +720,10 @@ function FromVertexToHoldingFaces () {
 
     this._fromVertex = null;
     this._nextEdge = null;
+
     Object.defineProperty(this, 'fromVertex', {
-        set: function( value ) { 
-            //console.log(value)
+        set: function( value ) {
+
             this._fromVertex = value;
             this._nextEdge = this._fromVertex.edge;// || null;
            // if(this._fromVertex) this._nextEdge = this._fromVertex.edge;// || null;
@@ -622,11 +733,7 @@ function FromVertexToHoldingFaces () {
 }
 
 FromVertexToHoldingFaces.prototype = {
-    /*set_fromVertex: function(value) {
-        this._fromVertex = value;
-        this._nextEdge = this._fromVertex.edge;
-        return value;
-    },*/
+
     next: function() {
         if(this._nextEdge != null) do {
             this._resultFace = this._nextEdge.leftFace;
@@ -640,11 +747,16 @@ FromVertexToHoldingFaces.prototype = {
         else this._resultFace = null;
         return this._resultFace;
     }
+
 };
 
+//
+
 function FromVertexToIncomingEdges () {
-    //this._fromVertex = null;
-    //this._nextEdge = null;
+
+    this._fromVertex = null;
+    this._nextEdge = null;
+
     Object.defineProperty(this, 'fromVertex', {
         set: function(value) { 
             this._fromVertex = value;
@@ -655,12 +767,7 @@ function FromVertexToIncomingEdges () {
 }
 
 FromVertexToIncomingEdges.prototype = {
-    /*set_fromVertex: function(value) {
-        this._fromVertex = value;
-        this._nextEdge = this._fromVertex.edge;
-        while(!this._nextEdge.isReal) this._nextEdge = this._nextEdge.rotLeftEdge;
-        return value;
-    },*/
+
     next: function() {
         if(this._nextEdge != null) {
             this._resultEdge = this._nextEdge.oppositeEdge;
@@ -674,13 +781,17 @@ FromVertexToIncomingEdges.prototype = {
         } else this._resultEdge = null;
         return this._resultEdge;
     }
+
 };
+
+//
 
 function FromVertexToOutgoingEdges () {
 
     this.realEdgesOnly = true;
-    //this._fromVertex = null;
-    //this._nextEdge = null;
+    this._fromVertex = null;
+    this._nextEdge = null;
+
     Object.defineProperty(this, 'fromVertex', {
         set: function(value) { 
             this._fromVertex = value;
@@ -690,13 +801,9 @@ function FromVertexToOutgoingEdges () {
         }
     });
 }
+
 FromVertexToOutgoingEdges.prototype = {
-    /*set_fromVertex: function(value) {
-        this._fromVertex = value;
-        this._nextEdge = this._fromVertex.edge;
-        while(this.realEdgesOnly && !this._nextEdge.isReal) this._nextEdge = this._nextEdge.rotLeftEdge;
-        return value;
-    },*/
+
     next: function() {
         if(this._nextEdge != null) {
             this._resultEdge = this._nextEdge;
@@ -711,6 +818,44 @@ FromVertexToOutgoingEdges.prototype = {
         return this._resultEdge;
     }
 };
+
+
+
+//!\\ not used
+/*
+function FromVertexToNeighbourVertices() {
+
+    this._fromVertex = null;
+    this._nextEdge = null;
+
+    Object.defineProperty(this, 'fromVertex', {
+        set: function(value) { 
+            this._fromVertex = value;
+            this._nextEdge = this._fromVertex.edge
+        }
+    });
+};
+
+FromVertexToNeighbourVertices.prototype = {
+
+    next: function() {
+        if(this._nextEdge != null){
+            this._resultVertex = this._nextEdge.destinationVertex;
+            do {
+                this._nextEdge = this._nextEdge.rotLeftEdge;
+            } while(!this._nextEdge.isReal);
+
+            if(this._nextEdge == this._fromVertex.edge) {
+                this._nextEdge = null;
+            }
+        }
+        else this._resultVertex = null;
+        return this._resultVertex;
+    }
+};
+
+export { FromVertexToNeighbourVertices };
+*/
 
 var Geom2D = {
 
@@ -994,6 +1139,39 @@ var Geom2D = {
 
     },
 
+    /*isSegmentIntersectingTriangle: function( s1, s2, t1, t2, t3 ) {
+
+        var side1_1 = Geom2D.getDirection(t1, t2, s1);
+        var side1_2 = Geom2D.getDirection(t1, t2, s2);
+        if(side1_1 <= 0 && side1_2 <= 0) return false;
+        var side2_1 = Geom2D.getDirection(t2, t3, s1);
+        var side2_2 = Geom2D.getDirection(t2, t3, s2);
+        if(side2_1 <= 0 && side2_2 <= 0) return false;
+        var side3_1 = Geom2D.getDirection(t3, t1, s1);
+        var side3_2 = Geom2D.getDirection(t3, t1, s2);
+        if(side3_1 <= 0 && side3_2 <= 0) return false;
+        if(side1_1 == 1 && side2_1 == 1 && side3_1 == 1) return true;
+        if(side1_1 == 1 && side2_1 == 1 && side3_1 == 1) return true;
+        var side1, side2;
+        if(side1_1 == 1 && side1_2 <= 0 || side1_1 <= 0 && side1_2 == 1) {
+            side1 = Geom2D.getDirection(s1, s2, t1);
+            side2 = Geom2D.getDirection(s1, s2, t2);
+            if(side1 == 1 && side2 <= 0 || side1 <= 0 && side2 == 1) return true;
+        }
+        if(side2_1 == 1 && side2_2 <= 0 || side2_1 <= 0 && side2_2 == 1) {
+            side1 = Geom2D.getDirection(s1, s2, t2);
+            side2 = Geom2D.getDirection(s1, s2, t3);
+            if(side1 == 1 && side2 <= 0 || side1 <= 0 && side2 == 1) return true;
+        }
+        if(side3_1 == 1 && side3_2 <= 0 || side3_1 <= 0 && side3_2 == 1) {
+            side1 = Geom2D.getDirection(s1, s2, t3);
+            side2 = Geom2D.getDirection(s1, s2, t1);
+            if(side1 == 1 && side2 <= 0 || side1 <= 0 && side2 == 1) return true;
+        }
+        return false;
+
+    },*/
+
     isDelaunay: function ( edge ) {
 
         var vLeft = edge.originVertex;
@@ -1101,7 +1279,7 @@ var Geom2D = {
         result.y = b + t1*(d - b);
     },*/
 
-    intersections2Circles: function (c1, r1, c2, r2, result){
+    intersections2Circles: function ( c1, r1, c2, r2, result ){
 
         var factor, a, b, first, dist, invd, trans;
         dist = _Math.Squared(c2.x - c1.x, c2.y - c1.y);
@@ -1205,17 +1383,15 @@ var Geom2D = {
         var distance = _Math.SquaredSqrt(c1.x - c2.x, c1.y - c2.y);
         var radius = distance * 0.25;
         var center = c2.clone().sub(c1).mul(0.25).add(c1);
-        //var center = new Point();
-        //center.x = c1.x + (c2.x - c1.x) * 0.25;
-        //center.y = c1.y + (c2.y - c1.y) * 0.25;
-        if( Geom2D.intersections2Circles(c1, r, center, radius, result)) {
+
+        if( Geom2D.intersections2Circles( c1, r, center, radius, result )) {
+
             var t1x = result[0];
             var t1y = result[1];
             var t2x = result[2];
             var t2y = result[3];
             var mid = c1.clone().add(c2).mul(0.5);
-            //var midX = (c1.x + c2.x) * 0.5;
-            //var midY = (c1.y + c2.y) * 0.5;
+
             var dotProd = (t1x - mid.x) * (c2.y - c1.y) + (t1y - mid.y) * (-c2.x + c1.x);
             var tproj = dotProd / (distance * distance);
             var projx = mid.x + tproj * (c2.y - c1.y);
@@ -1226,6 +1402,7 @@ var Geom2D = {
             var t3y = t2y + t4y - t1y;
             result.push( t3x, t3y, t4x, t4y );
             return true;
+            
         } else return false;
 
     },
@@ -1427,84 +1604,7 @@ ImageLoader.prototype = {
     }
 };
 
-function EntityAI ( x, y, r, d ) {
-
-    this.path = [];
-    this.position = new Point(x || 0, y || 0);
-    this.direction = new Point(1,0);
-    this.radius = r || 10;
-    //this.radiusSquared = 10*10;
-    //this.x = this.y = 0;
-    //this.dirNormX = 1;
-    //this.dirNormY = 0;
-    this.angle = 0;
-    this.angleFOV = 120 * _Math.torad;
-    this.radiusFOV = d || 200;
-
-    this.isSee = false;
-    //this._radiusSquaredFOV = 0;
-
-    /*Object.defineProperty(this, 'radiusFOV', {
-        get: function() { return this._radiusFOV; },
-        set: function(value) { 
-            this._radiusFOV = value;
-            this._radiusSquaredFOV = this._radiusFOV*this._radiusFOV; 
-        }
-    });
-
-    Object.defineProperty(this, 'radius', {
-        get: function() { return this._radius; },
-        set: function(value) { 
-            this._radius = value;
-            this.radiusSquared = this._radius*this._radius; 
-        }
-    });*/
-
-    /*Object.defineProperty(this, 'approximateObject', {
-        get: function() {
-            this._approximateObject.matrix.identity().translate(this.x,this.y);
-            return this._approximateObject; 
-        }
-    });*/
-}
-
-EntityAI.prototype = {
-    /*get_position:function(){
-        return new DDLS.Point(this.x, this.y);
-    },
-    position:function(x, y){
-        this.x = x || 0;
-        this.y = y || 0;
-        this.path = [];
-    },*/
-    /*buildApproximation: function() {
-        this._approximateObject = new DDLS.Object();
-        this._approximateObject.matrix.translate(this.x,this.y);
-        var coordinates = [];
-        this._approximateObject.coordinates = coordinates;
-        if(this._radius == 0) return;
-        var n = DDLS.EntityAI.NUM_SEGMENTS;
-        var ndiv = 1/n;
-        var _g = 0;
-        while(_g < n) {
-            var i = _g++;
-            coordinates.push(this._radius * DDLS.cos(DDLS.TwoPI * i * ndiv));
-            coordinates.push(this._radius * DDLS.sin(DDLS.TwoPI * i * ndiv));
-            coordinates.push(this._radius * DDLS.cos(DDLS.TwoPI * (i + 1) * ndiv));
-            coordinates.push(this._radius * DDLS.sin(DDLS.TwoPI * (i + 1) * ndiv));
-        }
-    },
-    get_approximateObject: function() {
-        this._approximateObject.matrix.identity().translate(this.x,this.y);
-        return this._approximateObject;
-    }*/
-};
-
-
-
-//DDLS.EntityAI.NUM_SEGMENTS = 6;
-
-function FieldOfView( entity, world ) {
+function FieldOfView ( entity, world ) {
 
     this.entity = entity || null;
     this.world = world || null;
@@ -1513,7 +1613,10 @@ function FieldOfView( entity, world ) {
 
 FieldOfView.prototype = {
 
-    isInField:function( targetEntity ){
+    constructor: FieldOfView,
+
+    isInField: function ( targetEntity ) {
+
         if (!this.world) return;//throw new Error("Mesh missing");
         if (!this.entity) return;//throw new Error("From entity missing");
 
@@ -1573,11 +1676,11 @@ FieldOfView.prototype = {
             this._debug.graphics.drawCircle(rightTargetX, rightTargetY, 2);
         }*/
         
-        var dotProdMin = _Math.cos( this.entity.angleFOV*0.5 );
+        var dotProdMin = Math.cos( this.entity.angleFOV*0.5 );
 
         // we compare the dots for the left point
         var left = leftTarget.clone().sub(pos);
-        var lengthLeft = _Math.sqrt( left.x*left.x + left.y*left.y );
+        var lengthLeft = Math.sqrt( left.x*left.x + left.y*left.y );
         var dotLeft = (left.x/lengthLeft)*direction.x + (left.y/lengthLeft)*direction.y;
         // if the left point is in field
         if (dotLeft > dotProdMin) leftTargetInField = true;
@@ -1586,7 +1689,7 @@ FieldOfView.prototype = {
         
         // we compare the dots for the right point
         var right = rightTarget.clone().sub(pos);
-        var lengthRight = _Math.sqrt( right.x*right.x + right.y*right.y );
+        var lengthRight = Math.sqrt( right.x*right.x + right.y*right.y );
         var dotRight = (right.x/lengthRight)*direction.x + (right.y/lengthRight)*direction.y;
         // if the right point is in field
         if (dotRight > dotProdMin) rightTargetInField = true;
@@ -1752,11 +1855,12 @@ FieldOfView.prototype = {
         //console.log(wall)
         
         return true;
+
     }
 
 };
 
-function LinearPathSampler() {
+function LinearPathSampler () {
 
     this.entity = null;
     this._path = null;
@@ -1812,20 +1916,24 @@ function LinearPathSampler() {
             this.reset();
         }
     });
-
     
 }
 
 LinearPathSampler.prototype = {
 
-    dispose: function() {
+    constructor: LinearPathSampler,
+
+    dispose: function () {
+
         this.entity = null;
         this._path = null;
         this._preCompX = null;
         this._preCompY = null;
+
     },
 
-    reset: function() {
+    reset: function () {
+
         if(this._path.length > 0) {
             this.pos.x = this._path[0];
             this.pos.y = this._path[1];
@@ -1841,9 +1949,11 @@ LinearPathSampler.prototype = {
             this._count = 0;
             //this._path = [];
         }
+
     },
 
-    preCompute: function() {
+    preCompute: function () {
+
         this._preCompX.splice(0,this._preCompX.length);
         this._preCompY.splice(0,this._preCompY.length);
         this._count = 0;
@@ -1856,9 +1966,11 @@ LinearPathSampler.prototype = {
         }
         this.reset();
         this._preComputed = true;
+
     },
 
-    prev: function() {
+    prev: function () {
+
         if(!this.hasPrev) return false;
         this.hasNext = true;
         if(this._preComputed) {
@@ -1899,9 +2011,11 @@ LinearPathSampler.prototype = {
             this.updateEntity();
             return true;
         }
+
     },
 
-    next: function() {
+    next: function () {
+
         if(!this.hasNext) return false;
         this.hasPrev = true;
         if(this._preComputed) {
@@ -1943,13 +2057,17 @@ LinearPathSampler.prototype = {
             this.updateEntity();
             return true;
         }
+
     },
 
-    applyLast:function(){
+    applyLast: function () {
+
         this.pos.set(this._preCompX[this._count], this._preCompY[this._count]);
+
     },
 
-    updateEntity: function() {
+    updateEntity: function () {
+
         if(this.entity == null) return;
         this.entity.angle = _Math.atan2( this.pos.y - this.entity.position.y, this.pos.x - this.entity.position.x );//*_Math.todeg;
         this.entity.direction.angular( this.entity.angle );
@@ -1963,49 +2081,68 @@ LinearPathSampler.prototype = {
 
 };
 
-function Heroe ( s, world ) {
-    s = s || {};
-    
+function Entity ( s, world ) {
+
+    this.isSee = false;
+    this.isWalking = false;
+    this.isSelected = false;
+    this.isMove = false;
+
     this.world = world;
 
+    s = s || {};
+
+    
+    this.position = new Point( s.x || 0, s.y || 0 );
+    this.direction = new Point(1,0);
+    this.radius = s.r || 10;
+    //this.radiusSquared = 10*10;
+    //this.x = this.y = 0;
+    //this.dirNormX = 1;
+    //this.dirNormY = 0;
+    this.angle = 0;
+    this.angleFOV = ( s.fov || 120 ) * _Math.torad;
+    this.radiusFOV = s.distance || 200;
+    this.testSee = s.see || false;
+
+
     this.path = [];
-    //this._path = [];
     this.tmppath = [];
 
     this.target = new Point();
-    this.move = false;
+    
     this.newPath = false;
 
     this.mesh = null;
-    this.isSelected = false;
-    this.isWalking = false;
 
-    this.testSee = s.see || false;
-
-    this.entity = new EntityAI( s.x || 0, s.y || 0, s.r || 4 );
-
-    this.fov = new FieldOfView( this.entity, this.world );
+    this.fov = new FieldOfView( this , this.world );
 
     this.pathSampler = new LinearPathSampler();
-    this.pathSampler.entity = this.entity;
+    this.pathSampler.entity = this;
     this.pathSampler.path = this.tmppath;
     this.pathSampler.samplingDistance = s.speed || 10;
 
+    // compatibility issue
+    this.entity = this;
+
 }
 
-Heroe.prototype = {
+Entity.prototype = {
+
+    constructor: Entity,
     
-    setTarget:function(x, y){
+    setTarget: function ( x, y ) {
 
         this.path = [];
         this.target.set( x, y );
-        this.world.pathFinder.entity = this.entity;
-        //this.world.pathFinder.findPath( this.target, this.path );
+        this.world.pathFinder.entity = this;
         this.world.pathFinder.findPath( this.target, this.path );
         this.testPath();
 
     },
-    testPath:function(){
+
+    testPath: function () {
+
         if( !this.path ) return;
         if( this.path.length > 0 ){
         //if( this.path.length > 0 ){
@@ -2022,44 +2159,38 @@ Heroe.prototype = {
             this.newPath = true;
         }
     },
-    getPos:function(){
-        return { x:this.entity.position.x, y:this.entity.position.y, r:-this.entity.angle };
+
+    getPos: function () {
+
+        return { x:this.position.x, y:this.position.y, r:-this.angle };
+
     },
-    update:function(){
+
+    update: function () {
 
         var p;
-        /*if(this.mesh !== null){ 
-            this.mesh.position.set( this.entity.position.x, 0, this.entity.position.y );
-            this.mesh.rotation.y = -this.entity.angle;
-        }*/
-        //if(this.newPath){
-            //console.log(this.path);
-            ////this.newPath = false;
-            //this.pathSampler.reset();
-            //this.pathSampler.path = this._path;
-        //}
       
         if( this.pathSampler.hasNext ){
 
             this.newPath = false;
-            this.move = true;
+            this.isMove = true;
             this.pathSampler.next();
 
         } else {
-            this.move = false;
+
+            this.isMove = false;
             this.tmppath = [];
+
         }
 
-        if(this.move && !this.isWalking) this.isWalking = true;
-        if(!this.move && this.isWalking) this.isWalking = false;
+        if( this.isMove && !this.isWalking ) this.isWalking = true;
+        if( !this.isMove && this.isWalking ) this.isWalking = false;
 
         if( this.mesh !== null ){
             p = this.getPos();
             this.mesh.position.set( p.x, 0, p.y );
             this.mesh.rotation.y = p.r;
         }
-
-
 
     }
 };
@@ -2068,16 +2199,17 @@ function Face() {
 
     this.type = FACE;
     this.id = _Math.generateUUID();
-    //DDLS.FaceID ++;
+
     this.isReal = false;
     this.edge = null;
+    
 }
 
 Face.prototype = {
 
     constructor: Face,
 
-    setDatas: function(edge, isReal) {
+    setDatas: function( edge, isReal ) {
 
         this.isReal = isReal !== undefined ? isReal : true;
         this.edge = edge;
@@ -2192,7 +2324,7 @@ function Edge () {
 
     this.type = EDGE;
     this.id = _Math.generateUUID();
-    //DDLS.EdgeID ++;
+
     this.fromConstraintSegments = [];
     this.isConstrained = false;
     this.isReal = false;
@@ -2236,39 +2368,50 @@ Edge.prototype = {
 
     constructor: Edge,
 
-    setDatas: function(originVertex, oppositeEdge, nextLeftEdge, leftFace, isReal, isConstrained) {
+    setDatas: function( originVertex, oppositeEdge, nextLeftEdge, leftFace, isReal, isConstrained ) {
+
         this.isConstrained = isReal !== undefined ? isConstrained : false;
         this.isReal = isReal !== undefined ? isReal : true;
         this.originVertex = originVertex;
         this.oppositeEdge = oppositeEdge;
         this.nextLeftEdge = nextLeftEdge;
         this.leftFace = leftFace;
+
     },
 
     getDatas:function(){
-        return [this.originVertex.pos.x, this.originVertex.pos.y, this.destinationVertex.pos.x, this.destinationVertex.pos.y, this.isConstrained ? 1:0 ];
+
+        return [ this.originVertex.pos.x, this.originVertex.pos.y, this.destinationVertex.pos.x, this.destinationVertex.pos.y, this.isConstrained ? 1:0 ];
+
     },
 
-    addFromConstraintSegment: function(segment) {
-        if ( this.fromConstraintSegments.indexOf(segment) == -1 ) this.fromConstraintSegments.push(segment);
+    addFromConstraintSegment: function( segment ) {
+
+        if ( this.fromConstraintSegments.indexOf(segment) === -1 ) this.fromConstraintSegments.push(segment);
+
     },
 
-    removeFromConstraintSegment: function(segment) {
-        //if(this.fromConstraintSegments == null) return;
-        var index = this.fromConstraintSegments.indexOf(segment);
-        if ( index != -1 ) this.fromConstraintSegments.splice(index, 1);
+    removeFromConstraintSegment: function( segment ) {
+
+        var index = this.fromConstraintSegments.indexOf( segment );
+        if ( index !== -1 ) this.fromConstraintSegments.splice(index, 1);
+
     },
 
     dispose: function() {
+
         this.originVertex = null;
         this.oppositeEdge = null;
         this.nextLeftEdge = null;
         this.leftFace = null;
         this.fromConstraintSegments = null;
+
     },
 
     toString: function() {
+
         return "edge " + this.originVertex.id + " - " + this.destinationVertex.id;
+
     }
 
 };
@@ -2297,7 +2440,6 @@ Shape.prototype = {
 function Mesh2D( width, height ) {
 
     this.id = _Math.generateUUID();
-    //DDLS.MeshID++;
     this.__objectsUpdateInProgress = false;
     this.__centerVertex = null;
     this.width = width;
@@ -2345,6 +2487,7 @@ Mesh2D.prototype = {
         this.AR_edge = null;
 
     },
+    
     dispose: function () {
 
         while(this._vertices.length > 0) this._vertices.pop().dispose();
@@ -2410,7 +2553,7 @@ Mesh2D.prototype = {
 
     },
 
-    deleteObject: function( o ) {
+    deleteObject: function ( o ) {
 
         if( o.constraintShape == null ) return;
         this.deleteConstraintShape( o.constraintShape );
@@ -2766,7 +2909,7 @@ Mesh2D.prototype = {
 
     },
 
-    deleteConstraintSegment: function( segment ) {
+    deleteConstraintSegment: function ( segment ) {
 
         var vertexToDelete = [];
         var edge = null;
@@ -3130,6 +3273,7 @@ Mesh2D.prototype = {
     },
 
     restoreAsDelaunay: function () {
+
         var edge;
         while(this.__edgesToCheck.length > 0) {
             edge = this.__edgesToCheck.shift();
@@ -3145,6 +3289,7 @@ Mesh2D.prototype = {
                 this.flipEdge(edge);
             }
         }
+
     },
 
     // Delete a vertex IF POSSIBLE and then fill the hole with a new triangulation.
@@ -3152,6 +3297,7 @@ Mesh2D.prototype = {
     // - it is free of constraint segment (no adjacency to any constrained edge)
     // - it is adjacent to exactly 2 contrained edges and is not an end point of any constraint segment
     deleteVertex: function ( vertex ) {
+
         var i;
         var freeOfConstraint;
         var iterEdges = new FromVertexToOutgoingEdges();
@@ -3489,8 +3635,10 @@ Mesh2D.prototype = {
 
     vertexIsInsideAABB: function ( vertex, mesh ) {
 
-        if(vertex.pos.x < 0 || vertex.pos.x > mesh.width || vertex.pos.y < 0 || vertex.pos.y > mesh.height) return false; 
-        else return true;
+        return !(vertex.pos.x < 0 || vertex.pos.x > mesh.width || vertex.pos.y < 0 || vertex.pos.y > mesh.height); 
+
+        //if(vertex.pos.x < 0 || vertex.pos.x > mesh.width || vertex.pos.y < 0 || vertex.pos.y > mesh.height) return false; 
+        //else return true;
 
     }
 
@@ -3615,7 +3763,11 @@ function AStar () {
 }
 
 AStar.prototype = {
+
+    constructor: AStar,
+
     dispose: function() {
+
         this.mesh = null;
         this.closedFaces.dispose();
         this.openedFaces.dispose();
@@ -3638,7 +3790,9 @@ AStar.prototype = {
         this.scoreH = null;
         this.predecessor = null;
     },
-    findPath: function( from, target, resultListFaces, resultListEdges ) {
+
+    findPath: function ( from, target, resultListFaces, resultListEdges ) {
+
         this.sortedOpenedFaces = [];
         this.closedFaces = new Dictionary(1);
         this.openedFaces = new Dictionary(1);
@@ -3754,10 +3908,10 @@ AStar.prototype = {
                     entryPoint.y = (innerEdge.originVertex.pos.y + innerEdge.destinationVertex.pos.y) * 0.5;
                     distancePoint.x = entryPoint.x - target.x;
                     distancePoint.y = entryPoint.y - target.y;
-                    h = distancePoint.get_length();
+                    h = distancePoint.length();
                     distancePoint.x = fromPoint.x - entryPoint.x;
                     distancePoint.y = fromPoint.y - entryPoint.y;
-                    g = this.scoreG.get(this.curFace) + distancePoint.get_length();
+                    g = this.scoreG.get(this.curFace) + distancePoint.length();
                     f = h + g;
                     fillDatas = false;
                     if(this.openedFaces.get(neighbourFace) == null || !this.openedFaces.get(neighbourFace)) {
@@ -3800,7 +3954,8 @@ AStar.prototype = {
         else if(this.scoreF.get(a) < this.scoreF.get(b)) return 1; 
         else return -1;
     },*/
-    isWalkableByRadius: function(fromEdge,throughFace,toEdge) {
+    isWalkableByRadius: function ( fromEdge, throughFace, toEdge ) {
+        
         var vA = null; // the vertex on fromEdge not on toEdge
         var vB = null; // the vertex on toEdge not on fromEdge
         var vC = null; // the common vertex of the 2 edges (pivot)
@@ -3932,6 +4087,7 @@ AStar.prototype = {
 };
 
 function Funnel() {
+
     this._currPoolPointsIndex = 0;
     this._poolPointsSize = 3000;
     this._numSamplesCircle = 16;
@@ -3960,15 +4116,20 @@ function Funnel() {
             this._sampleCircleDistanceSquared = _Math.Squared(this._sampleCircle[0].x - this._sampleCircle[1].x, this._sampleCircle[0].y - this._sampleCircle[1].y);
         }
     });
+
 }
 
 Funnel.prototype = {
 
+    constructor: Funnel,
+
     dispose: function() {
+
         this._sampleCircle = null;
+
     },
 
-    getPoint: function(x,y) {
+    getPoint: function( x, y ) {
 
         y = y || 0;
         x = x || 0;
@@ -3982,13 +4143,14 @@ Funnel.prototype = {
         return this.__point;
     },
 
-    getCopyPoint: function(pointToCopy) {
+    getCopyPoint: function ( pointToCopy ) {
 
-        return this.getPoint(pointToCopy.x,pointToCopy.y);
+        return this.getPoint( pointToCopy.x, pointToCopy.y );
 
     },
 
-    findPath: function( from, target, listFaces, listEdges, resultPath ) {
+    findPath: function ( from, target, listFaces, listEdges, resultPath ) {
+
         var p_from = from;
         var p_to = target;
         var rad = this._radius * 1.01;
@@ -4303,8 +4465,11 @@ Funnel.prototype = {
             resultPath.push(_Math.fix(adjustedPoints[i].x));
             resultPath.push(_Math.fix(adjustedPoints[i].y));
         }
+
     },
-    adjustWithTangents: function(p1, applyRadiusToP1, p2, applyRadiusToP2, pointSides, pointSuccessor, newPath, adjustedPoints) {
+
+    adjustWithTangents: function( p1, applyRadiusToP1, p2, applyRadiusToP2, pointSides, pointSuccessor, newPath, adjustedPoints ) {
+
         var tangentsResult = [];
         var side1 = pointSides.get(p1);
         var side2 = pointSides.get(p2);
@@ -4377,8 +4542,11 @@ Funnel.prototype = {
         adjustedPoints.push(pTangent1);
         adjustedPoints.push(pTangent2);
         newPath.push(p1);
+
     },
-    checkAdjustedPath: function(newPath, adjustedPoints, pointSides) {
+
+    checkAdjustedPath: function( newPath, adjustedPoints, pointSides ) {
+
         var needCheck = true;
         var point0;
         var point0Side;
@@ -4466,7 +4634,9 @@ Funnel.prototype = {
             }
         }
     },
-    smoothAngle: function(prevPoint,pointToSmooth,nextPoint,side,encirclePoints) {
+
+    smoothAngle: function( prevPoint, pointToSmooth, nextPoint, side, encirclePoints ) {
+
         var angleType = Geom2D.getDirection(prevPoint,pointToSmooth,nextPoint);
         var distanceSquared = _Math.Squared(prevPoint.x - nextPoint.x, prevPoint.y - nextPoint.y);
         if(distanceSquared <= this._sampleCircleDistanceSquared) return;
@@ -4505,6 +4675,7 @@ Funnel.prototype = {
             } else index = 0;
         }
         if(side == -1) encirclePoints.reverse();
+        
     }
 };
 
@@ -4518,13 +4689,20 @@ function PathFinder() {
     this.entity = null;
 
     Object.defineProperty(this, 'mesh', {
+
         get: function() { return this._mesh; },
         set: function(value) { this._mesh = value; this.astar.mesh = value; }
+
     });
+    
 }
 
 PathFinder.prototype = {
-    dispose: function() {
+
+    constructor: PathFinder,
+
+    dispose: function () {
+
         this._mesh = null;
         this.astar.dispose();
         this.astar = null;
@@ -4533,7 +4711,9 @@ PathFinder.prototype = {
         this.listEdges = null;
         this.listFaces = null;
     },
+
     findPath: function( target, resultPath ) {
+
         //resultPath = [];
         resultPath.splice(0,resultPath.length);
         //DDLS.Debug.assertFalse(this._mesh == null,"Mesh missing",{ fileName : "PathFinder.hx", lineNumber : 51, className : "DDLS.PathFinder", methodName : "findPath"});
@@ -4552,97 +4732,115 @@ PathFinder.prototype = {
             return;
         }
         this.funnel.findPath( start, target, this.listFaces, this.listEdges, resultPath );
+
     }
 };
 
-function Matrix2D (a,b,c,d,e,f) {
+function Matrix2D ( a, b, c, d, e, f ) {
 
-    this.n = new _Math.ARRAY(6);
-    this.n[0] = a || 1;
-    this.n[1] = b || 0;
-    this.n[2] = c || 0;
-    this.n[3] = d || 1;
-    this.n[4] = e || 0;
-    this.n[5] = f || 0;
+    this.n = [ a || 1, b || 0, c || 0, d || 1, e || 0, f || 0 ];
 
 }
 
 Matrix2D.prototype = {
+
     constructor: Matrix2D,
 
-    identity: function() {
-        this.n[0] = 1;
-        this.n[1] = 0;
-        this.n[2] = 0;
-        this.n[3] = 1;
-        this.n[4] = 0;
-        this.n[5] = 0;
+    identity: function () {
+
+        this.n = [ 1, 0, 0, 1, 0, 0 ];
         return this;
+
     },
 
-    translate: function(p) {
-        this.n[4] = this.n[4] + p.x;
-        this.n[5] = this.n[5] + p.y;
+    translate: function ( p ) {
+
+        var n = this.n;
+        n[4] += p.x;
+        n[5] += p.y;
         return this;
+
     },
 
-    scale: function(p) {
-        this.n[0] *= p.x;
-        this.n[1] *= p.y;
-        this.n[2] *= p.x;
-        this.n[3] *= p.y;
-        this.n[4] *= p.x;
-        this.n[5] *= p.y;
+    scale: function ( p ) {
+
+        var n = this.n;
+        n[0] *= p.x;
+        n[1] *= p.y;
+        n[2] *= p.x;
+        n[3] *= p.y;
+        n[4] *= p.x;
+        n[5] *= p.y;
         return this;
+
     },
 
-    rotate: function(rad) {
-        var aa = this.n[0], ab = this.n[1],
-        ac = this.n[2], ad = this.n[3],
-        atx = this.n[4], aty = this.n[5],
-        st = _Math.sin(rad), ct = _Math.cos(rad);
-        this.n[0] = aa*ct + ab*st;
-        this.n[1] = -aa*st + ab*ct;
-        this.n[2] = ac*ct + ad*st;
-        this.n[3] = -ac*st + ct*ad;
-        this.n[4] = ct*atx + st*aty;
-        this.n[5] = ct*aty - st*atx;
+    rotate: function ( rad ) {
+
+        var n = this.n;
+        var aa = n[0], ab = n[1],
+        ac = n[2], ad = n[3],
+        atx = n[4], aty = n[5],
+        st = Math.sin( rad ), ct = Math.cos( rad );
+        n[0] = aa*ct + ab*st;
+        n[1] = -aa*st + ab*ct;
+        n[2] = ac*ct + ad*st;
+        n[3] = -ac*st + ct*ad;
+        n[4] = ct*atx + st*aty;
+        n[5] = ct*aty - st*atx;
         return this;
+
     },
 
-    clone: function() {
-        return new Matrix2D(this.n[0],this.n[1],this.n[2],this.n[3],this.n[4],this.n[5]);
+    tranform: function ( p ) {
+
+        var n = this.n;
+        var x = n[0] * p.x + n[2] * p.y + n[4];
+        var y = n[1] * p.x + n[3] * p.y + n[5];
+        p.x = x;
+        p.y = y;
+
     },
 
-    tranform: function(point) {
-        var x = this.n[0] * point.x + this.n[2] * point.y + this.n[4];
-        var y = this.n[1] * point.x + this.n[3] * point.y + this.n[5];
-        point.x = x;
-        point.y = y;
+    transformX: function ( x, y ) {
+
+        var n = this.n;
+        return n[0] * x + n[2] * y + n[4];
+
     },
 
-    transformX: function(x,y) {
-        return this.n[0] * x + this.n[2] * y + this.n[4];
+    transformY: function ( x, y ) {
+
+        var n = this.n;
+        return n[1] * x + n[3] * y + n[5];
+
     },
 
-    transformY: function(x,y) {
-        return this.n[1] * x + this.n[3] * y + this.n[5];
-    },
+    concat: function ( matrix ) { // multiply
 
-    concat: function(matrix) {// multiply
-        var a = this.n[0] * matrix.n[0] + this.n[1] * matrix.n[2];
-        var b = this.n[0] * matrix.n[1] + this.n[1] * matrix.n[3];
-        var c = this.n[2] * matrix.n[0] + this.n[3] * matrix.n[2];
-        var d = this.n[2] * matrix.n[1] + this.n[3] * matrix.n[3];
-        var e = this.n[4] * matrix.n[0] + this.n[5] * matrix.n[2] + matrix.n[4];
-        var f = this.n[4] * matrix.n[1] + this.n[5] * matrix.n[3] + matrix.n[5];
-        this.n[0] = a;
-        this.n[1] = b;
-        this.n[2] = c;
-        this.n[3] = d;
-        this.n[4] = e;
-        this.n[5] = f;
+        var n = this.n;
+        var m = matrix.n;
+        var a = n[0] * m[0] + n[1] * m[2];
+        var b = n[0] * m[1] + n[1] * m[3];
+        var c = n[2] * m[0] + n[3] * m[2];
+        var d = n[2] * m[1] + n[3] * m[3];
+        var e = n[4] * m[0] + n[5] * m[2] + m[4];
+        var f = n[4] * m[1] + n[5] * m[3] + m[5];
+        n[0] = a;
+        n[1] = b;
+        n[2] = c;
+        n[3] = d;
+        n[4] = e;
+        n[5] = f;
         return this;
+
+    },
+
+    clone: function () {
+
+        var n = this.n;
+        return new Matrix2D( n[0], n[1], n[2], n[3], n[4], n[5] );
+
     }
 
 };
@@ -4650,10 +4848,9 @@ Matrix2D.prototype = {
 function Object2D() {
 
     this.id = _Math.generateUUID();
-    //DDLS.ObjectID++;
     this._pivot = new Point();
     this._position = new Point();
-    this._scale = new Point(1,1);
+    this._scale = new Point( 1, 1 );
     this._matrix = new Matrix2D();
     this._rotation = 0;
     this._constraintShape = null;
@@ -4705,28 +4902,28 @@ Object2D.prototype = {
 
     constructor: Object2D,
 
-    position:function( x, y ){
+    position: function ( x, y ) {
 
-        this._position.set(x,y);
+        this._position.set( x, y );
         this.hasChanged = true;
 
     },
 
-    scale:function( w, h ){
+    scale: function ( w, h ) {
 
         this._scale.set(w,h);
         this.hasChanged = true;
 
     },
 
-    pivot:function( x, y ){
+    pivot: function ( x, y ) {
 
         this._pivot.set(x,y);
         this.hasChanged = true;
 
     },
 
-    dispose: function() {
+    dispose: function () {
 
         this._matrix = null;
         this._coordinates = null;
@@ -4734,11 +4931,11 @@ Object2D.prototype = {
 
     },
 
-    updateValuesFromMatrix: function() {
+    updateValuesFromMatrix: function () {
 
     },
 
-    updateMatrixFromValues: function() {
+    updateMatrixFromValues: function () {
 
         this._matrix.identity().translate(this._pivot.negate()).scale(this._scale).rotate(this._rotation).translate(this._position);
 
@@ -4767,13 +4964,13 @@ World.prototype = {
 
     constructor: World,
 
-    getMesh:function(){
+    getMesh: function () {
 
         return this.mesh;
 
     },
 
-    update:function(){
+    update: function () {
 
         var lng = this.heroes.length;
 
@@ -4789,7 +4986,8 @@ World.prototype = {
                 j = lng;
                 while( j-- ){
                     if( i !== j ) {
-                        this.heroes[i].entity.isSee = this.heroes[i].fov.isInField( this.heroes[j].entity );
+                        //this.heroes[i].entity.isSee = this.heroes[i].fov.isInField( this.heroes[j].entity );
+                        this.heroes[i].isSee = this.heroes[i].fov.isInField( this.heroes[j] );
                     }
                 }
             }
@@ -4798,28 +4996,29 @@ World.prototype = {
 
     },
 
-    updateMesh : function(){
+    updateMesh: function () {
 
        this.mesh.updateObjects();
 
     },
     
-    add : function ( o ) {
+    add: function ( o ) {
 
         this.mesh.insertObject(o);
         this.objects.push(o);
 
     },
 
-    addHeroe : function( s ){
+    addHeroe: function ( s ) {
 
-        var h = new Heroe( s, this );
+        //var h = new Heroe( s, this );
+        var h = new Entity( s, this );
         this.heroes.push( h );
         return h;
         
     },
 
-    addObject : function( s ){
+    addObject: function ( s ) {
 
         s = s || {};
         var o = new Object2D();
@@ -4832,9 +5031,10 @@ World.prototype = {
         this.mesh.insertObject(o);
         this.objects.push(o);
         return o;
+
     },
 
-    reset : function(w,h){
+    reset: function ( w, h ) {
 
         this.mesh.dispose();
         if(w) this.w = w;
@@ -4844,7 +5044,7 @@ World.prototype = {
     
     },
 
-    rebuild : function( mesh ){
+    rebuild: function ( mesh ) {
 
         this.mesh.clear( true );
         if( mesh !== undefined ) this.mesh = mesh;
@@ -4856,6 +5056,7 @@ World.prototype = {
             this.objects[i]._constraintShape = null;
             this.mesh.insertObject(this.objects[i]);
         }
+
     },
     
 
@@ -4981,7 +5182,7 @@ function CircleMesh ( x, y, r, n ) {
 function Graph () {
 
     this.id = _Math.generateUUID();
-    //DDLS.GraphID++;
+
     this.edge = null;
     this.node = null;
 
@@ -4989,13 +5190,15 @@ function Graph () {
 
 Graph.prototype = {
 
+    constructor: Graph,
+
     dispose: function() {
 
         while( this.node != null ) this.deleteNode(this.node);
 
     },
 
-    insertNode: function() {
+    insertNode: function () {
 
         var node = new GraphNode();
         if(this.node != null) {
@@ -5004,9 +5207,10 @@ Graph.prototype = {
         }
         this.node = node;
         return node;
+
     },
 
-    deleteNode: function(node) {
+    deleteNode: function ( node ) {
 
         while(node.outgoingEdge != null) {
             if(node.outgoingEdge.oppositeEdge != null) this.deleteEdge(node.outgoingEdge.oppositeEdge);
@@ -5032,10 +5236,12 @@ Graph.prototype = {
 
     },
 
-    insertEdge: function(fromNode,toNode) {
+    insertEdge: function( fromNode, toNode ) {
 
-        if(fromNode.successorNodes.get(toNode) != null) return null;
+        if( fromNode.successorNodes.get( toNode ) != null ) return null;
+
         var edge = new GraphEdge();
+
         if(this.edge != null) {
             this.edge.prev = edge;
             edge.next = this.edge;
@@ -5059,7 +5265,7 @@ Graph.prototype = {
 
     },
     
-    deleteEdge: function(edge) {
+    deleteEdge: function( edge ) {
 
         if(this.edge == edge) {
             if(edge.next != null) {
@@ -6359,8 +6565,8 @@ Mesh2D.prototype.draw = function(){
 
 };
 
-Heroe.prototype.draw = function(){
+/*Entity.prototype.draw = function(){
 
-};
+}*/
 
-export { REVISION, Main, TwoPI, rand, randInt, ImageLoader, fromImageData, Heroe, World, RectMesh, CircleMesh, BitmapObject, GridMaze, Dungeon, SimpleView, ThreeView };
+export { REVISION, Main, TwoPI, rand, randInt, ImageLoader, fromImageData, Entity, World, RectMesh, CircleMesh, BitmapObject, GridMaze, Dungeon, SimpleView, ThreeView };

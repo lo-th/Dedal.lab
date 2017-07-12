@@ -4,6 +4,7 @@ import { Geom2D } from '../math/Geom2D';
 import { Dictionary, Log } from '../constants';
 
 function Funnel() {
+
     this._currPoolPointsIndex = 0;
     this._poolPointsSize = 3000;
     this._numSamplesCircle = 16;
@@ -32,15 +33,20 @@ function Funnel() {
             this._sampleCircleDistanceSquared = _Math.Squared(this._sampleCircle[0].x - this._sampleCircle[1].x, this._sampleCircle[0].y - this._sampleCircle[1].y);
         }
     });
+
 };
 
 Funnel.prototype = {
 
+    constructor: Funnel,
+
     dispose: function() {
+
         this._sampleCircle = null;
+
     },
 
-    getPoint: function(x,y) {
+    getPoint: function( x, y ) {
 
         y = y || 0;
         x = x || 0;
@@ -54,13 +60,14 @@ Funnel.prototype = {
         return this.__point;
     },
 
-    getCopyPoint: function(pointToCopy) {
+    getCopyPoint: function ( pointToCopy ) {
 
-        return this.getPoint(pointToCopy.x,pointToCopy.y);
+        return this.getPoint( pointToCopy.x, pointToCopy.y );
 
     },
 
-    findPath: function( from, target, listFaces, listEdges, resultPath ) {
+    findPath: function ( from, target, listFaces, listEdges, resultPath ) {
+
         var p_from = from;
         var p_to = target;
         var rad = this._radius * 1.01;
@@ -375,8 +382,11 @@ Funnel.prototype = {
             resultPath.push(_Math.fix(adjustedPoints[i].x));
             resultPath.push(_Math.fix(adjustedPoints[i].y));
         }
+
     },
-    adjustWithTangents: function(p1, applyRadiusToP1, p2, applyRadiusToP2, pointSides, pointSuccessor, newPath, adjustedPoints) {
+
+    adjustWithTangents: function( p1, applyRadiusToP1, p2, applyRadiusToP2, pointSides, pointSuccessor, newPath, adjustedPoints ) {
+
         var tangentsResult = [];
         var side1 = pointSides.get(p1);
         var side2 = pointSides.get(p2);
@@ -449,8 +459,11 @@ Funnel.prototype = {
         adjustedPoints.push(pTangent1);
         adjustedPoints.push(pTangent2);
         newPath.push(p1);
+
     },
-    checkAdjustedPath: function(newPath, adjustedPoints, pointSides) {
+
+    checkAdjustedPath: function( newPath, adjustedPoints, pointSides ) {
+
         var needCheck = true;
         var point0;
         var point0Side;
@@ -538,7 +551,9 @@ Funnel.prototype = {
             }
         }
     },
-    smoothAngle: function(prevPoint,pointToSmooth,nextPoint,side,encirclePoints) {
+
+    smoothAngle: function( prevPoint, pointToSmooth, nextPoint, side, encirclePoints ) {
+
         var angleType = Geom2D.getDirection(prevPoint,pointToSmooth,nextPoint);
         var distanceSquared = _Math.Squared(prevPoint.x - nextPoint.x, prevPoint.y - nextPoint.y);
         if(distanceSquared <= this._sampleCircleDistanceSquared) return;
@@ -577,6 +592,7 @@ Funnel.prototype = {
             } else index = 0;
         }
         if(side == -1) encirclePoints.reverse();
+        
     }
 };
 
