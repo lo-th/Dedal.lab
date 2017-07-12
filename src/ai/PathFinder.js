@@ -1,6 +1,12 @@
-DDLS.PathFinder = function() {
-    this.astar = new DDLS.AStar();
-    this.funnel = new DDLS.Funnel();
+import { Log } from '../constants';
+import { AStar } from '../ai/AStar';
+import { Funnel } from '../ai/Funnel';
+import { Geom2D } from '../math/Geom2D';
+
+function PathFinder() {
+
+    this.astar = new AStar();
+    this.funnel = new Funnel();
     this.listFaces = [];
     this.listEdges = [];
     this._mesh = null;
@@ -12,7 +18,7 @@ DDLS.PathFinder = function() {
     });
 };
 
-DDLS.PathFinder.prototype = {
+PathFinder.prototype = {
     dispose: function() {
         this._mesh = null;
         this.astar.dispose();
@@ -27,7 +33,7 @@ DDLS.PathFinder.prototype = {
         resultPath.splice(0,resultPath.length);
         //DDLS.Debug.assertFalse(this._mesh == null,"Mesh missing",{ fileName : "PathFinder.hx", lineNumber : 51, className : "DDLS.PathFinder", methodName : "findPath"});
         //DDLS.Debug.assertFalse(this.entity == null,"Entity missing",{ fileName : "PathFinder.hx", lineNumber : 52, className : "DDLS.PathFinder", methodName : "findPath"});
-        if( DDLS.Geom2D.isCircleIntersectingAnyConstraint(target,this.entity.radius,this._mesh) ) return;
+        if( Geom2D.isCircleIntersectingAnyConstraint(target,this.entity.radius,this._mesh) ) return;
         this.astar.radius = this.entity.radius;
         this.funnel.radius = this.entity.radius;
         this.listFaces.splice(0,this.listFaces.length);
@@ -37,9 +43,11 @@ DDLS.PathFinder.prototype = {
         var start = this.entity.position;
         this.astar.findPath( start, target, this.listFaces, this.listEdges );
         if(this.listFaces.length == 0) {
-            DDLS.Log("PathFinder listFaces.length == 0");
+            Log("PathFinder listFaces.length == 0");
             return;
         }
         this.funnel.findPath( start, target, this.listFaces, this.listEdges, resultPath );
     }
 };
+
+export { PathFinder };

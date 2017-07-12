@@ -1,12 +1,17 @@
+import { RectMesh } from '../factories/RectMesh';
+import { PathFinder } from '../ai/PathFinder';
+import { Heroe } from '../ai/Heroe';
+import { Object2D } from '../core/Object2D';
 
-DDLS.World = function( w, h ) {
+
+function World ( w, h ) {
     
     this.w = w || 512;
     this.h = h || 512;
 
-    this.mesh = DDLS.RectMesh( this.w, this.h );
+    this.mesh = RectMesh( this.w, this.h );
 
-    this.pathFinder = new DDLS.PathFinder();
+    this.pathFinder = new PathFinder();
     this.pathFinder.mesh = this.mesh;
 
     this.heroes = [];
@@ -16,10 +21,14 @@ DDLS.World = function( w, h ) {
 
 };
 
-DDLS.World.prototype = {
+World.prototype = {
+
+    constructor: World,
 
     getMesh:function(){
+
         return this.mesh;
+
     },
 
     update:function(){
@@ -62,7 +71,7 @@ DDLS.World.prototype = {
 
     addHeroe : function( s ){
 
-        var h = new DDLS.Heroe( s, this );
+        var h = new Heroe( s, this );
         this.heroes.push( h );
         return h;
         
@@ -71,7 +80,7 @@ DDLS.World.prototype = {
     addObject : function( s ){
 
         s = s || {};
-        var o = new DDLS.Object();
+        var o = new Object2D();
         o.coordinates = s.coord || [-1,-1,1,-1,  1,-1,1,1,  1,1,-1,1,  -1,1,-1,-1];
         o.position(s.x || 1,s.y || 1);
         o.scale(s.w || 1, s.h || 1);
@@ -88,7 +97,7 @@ DDLS.World.prototype = {
         this.mesh.dispose();
         if(w) this.w = w;
         if(h) this.h = h;
-        this.mesh = DDLS.RectMesh( this.w, this.h );
+        this.mesh = RectMesh( this.w, this.h );
         this.pathFinder.mesh = this.mesh;
     
     },
@@ -97,7 +106,7 @@ DDLS.World.prototype = {
 
         this.mesh.clear( true );
         if( mesh !== undefined ) this.mesh = mesh;
-        else this.mesh = DDLS.RectMesh( this.w, this.h );
+        else this.mesh = RectMesh( this.w, this.h );
         this.pathFinder.mesh = this.mesh;
         //this.mesh._objects = [];
         var i = this.objects.length;
@@ -110,3 +119,5 @@ DDLS.World.prototype = {
 
 
 };
+
+export { World };

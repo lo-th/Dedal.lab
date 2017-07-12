@@ -1,4 +1,7 @@
-DDLS.RandGenerator = function(seed,rangeMin,rangeMax) {
+import { _Math } from '../math/Math';
+
+function RandGenerator ( seed, rangeMin, rangeMax ) {
+
     this.rangeMin = rangeMin || 0;
     this.rangeMax = rangeMax || 1;
     this._originalSeed = this._currSeed = seed || 1234;
@@ -8,9 +11,12 @@ DDLS.RandGenerator = function(seed,rangeMin,rangeMax) {
         get: function() { return this._originalSeed; },
         set: function(value) { this._originalSeed = this._currSeed = value; }
     });
+
 };
-DDLS.RandGenerator.prototype = {
-    constructor: DDLS.RandGenerator,
+
+RandGenerator.prototype = {
+
+    constructor: RandGenerator,
     reset: function() {
         this._currSeed = this._originalSeed;
         this._numIter = 0;
@@ -20,7 +26,7 @@ DDLS.RandGenerator.prototype = {
         this._tempString = (tmp*tmp).toString();//Std.string(_floatSeed * _floatSeed);
         while(this._tempString.length < 8) this._tempString = "0" + this._tempString;
         this._currSeed = parseInt(this._tempString.substr( 1 , 5 ));//Std.parseInt(HxOverrides.substr(this._tempString,1,5));
-        var res = DDLS.round(this.rangeMin + (this._currSeed / 99999) * (this.rangeMax - this.rangeMin));
+        var res = _Math.round(this.rangeMin + (this._currSeed / 99999) * (this.rangeMax - this.rangeMin));
         if(this._currSeed == 0) this._currSeed = this._originalSeed + this._numIter;
         this._numIter++;
         if(this._numIter == 200) this.reset();
@@ -42,3 +48,5 @@ DDLS.RandGenerator.prototype = {
         }
     }
 };
+
+export { RandGenerator };

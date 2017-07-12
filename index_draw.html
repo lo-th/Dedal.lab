@@ -8,13 +8,14 @@
 <meta http-equiv="Pragma" content="no-cache">
 <link rel="shortcut icon" href="favicon.ico">
 <style>
-body { margin: 0px; background-color: #6a6a6a; overflow: hidden; background-image:url(images/bg.png); background-repeat:repeat-x;}
+body { margin: 0px; background-color: #6a6a6a; overflow: hidden; background-image:url(assets/bg.png); background-repeat:repeat-x;}
 canvas { position: absolute; top:0; left:0; pointer-events:auto; width:100%; height:100%; }
 </style>
-<script src="build/ddls.min.js"></script>
+<script src="build/ddls.js"></script>
 <script src="js/libs//three.min.js"></script>
 <script src="js/libs/sea3d.min.js"></script>
 <script src="js/controls/OrbitControls.js"></script>
+<script src="js/pool.js"></script>
 </head>
 <body>
 <canvas id="canvas"></canvas>
@@ -169,8 +170,9 @@ function init() {
 
     draw = new DrawCanvas();
 
-    load();
-    
+    // load assets
+
+    pool.load(['assets/basic.sea'], loadComplete );
 
 }
 
@@ -182,20 +184,18 @@ function angleBetween(p1, p2) {
 }
 
 
-function load(){
-    var loader = new THREE.SEA3D();
-    loader.onComplete = function( e ) {
-        heroModel = loader.getMesh("hero");
-        geobox = loader.getMesh("box").geometry;
-        matbox = loader.getMesh("box").material;
-        matboxSelect = matbox.clone();
-        matboxSelect.color.setHex( 0xff0000 );
-        matboxSelect.transparent = true;
-        matboxSelect.opacity = 0.5;
+function loadComplete(){
+    var meshs = pool.meshByName ( 'basic' );
+    
+    heroModel = meshs.hero;
+    geobox = meshs.box.geometry;
+    matbox = meshs.box.material;
+    matboxSelect = matbox.clone();
+    matboxSelect.color.setHex( 0xff0000 );
+    matboxSelect.transparent = true;
+    matboxSelect.opacity = 0.5;
 
-        demo();
-    }
-    loader.load( 'models/basic.sea' );
+    demo();
 }
 
 function demo(){

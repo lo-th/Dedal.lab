@@ -1,14 +1,16 @@
 //var DDLS = DDLS || {};
+import { _Math } from '../math/Math';
+import { Main } from '../constants';
 
-DDLS.SimpleView = function( world ) {
+function SimpleView( world ) {
 
 
 
     //this.w = w || 512;
     //this.h = h || 512;
 
-    this.g0 = new DDLS.BasicCanvas( world.w, world.h )
-    this.g = new DDLS.BasicCanvas( world.w, world.h );
+    this.g0 = new BasicCanvas( world.w, world.h )
+    this.g = new BasicCanvas( world.w, world.h );
 
     this.g.canvas.style.pointerEvents = 'none';
     this.g0.canvas.style.pointerEvents = 'auto';
@@ -35,11 +37,11 @@ DDLS.SimpleView = function( world ) {
 
     this.domElement = this.g0.canvas;
 
-    DDLS.VIEW = this;
+    Main.set( this );
 
 };
 
-DDLS.SimpleView.prototype = {
+SimpleView.prototype = {
 
     drawImage : function ( img, w, h ) {
 
@@ -153,9 +155,11 @@ DDLS.SimpleView.prototype = {
 
 };
 
+export { SimpleView };
+
 // CANVAS
 
-DDLS.BasicCanvas = function( w, h ) {
+function BasicCanvas( w, h ) {
 
     this.w = w || 200;
     this.h = h || 200;
@@ -171,7 +175,7 @@ DDLS.BasicCanvas = function( w, h ) {
 
 };
 
-DDLS.BasicCanvas.prototype = {
+BasicCanvas.prototype = {
 
     clear: function() {
         this.ctx.clearRect(0,0,this.w,this.h);
@@ -181,7 +185,7 @@ DDLS.BasicCanvas.prototype = {
     },
     drawCircle: function(x,y,radius, s, e) {
         s = s || 0;
-        e = e || DDLS.TwoPI;
+        e = e || _Math.TwoPI;
         this.ctx.beginPath();
         this.ctx.arc(x,y,radius, s, e, false);
         //this.ctx.stroke();
@@ -236,12 +240,12 @@ DDLS.BasicCanvas.prototype = {
 };
 
 // DRAW CONTEXT
-
-DDLS.DrawContext = function(g) {
+/*
+function DrawContext(g) {
     this.g = g;
 };
 
-DDLS.DrawContext.prototype = {
+DrawContext.prototype = {
     clear: function() { this.g.clear(); },
     lineStyle: function(thickness,c) { this.g.lineStyle(thickness,c); },
     beginFill: function(c) { this.g.beginFill(c);},
@@ -250,4 +254,4 @@ DDLS.DrawContext.prototype = {
     lineTo: function(x,y) { this.g.lineTo(x,y);},
     drawCircle: function(cx,cy,r) { this.g.drawCircle(cx,cy,r); },
     drawRect: function(x,y,w,h) { this.g.drawRect(x,y,w,h); }
-};
+};*/

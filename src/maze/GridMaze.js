@@ -1,23 +1,48 @@
-DDLS.GridMaze = function(width,height,cols,rows) {
+
+import { _Math } from '../math/Math';
+import { RandGenerator } from '../math/RandGenerator';
+import { Object2D } from '../core/Object2D';
+
+
+function Cell (col,row) {
+
+    this.visited = false;
+    this.col = col;
+    this.row = row;
+    var _g = [];
+    var _g2 = 0;
+    var _g1 = 4;
+    while(_g2 < _g1) {
+        var i = _g2++;
+        _g.push([]);
+    }
+    this.walls = _g;
+
+};
+
+function GridMaze (width,height,cols,rows) {
 
     this.generate(width,height,cols,rows);
 
 };
 
-DDLS.GridMaze.prototype = {
-    constructor: DDLS.GridMaze,
+GridMaze.prototype = {
+
+    constructor: GridMaze,
 
     generate : function(width,height,cols,rows) {
         this.tileWidth = width / cols | 0;
         this.tileHeight = height / rows | 0;
         this.cols = cols;
         this.rows = rows;
-        this.rng = new DDLS.RandGenerator(DDLS.randInt(1234,7259));
+        this.rng = new RandGenerator(_Math.randInt(1234,7259));
         this.makeGrid();
         this.traverseGrid();
         this.populateObject();
     },
+
     makeGrid : function() {
+
         this.grid = [];
         var _g1 = 0;
         var _g = this.cols;
@@ -28,7 +53,7 @@ DDLS.GridMaze.prototype = {
             var _g2 = this.rows;
             while(_g3 < _g2) {
                 var r = _g3++;
-                var cell = new DDLS.Cell(c,r);
+                var cell = new Cell(c,r);
                 this.grid[c][r] = cell;
                 var topLeft = [c * this.tileWidth,r * this.tileHeight];
                 var topRight = [(c + 1) * this.tileWidth,r * this.tileHeight];
@@ -41,7 +66,9 @@ DDLS.GridMaze.prototype = {
             }
         }
     },
+
     traverseGrid : function() {
+
         var DX = [0,1,0,-1];
         var DY = [-1,0,1,0];
         var REVERSED_DIR = [2,3,0,1];
@@ -73,8 +100,10 @@ DDLS.GridMaze.prototype = {
             if(idx >= 0) cells.splice(idx,1);
         }
     },
+
     populateObject : function() {
-        this.object = new DDLS.Object();
+
+        this.object = new Object2D();
         var coords = [];
         var _g1 = 0;
         var _g = this.cols;
@@ -103,16 +132,4 @@ DDLS.GridMaze.prototype = {
     }
 }
 
-DDLS.Cell = function(col,row) {
-    this.visited = false;
-    this.col = col;
-    this.row = row;
-    var _g = [];
-    var _g2 = 0;
-    var _g1 = 4;
-    while(_g2 < _g1) {
-        var i = _g2++;
-        _g.push([]);
-    }
-    this.walls = _g;
-};
+export { GridMaze };

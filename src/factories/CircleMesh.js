@@ -1,4 +1,13 @@
-DDLS.CircleMesh = function( x, y, r, n ) {
+import { _Math } from '../math/Math';
+
+import { Face } from '../core/Face';
+import { Vertex } from '../core/Vertex';
+import { Segment } from '../core/Segment';
+import { Edge } from '../core/Edge';
+import { Shape } from '../core/Shape';
+import { Mesh2D } from '../core/Mesh2D';
+
+function CircleMesh ( x, y, r, n ) {
 
     r = r || 100;
     x = x || r;
@@ -15,20 +24,20 @@ DDLS.CircleMesh = function( x, y, r, n ) {
     var i = n;
 
     while(i--){
-        f.push(new DDLS.Face());
-        v.push(new DDLS.Vertex());
-        s.push(new DDLS.Segment());
-        e.push(new DDLS.Edge(), new DDLS.Edge(), new DDLS.Edge());
+        f.push(new Face());
+        v.push(new Vertex());
+        s.push(new Segment());
+        e.push(new Edge(), new Edge(), new Edge());
     }
 
-    var boundShape = new DDLS.Shape();    
+    var boundShape = new Shape();    
     var offset = 10;
     
     var ndiv = 1/n;
     i = 0;
     while( i < n ) {
 
-        v[i].pos.set( x + ((r+offset) * DDLS.cos(DDLS.TwoPI * i * ndiv)), y + ((r+offset) * DDLS.sin(DDLS.TwoPI * i * ndiv)) );
+        v[i].pos.set( x + ((r+offset) * _Math.cos( _Math.TwoPI * i * ndiv)), y + ((r+offset) * _Math.sin( _Math.TwoPI * i * ndiv)) );
         v[i].setDatas(e[i*2]);
         i++;
 
@@ -91,16 +100,16 @@ DDLS.CircleMesh = function( x, y, r, n ) {
     i = 0;
     while( i < n ) {
 
-        coord.push(x+(r * DDLS.cos(DDLS.TwoPI * i * ndiv)));
-        coord.push(y+(r * DDLS.sin(DDLS.TwoPI * i * ndiv)));
-        coord.push(x+(r * DDLS.cos(DDLS.TwoPI * (i + 1) * ndiv)));
-        coord.push(y+(r * DDLS.sin(DDLS.TwoPI * (i + 1) * ndiv)));
+        coord.push(x+(r * _Math.cos( _Math.TwoPI * i * ndiv)));
+        coord.push(y+(r * _Math.sin( _Math.TwoPI * i * ndiv)));
+        coord.push(x+(r * _Math.cos( _Math.TwoPI * (i + 1) * ndiv)));
+        coord.push(y+(r * _Math.sin( _Math.TwoPI * (i + 1) * ndiv)));
         i++;
 
     }
 
 
-    var mesh = new DDLS.Mesh( r*2, r*2 );
+    var mesh = new Mesh2D( r*2, r*2 );
     mesh._vertices = v;
     mesh._edges = e;
     mesh._faces = f;
@@ -113,3 +122,5 @@ DDLS.CircleMesh = function( x, y, r, n ) {
     return mesh;
 
 };
+
+export { CircleMesh };

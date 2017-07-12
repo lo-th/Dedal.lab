@@ -1,14 +1,18 @@
-DDLS.Dungeon = function( w, h, min, max ) {
 
+import { _Math } from '../math/Math';
+import { fromImageData } from '../core/Tools';
+import { BitmapObject } from '../factories/BitmapObject';
 
+function Dungeon( w, h, min, max ) {
     //this.callback  = callback;
     this.generate( w, h, min, max);
     
 
 };
 
-DDLS.Dungeon.prototype = {
-    constructor: DDLS.Dungeon,
+Dungeon.prototype = {
+
+    constructor: Dungeon,
 
     generate: function ( w, h, min, max ) {
 
@@ -25,17 +29,17 @@ DDLS.Dungeon.prototype = {
             }
         }
 
-        var room_count = DDLS.randInt(10, 20);
+        var room_count = _Math.randInt(10, 20);
         var min_size = min || 5;
         var max_size = max || 15;
 
         for (var i = 0; i < room_count; i++) {
             var room = {};
 
-            room.x = DDLS.randInt(1, this.w - max_size - 1);
-            room.y = DDLS.randInt(1, this.h - max_size - 1);
-            room.w = DDLS.randInt(min_size, max_size);
-            room.h = DDLS.randInt(min_size, max_size);
+            room.x = _Math.randInt(1, this.w - max_size - 1);
+            room.y = _Math.randInt(1, this.h - max_size - 1);
+            room.w = _Math.randInt(min_size, max_size);
+            room.h = _Math.randInt(min_size, max_size);
 
             if (this.DoesCollide(room)) {
                 i--;
@@ -54,12 +58,12 @@ DDLS.Dungeon.prototype = {
             var roomB = this.FindClosestRoom(roomA);
 
             var pointA = {
-                x: DDLS.randInt(roomA.x, roomA.x + roomA.w),
-                y: DDLS.randInt(roomA.y, roomA.y + roomA.h)
+                x: _Math.randInt(roomA.x, roomA.x + roomA.w),
+                y: _Math.randInt(roomA.y, roomA.y + roomA.h)
             };
             var pointB = {
-                x: DDLS.randInt(roomB.x, roomB.x + roomB.w),
-                y: DDLS.randInt(roomB.y, roomB.y + roomB.h)
+                x: _Math.randInt(roomB.x, roomB.x + roomB.w),
+                y: _Math.randInt(roomB.y, roomB.y + roomB.h)
             };
 
             while ((pointB.x != pointA.x) || (pointB.y != pointA.y)) {
@@ -177,8 +181,8 @@ DDLS.Dungeon.prototype = {
 
 
 
-        var pixels = DDLS.fromImageData(null, ctx.getImageData(0,0,this.w* 10,this.h* 10));
-        this.object = DDLS.BitmapObject.buildFromBmpData( pixels, 1.8 );
+        var pixels = fromImageData(null, ctx.getImageData(0,0,this.w* 10,this.h* 10));
+        this.object = BitmapObject.buildFromBmpData( pixels, 1.8 );
 
         //this.callback( this.object );
 //console.log('creat', this.map )
@@ -187,3 +191,5 @@ DDLS.Dungeon.prototype = {
 
     }
 }
+
+export { Dungeon };

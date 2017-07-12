@@ -1,4 +1,9 @@
-DDLS.Heroe = function(s, world) {
+import { Point } from '../math/Point';
+import { EntityAI } from '../ai/EntityAI';
+import { FieldOfView } from '../ai/FieldOfView';
+import { LinearPathSampler } from '../ai/LinearPathSampler';
+
+function Heroe ( s, world ) {
     s = s || {};
     
     this.world = world;
@@ -7,7 +12,7 @@ DDLS.Heroe = function(s, world) {
     //this._path = [];
     this.tmppath = [];
 
-    this.target = new DDLS.Point();
+    this.target = new Point();
     this.move = false;
     this.newPath = false;
 
@@ -17,18 +22,19 @@ DDLS.Heroe = function(s, world) {
 
     this.testSee = s.see || false;
 
-    this.entity = new DDLS.EntityAI( s.x || 0, s.y || 0, s.r || 4 );
+    this.entity = new EntityAI( s.x || 0, s.y || 0, s.r || 4 );
 
-    this.fov = new DDLS.FieldOfView( this.entity, this.world );
+    this.fov = new FieldOfView( this.entity, this.world );
 
-    this.pathSampler = new DDLS.LinearPathSampler();
+    this.pathSampler = new LinearPathSampler();
     this.pathSampler.entity = this.entity;
     this.pathSampler.path = this.tmppath;
     this.pathSampler.samplingDistance = s.speed || 10;
 
 };
 
-DDLS.Heroe.prototype = {
+Heroe.prototype = {
+    
     setTarget:function(x, y){
 
         this.path = []
@@ -97,3 +103,5 @@ DDLS.Heroe.prototype = {
 
     }
 };
+
+export { Heroe };

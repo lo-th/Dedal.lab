@@ -16,3 +16,13 @@ and convert to full javascript without extra lib<br><br>
 <a href="http://lo-th.github.io/Dedal.lab/2d_dungeon.html">2d dungeon</a><br>
 <a href="http://lo-th.github.io/Dedal.lab/2d_Pathfinding .html">2d path finding</a><br>
 </p>
+
+
+## Setup
+
+- Install [Node.js](https://nodejs.org/)
+- Execute `npm install`
+
+## Build
+
+- Execute `npm run build` (`npm run build-closure` or `npm run build-uglify` for minifying)

@@ -1,5 +1,12 @@
-DDLS.AStar = function() {
-    this.iterEdge = new DDLS.FromFaceToInnerEdges();
+import { Dictionary, Log } from '../constants';
+import { _Math } from '../math/Math';
+import { Point } from '../math/Point';
+import { Geom2D } from '../math/Geom2D';
+import { FromFaceToInnerEdges } from '../core/Iterators';
+
+function AStar () {
+
+    this.iterEdge = new FromFaceToInnerEdges();
     this.mesh = null;
     this._radius = 0;
     this.radiusSquared = 0;
@@ -19,7 +26,7 @@ DDLS.AStar = function() {
 
 };
 
-DDLS.AStar.prototype = {
+AStar.prototype = {
     dispose: function() {
         this.mesh = null;
         this.closedFaces.dispose();
@@ -45,20 +52,20 @@ DDLS.AStar.prototype = {
     },
     findPath: function( from, target, resultListFaces, resultListEdges ) {
         this.sortedOpenedFaces = [];
-        this.closedFaces = new DDLS.Dictionary(1);
-        this.openedFaces = new DDLS.Dictionary(1);
-        this.entryEdges = new DDLS.Dictionary(1);
-        this.predecessor = new DDLS.Dictionary(1);
-        this.entryX = new DDLS.Dictionary(1);
-        this.entryY = new DDLS.Dictionary(1);
-        this.scoreF = new DDLS.Dictionary(1);
-        this.scoreG = new DDLS.Dictionary(1);
-        this.scoreH = new DDLS.Dictionary(1);
+        this.closedFaces = new Dictionary(1);
+        this.openedFaces = new Dictionary(1);
+        this.entryEdges = new Dictionary(1);
+        this.predecessor = new Dictionary(1);
+        this.entryX = new Dictionary(1);
+        this.entryY = new Dictionary(1);
+        this.scoreF = new Dictionary(1);
+        this.scoreG = new Dictionary(1);
+        this.scoreH = new Dictionary(1);
         
 
         var loc, locEdge, locVertex, distance, p1, p2, p3;
 
-        loc = DDLS.Geom2D.locatePosition(from, this.mesh);
+        loc = Geom2D.locatePosition(from, this.mesh);
         if ( loc.type == 0 ){
             // vertex are always in constraint, so we abort
             locVertex = loc; return;
@@ -71,7 +78,7 @@ DDLS.AStar.prototype = {
             this.fromFace = loc;
         }
         //
-        loc = DDLS.Geom2D.locatePosition( target, this.mesh );
+        loc = Geom2D.locatePosition( target, this.mesh );
         if ( loc.type == 0 ){
             locVertex = loc;
             this.toFace = locVertex.edge.leftFace;
@@ -83,7 +90,7 @@ DDLS.AStar.prototype = {
         }
 
 
-        /*loc = DDLS.Geom2D.locatePosition(fromX,fromY,this.mesh);
+        /*loc = Geom2D.locatePosition(fromX,fromY,this.mesh);
         switch(loc[1]) {
         case 0:
             var vertex = loc[2];
@@ -102,7 +109,7 @@ DDLS.AStar.prototype = {
         case 3:
             break;
         }
-        loc = DDLS.Geom2D.locatePosition(toX,toY,this.mesh);
+        loc = Geom2D.locatePosition(toX,toY,this.mesh);
         switch(loc[1]) {
         case 0:
             var vertex1 = loc[2];
@@ -127,19 +134,19 @@ DDLS.AStar.prototype = {
         this.entryY.set(this.fromFace,from.y);
         this.scoreG.set(this.fromFace,0);
 
-        var dist = DDLS.SquaredSqrt(target.x - from.x, target.y - from.y);
+        var dist = _Math.SquaredSqrt(target.x - from.x, target.y - from.y);
 
         this.scoreH.set(this.fromFace,dist);
         this.scoreF.set(this.fromFace,dist);
 
         var innerEdge, neighbourFace, f, g, h;
-        var fromPoint = new DDLS.Point();
-        var entryPoint = new DDLS.Point();
-        var distancePoint = new DDLS.Point();
+        var fromPoint = new Point();
+        var entryPoint = new Point();
+        var distancePoint = new Point();
         var fillDatas = false;
         while(true) {
             if(this.sortedOpenedFaces.length == 0) {
-                DDLS.Log("AStar no path found");
+                Log("AStar no path found");
                 this.curFace = null;
                 break;
             }
@@ -234,7 +241,7 @@ DDLS.AStar.prototype = {
         dot = (vC.pos.x - vA.pos.x) * (vB.pos.x - vA.pos.x) + (vC.pos.y - vA.pos.y) * (vB.pos.y - vA.pos.y);
         if(dot <= 0) {
             // we compare length of AC with radius
-            distSquared = DDLS.Squared(vC.pos.x - vA.pos.x, vC.pos.y - vA.pos.y);
+            distSquared = _Math.Squared(vC.pos.x - vA.pos.x, vC.pos.y - vA.pos.y);
             if(distSquared >= this.diameterSquared) return true;
             else return false;
         }
@@ -243,7 +250,7 @@ DDLS.AStar.prototype = {
         dot = (vC.pos.x - vB.pos.x) * (vA.pos.x - vB.pos.x) + (vC.pos.y - vB.pos.y) * (vA.pos.y - vB.pos.y);
         if(dot <= 0) {
             // we compare length of BC with radius
-            distSquared = DDLS.Squared(vC.pos.x - vB.pos.x, vC.pos.y - vB.pos.y);
+            distSquared = _Math.Squared(vC.pos.x - vB.pos.x, vC.pos.y - vB.pos.y);
             if(distSquared >= this.diameterSquared) return true;
             else return false;
         }
@@ -254,19 +261,19 @@ DDLS.AStar.prototype = {
 
         // if the adjacent edge is constrained, we check the distance of orthognaly projected
         if(adjEdge.isConstrained) {
-            var proj = new DDLS.Point(vC.pos.x,vC.pos.y);
-            DDLS.Geom2D.projectOrthogonaly(proj,adjEdge);
-            distSquared = DDLS.Squared(proj.x - vC.pos.x, proj.y - vC.pos.y);
+            var proj = new Point(vC.pos.x,vC.pos.y);
+            Geom2D.projectOrthogonaly( proj, adjEdge );
+            distSquared = _Math.Squared(proj.x - vC.pos.x, proj.y - vC.pos.y);
             if(distSquared >= this.diameterSquared) return true; 
             else return false;
         } else {// if the adjacent is not constrained
-            var distSquaredA = DDLS.Squared(vC.pos.x - vA.pos.x, vC.pos.y - vA.pos.y);
-            var distSquaredB = DDLS.Squared(vC.pos.x - vB.pos.x, vC.pos.y - vB.pos.y);
+            var distSquaredA = _Math.Squared(vC.pos.x - vA.pos.x, vC.pos.y - vA.pos.y);
+            var distSquaredB = _Math.Squared(vC.pos.x - vB.pos.x, vC.pos.y - vB.pos.y);
             if(distSquaredA < this.diameterSquared || distSquaredB < this.diameterSquared) return false; 
             else {
                 var vFaceToCheck = [];
                 var vFaceIsFromEdge = [];
-                var facesDone = new DDLS.Dictionary(1);
+                var facesDone = new Dictionary(1);
                 vFaceIsFromEdge.push(adjEdge);
                 if(adjEdge.leftFace == throughFace) {
                     vFaceToCheck.push(adjEdge.rightFace);
@@ -303,7 +310,7 @@ DDLS.AStar.prototype = {
 
                     // we check if the next face is not already in pipe
                     // and if the edge A is close to pivot vertex
-                    if(!facesDone.get(nextFaceA) && DDLS.Geom2D.distanceSquaredVertexToEdge(vC,currEdgeA) < this.diameterSquared) {
+                    if(!facesDone.get(nextFaceA) && Geom2D.distanceSquaredVertexToEdge(vC,currEdgeA) < this.diameterSquared) {
                         // if the edge is constrained
                         if(currEdgeA.isConstrained) return false; // so it is not walkable
                         else {
@@ -315,7 +322,7 @@ DDLS.AStar.prototype = {
                     }
                     // we check if the next face is not already in pipe
                     // and if the edge B is close to pivot vertex
-                    if(!facesDone.get(nextFaceB) && DDLS.Geom2D.distanceSquaredVertexToEdge(vC,currEdgeB) < this.diameterSquared) {
+                    if(!facesDone.get(nextFaceB) && Geom2D.distanceSquaredVertexToEdge(vC,currEdgeB) < this.diameterSquared) {
                         // if the edge is constrained
                         if(currEdgeB.isConstrained) return false; // so it is not walkable
                         else {
@@ -335,3 +342,5 @@ DDLS.AStar.prototype = {
         //?\\return true;
     }
 };
+
+export { AStar };

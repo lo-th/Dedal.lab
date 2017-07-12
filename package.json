@@ -1,0 +1,54 @@
+{
+  "name": "ddls",
+  "version": "1.0.1",
+  "description": "JavaScript 3D library",
+  "main": "build/ddls.js",
+  "repository": "lo-th/Dedal.lab",
+  "jsnext:main": "build/ddls.module.js",
+  "module": "build/ddls.module.js",
+  "files": [
+    "package.json",
+    "LICENSE",
+    "README.md",
+    "build/ddls.js",
+    "build/ddls.min.js",
+    "build/ddls.module.js",
+    "src",
+    "examples/js",
+    "examples/fonts"
+  ],
+  "directories": {
+    "doc": "docs",
+    "example": "examples",
+    "test": "test"
+  },
+  "eslintConfig": {
+    "extends": "mdcs"
+  },
+  "scripts": {
+    "build": "rollup -c",
+    "build-uglify": "rollup -c && uglifyjs build/ddls.js -cm --preamble \"// lo-th.github.io/ddls/license\" > build/ddls.min.js",
+    "build-closure": "rollup -c && java -jar utils/build/compiler/closure-compiler-v20160713.jar --warning_level=VERBOSE --jscomp_off=globalThis --jscomp_off=checkTypes --externs utils/build/externs.js --language_in=ECMASCRIPT5_STRICT --js build/ddls.js --js_output_file build/ddls.min.js",
+    "dev": "rollup -c -w",
+    "lint": "eslint src",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ddls",
+    "ddls.js",
+    "ui"
+  ],
+  "author": "lo-th",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lo-th/ddls/issues"
+  },
+  "homepage": "http://lo-th.github.io/ddls/",
+  "devDependencies": {
+    "eslint": "latest",
+    "eslint-config-mdcs": "latest",
+    "rollup": "latest",
+    "rollup-watch": "latest",
+    "uglify-js": "latest"
+  }
+}

@@ -1,14 +1,18 @@
-DDLS.EntityAI = function(x, y, r, d) {
+import { _Math } from '../math/Math';
+import { Point } from '../math/Point';
+
+function EntityAI ( x, y, r, d ) {
+
     this.path = [];
-    this.position = new DDLS.Point(x || 0, y || 0);
-    this.direction = new DDLS.Point(1,0);
+    this.position = new Point(x || 0, y || 0);
+    this.direction = new Point(1,0);
     this.radius = r || 10;
     //this.radiusSquared = 10*10;
     //this.x = this.y = 0;
     //this.dirNormX = 1;
     //this.dirNormY = 0;
     this.angle = 0;
-    this.angleFOV = 120 * DDLS.torad;
+    this.angleFOV = 120 * _Math.torad;
     this.radiusFOV = d || 200;
 
     this.isSee = false;
@@ -38,7 +42,7 @@ DDLS.EntityAI = function(x, y, r, d) {
     });*/
 };
 
-DDLS.EntityAI.prototype = {
+EntityAI.prototype = {
     /*get_position:function(){
         return new DDLS.Point(this.x, this.y);
     },
@@ -69,5 +73,7 @@ DDLS.EntityAI.prototype = {
         return this._approximateObject;
     }*/
 };
+
+export { EntityAI };
 
 //DDLS.EntityAI.NUM_SEGMENTS = 6;

@@ -1,7 +1,13 @@
-var THREE;
+import { Main } from '../constants';
+import { Mesh2D } from '../core/Mesh2D';
+import { Heroe } from '../ai/Heroe';
 
-DDLS.ThreeView = function( scene, world ) {
-//function ThreeView( scene, world ){
+
+//var THREE;
+
+
+
+function ThreeView( scene, world ) {
 
     this.world = world;
 
@@ -35,13 +41,13 @@ DDLS.ThreeView = function( scene, world ) {
     this.bufferPath.frustumCulled = false;
     scene.add(this.bufferPath);
 
-    DDLS.VIEW = this;
+    Main.set( this );
 
 }
 
-DDLS.ThreeView.prototype = {
+ThreeView.prototype = {
 
-    constructor: DDLS.ThreeView,
+    constructor: ThreeView,
 
     collapseBuffer : function() {
 
@@ -177,10 +183,14 @@ DDLS.ThreeView.prototype = {
     }
 }
 
-DDLS.Mesh.prototype.draw = function(){
+export { ThreeView };
+
+Mesh2D.prototype.draw = function(){
 
     //console.log('meshdraw')
     this.compute_Data();
+
+    var view = Main.get();
 
     var edge = this.AR_edge;
     var i = edge.length;
@@ -188,15 +198,15 @@ DDLS.Mesh.prototype.draw = function(){
     while(i--){
         n = i * 5;
         if(edge[n+4]) {
-            DDLS.VIEW.insertLine( edge[n], edge[n+1], edge[n+2], edge[n+3], 0,0,0 );
+            view.insertLine( edge[n], edge[n+1], edge[n+2], edge[n+3], 0,0,0 );
         }else{
-            DDLS.VIEW.insertLine( edge[n], edge[n+1], edge[n+2], edge[n+3], 0.4,0.4,0.4 );
+            view.insertLine( edge[n], edge[n+1], edge[n+2], edge[n+3], 0.4,0.4,0.4 );
         }
     }
     this.isRedraw = false;
 
 }
 
-DDLS.Heroe.prototype.draw = function(){
+Heroe.prototype.draw = function(){
 
 }

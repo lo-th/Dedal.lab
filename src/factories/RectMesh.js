@@ -1,4 +1,11 @@
-DDLS.RectMesh = function( w, h ) {
+import { Face } from '../core/Face';
+import { Vertex } from '../core/Vertex';
+import { Segment } from '../core/Segment';
+import { Edge } from '../core/Edge';
+import { Shape } from '../core/Shape';
+import { Mesh2D } from '../core/Mesh2D';
+
+function RectMesh ( w, h ) {
 
     //  v0 +-----+ v1
     //     |    /|
@@ -17,14 +24,14 @@ DDLS.RectMesh = function( w, h ) {
 
     while(i--){
 
-        f.push(new DDLS.Face());
-        v.push(new DDLS.Vertex());
-        s.push(new DDLS.Segment());
-        e.push(new DDLS.Edge(), new DDLS.Edge(), new DDLS.Edge());
+        f.push(new Face());
+        v.push(new Vertex());
+        s.push(new Segment());
+        e.push(new Edge(), new Edge(), new Edge());
 
     }
 
-    var boundShape = new DDLS.Shape();    
+    var boundShape = new Shape();    
     var offset = 10;
 
     v[0].pos.set(0 - offset, 0 - offset);
@@ -80,7 +87,7 @@ DDLS.RectMesh = function( w, h ) {
     s[3].fromShape = boundShape;
     boundShape.segments.push(s[0], s[1], s[2], s[3]);
 
-    var mesh = new DDLS.Mesh(w,h);
+    var mesh = new Mesh2D(w,h);
     mesh._vertices = v;
     mesh._edges = e;
     mesh._faces = f;
@@ -93,3 +100,5 @@ DDLS.RectMesh = function( w, h ) {
     return mesh;
 
 };
+
+export { RectMesh };
