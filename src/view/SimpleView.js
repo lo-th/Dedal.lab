@@ -1,6 +1,6 @@
 //var DDLS = DDLS || {};
-import { _Math } from '../math/Math';
-import { Main } from '../constants';
+
+import { Main, TwoPI } from '../constants';
 
 function SimpleView( world ) {
 
@@ -185,7 +185,7 @@ BasicCanvas.prototype = {
     },
     drawCircle: function(x,y,radius, s, e) {
         s = s || 0;
-        e = e || _Math.TwoPI;
+        e = e || TwoPI;
         this.ctx.beginPath();
         this.ctx.arc(x,y,radius, s, e, false);
         //this.ctx.stroke();

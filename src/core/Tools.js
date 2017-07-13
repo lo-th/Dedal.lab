@@ -1,22 +1,25 @@
-import { _Math } from '../math/Math';
 import { Dictionary, Log } from '../constants';
-
 import { Geom2D } from '../math/Geom2D';
 import { Point } from '../math/Point';
 
-function rand( low, high ){
-    return _Math.rand( low, high );
-};
+// MATH function
 
-export { rand };
+export var rand = function ( low, high ){ return low + Math.random() * ( high - low ); };
+export var randInt = function ( low, high ){ return low + Math.floor( Math.random() * ( high - low + 1 ) ); };
 
-function randInt( low, high ){
-    return _Math.randInt( low, high );
-};
+export var Squared = function ( a, b ) { return a * a + b * b; };
+export var SquaredSqrt = function ( a, b ) { return Math.sqrt( a * a + b * b ); };
 
-export { randInt };
+export var nearEqual = function ( a, b, e ) { return Math.abs( a - b ) < e; };
 
-export var TwoPI = _Math.TwoPI;
+export var Integral = function(x) { return Math.floor(x); };
+export var fix = function(x, n) { return x.toFixed(n || 3) * 1; };
+
+export var ARRAY = (typeof Float32Array !== 'undefined') ? Float32Array : Array;
+
+//export { randInt };
+
+
 
 function ShapeSimplifier ( coords, epsilon ) {
 
@@ -59,7 +62,7 @@ export { ShapeSimplifier };
 function PixelsData(w,h) {
 
     this.length = w * h;
-    this.bytes = new _Math.ARRAY( this.length << 2 );
+    this.bytes = new ARRAY( this.length << 2 );
     this.width = w;
     this.height = h;
 

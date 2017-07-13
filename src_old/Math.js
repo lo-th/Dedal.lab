@@ -27,7 +27,7 @@ var _Math = {
     golden   : 10.166407384630519,
 
     INF      : Infinity,
-    NINF     : -Infinity,
+    //NINF     : -Infinity,
     EPZ      : 0.00001,
     EPZ2      : 0.000001,
     EPSILON   : 0.01,
@@ -35,7 +35,7 @@ var _Math = {
     //NaN: Number.NaN,
 
     Squared: function ( a, b ) { return a * a + b * b; },
-    SquaredSqrt: function ( a, b ) { return _Math.sqrt( a * a + b * b ); },
+    SquaredSqrt: function ( a, b ) { return Math.sqrt( a * a + b * b ); },
 
     isFinite: function ( x ) { return isFinite(x); },
     int: function(x) { return Math.floor(x); },

@@ -1,5 +1,5 @@
 import { Dictionary, Log } from '../constants';
-import { _Math } from '../math/Math';
+import { nearEqual } from '../core/Tools';
 import { Point } from '../math/Point';
 import { Geom2D } from '../math/Geom2D';
 
@@ -37,10 +37,10 @@ var Potrace = {
         var b = bmpData.bytes[i+2];
         var a = bmpData.bytes[i+3];
 
-        if( mask.r !== undefined ){ if( _Math.nearEqual( r , mask.r, nearly ) ) valide = true; }
-        if( mask.g !== undefined ){ if( _Math.nearEqual( g , mask.g, nearly ) ) valide = true; }
-        if( mask.b !== undefined ){ if( _Math.nearEqual( b , mask.b, nearly ) ) valide = true; }
-        if( mask.a !== undefined ){ if( _Math.nearEqual( a , mask.a, nearly ) ) valide = true; }
+        if( mask.r !== undefined ){ if( nearEqual( r , mask.r, nearly ) ) valide = true; }
+        if( mask.g !== undefined ){ if( nearEqual( g , mask.g, nearly ) ) valide = true; }
+        if( mask.b !== undefined ){ if( nearEqual( b , mask.b, nearly ) ) valide = true; }
+        if( mask.a !== undefined ){ if( nearEqual( a , mask.a, nearly ) ) valide = true; }
 
         return valide;
 
@@ -380,7 +380,7 @@ var Potrace = {
             higherScore = 0;
             edge = currNode.outgoingEdge;
             while(edge != null) {
-                score = edge.data.nodesCount - edge.data.length * _Math.sqrt(edge.data.sumDistancesSquared / edge.data.nodesCount);
+                score = edge.data.nodesCount - edge.data.length * Math.sqrt(edge.data.sumDistancesSquared / edge.data.nodesCount);
                 if(score > higherScore) {
                     higherScore = score;
                     lowerScoreEdge = edge;

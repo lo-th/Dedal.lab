@@ -1,10 +1,9 @@
-//import { _Math } from '../math/Math';
 import { IDX, EDGE } from '../constants';
 
 function Edge () {
 
     this.type = EDGE;
-    this.id = IDX.get('edge');//_Math.generateUUID();
+    this.id = IDX.get('edge');
 
     this.fromConstraintSegments = [];
     this.isConstrained = false;

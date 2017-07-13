@@ -1,5 +1,5 @@
-import { _Math } from '../math/Math';
 
+import { TwoPI } from '../constants';
 import { Face } from '../core/Face';
 import { Vertex } from '../core/Vertex';
 import { Segment } from '../core/Segment';
@@ -37,7 +37,7 @@ function CircleMesh ( x, y, r, n ) {
     i = 0;
     while( i < n ) {
 
-        v[i].pos.set( x + ((r+offset) * _Math.cos( _Math.TwoPI * i * ndiv)), y + ((r+offset) * _Math.sin( _Math.TwoPI * i * ndiv)) );
+        v[i].pos.set( x + ((r+offset) * Math.cos( TwoPI * i * ndiv)), y + ((r+offset) * Math.sin( TwoPI * i * ndiv)) );
         v[i].setDatas(e[i*2]);
         i++;
 
@@ -100,10 +100,10 @@ function CircleMesh ( x, y, r, n ) {
     i = 0;
     while( i < n ) {
 
-        coord.push(x+(r * _Math.cos( _Math.TwoPI * i * ndiv)));
-        coord.push(y+(r * _Math.sin( _Math.TwoPI * i * ndiv)));
-        coord.push(x+(r * _Math.cos( _Math.TwoPI * (i + 1) * ndiv)));
-        coord.push(y+(r * _Math.sin( _Math.TwoPI * (i + 1) * ndiv)));
+        coord.push(x+(r * Math.cos( TwoPI * i * ndiv)));
+        coord.push(y+(r * Math.sin( TwoPI * i * ndiv)));
+        coord.push(x+(r * Math.cos( TwoPI * (i + 1) * ndiv)));
+        coord.push(y+(r * Math.sin( TwoPI * (i + 1) * ndiv)));
         i++;
 
     }

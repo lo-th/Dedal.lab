@@ -1,4 +1,5 @@
-import { _Math } from '../math/Math';
+
+import { torad } from '../constants';
 import { Point } from '../math/Point';
 import { FieldOfView } from '../ai/FieldOfView';
 import { LinearPathSampler } from '../ai/LinearPathSampler';
@@ -23,7 +24,7 @@ function Entity ( s, world ) {
     //this.dirNormX = 1;
     //this.dirNormY = 0;
     this.angle = 0;
-    this.angleFOV = ( s.fov || 120 ) * _Math.torad;
+    this.angleFOV = ( s.fov || 120 ) * torad;
     this.radiusFOV = s.distance || 200;
     this.testSee = s.see || false;
 

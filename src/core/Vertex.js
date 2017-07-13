@@ -1,4 +1,3 @@
-//import { _Math } from '../math/Math';
 import { IDX, VERTEX } from '../constants';
 import { Point } from '../math/Point';
 
@@ -6,9 +5,7 @@ import { Point } from '../math/Point';
 function Vertex () {
 
     this.type = VERTEX;
-    //this.colorDebug = -1;
-    this.id = IDX.get('vertex');//_Math.generateUUID();
-    //DDLS.VertexID ++;
+    this.id = IDX.get('vertex');
     this.pos = new Point();
     this.fromConstraintSegments = [];
     this.edge = null;

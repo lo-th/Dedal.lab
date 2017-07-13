@@ -1,7 +1,7 @@
-import { _Math } from '../math/Math';
+import { Integral, Squared, SquaredSqrt, fix } from '../core/Tools';
 import { Point } from '../math/Point';
 import { Geom2D } from '../math/Geom2D';
-import { Dictionary, Log, EDGE } from '../constants';
+import { Dictionary, Log, EDGE, TwoPI } from '../constants';
 
 function Funnel() {
 
@@ -20,17 +20,17 @@ function Funnel() {
     Object.defineProperty(this, 'radius', {
         get: function() { return this._radius; },
         set: function(value) { 
-            this._radius = _Math.max(0,value);
+            this._radius = Math.max(0,value);
             this._radiusSquared = this._radius * this._radius;
             this._sampleCircle = [];
             if(this._radius == 0) return;
             var l = this._numSamplesCircle, n = 0, r;
             while(n < l) {
                 var i = n++;
-                r = - _Math.TwoPI * i / this._numSamplesCircle;
-                this._sampleCircle.push(new Point(this._radius * _Math.cos(r),this._radius * _Math.sin(r)));
+                r = - TwoPI * i / this._numSamplesCircle;
+                this._sampleCircle.push(new Point(this._radius * Math.cos(r),this._radius * Math.sin(r)));
             }
-            this._sampleCircleDistanceSquared = _Math.Squared(this._sampleCircle[0].x - this._sampleCircle[1].x, this._sampleCircle[0].y - this._sampleCircle[1].y);
+            this._sampleCircleDistanceSquared = Squared(this._sampleCircle[0].x - this._sampleCircle[1].x, this._sampleCircle[0].y - this._sampleCircle[1].y);
         }
     });
 
@@ -78,23 +78,23 @@ Funnel.prototype = {
             p1 = checkFace.edge.originVertex.pos;
             p2 = checkFace.edge.destinationVertex.pos;
             p3 = checkFace.edge.nextLeftEdge.destinationVertex.pos;
-            distanceSquared = _Math.Squared(p1.x - p_from.x, p1.y - p_from.y);
+            distanceSquared = Squared(p1.x - p_from.x, p1.y - p_from.y);
             if(distanceSquared <= this._radiusSquared) {
-                distance = _Math.sqrt(distanceSquared);
+                distance = Math.sqrt(distanceSquared);
                 p_from.sub(p1).div(distance).mul(rad).add(p1);
                 //p_from.x = this._radius * 1.01 * ((p_from.x - p1.x) / distance) + p1.x;
                 //p_from.y = this._radius * 1.01 * ((p_from.y - p1.y) / distance) + p1.y;
             } else {
-                distanceSquared = _Math.Squared(p2.x - p_from.x, p2.y - p_from.y);
+                distanceSquared = Squared(p2.x - p_from.x, p2.y - p_from.y);
                 if(distanceSquared <= this._radiusSquared) {
-                    distance = _Math.sqrt(distanceSquared);
+                    distance = Math.sqrt(distanceSquared);
                     p_from.sub(p2).div(distance).mul(rad).add(p2);
                     //p_from.x = this._radius * 1.01 * ((p_from.X - p2.x) / distance) + p2.x;
                     //p_from.y = this._radius * 1.01 * ((p_from.y - p2.y) / distance) + p2.y;
                 } else {
-                    distanceSquared = _Math.Squared(p3.x - p_from.x, p3.y - p_from.y);
+                    distanceSquared = Squared(p3.x - p_from.x, p3.y - p_from.y);
                     if(distanceSquared <= this._radiusSquared) {
-                        distance = _Math.sqrt(distanceSquared);
+                        distance = Math.sqrt(distanceSquared);
                         p_from.sub(p3).div(distance).mul(rad).add(p3);
                         //p_from.x = this._radius * 1.01 * ((p_from.x - p3.x) / distance) + p3.x;
                         //p_from.y = this._radius * 1.01 * ((p_from.y - p3.y) / distance) + p3.y;
@@ -105,23 +105,23 @@ Funnel.prototype = {
             p1 = checkFace.edge.originVertex.pos;
             p2 = checkFace.edge.destinationVertex.pos;
             p3 = checkFace.edge.nextLeftEdge.destinationVertex.pos;
-            distanceSquared = _Math.Squared(p1.x - p_to.x, p1.y - p_to.y);
+            distanceSquared = Squared(p1.x - p_to.x, p1.y - p_to.y);
             if(distanceSquared <= this._radiusSquared) {
-                distance = _Math.sqrt(distanceSquared);
+                distance = Math.sqrt(distanceSquared);
                 p_to.sub(p1).div(distance).mul(rad).add(p1);
                 //p_to.x = this._radius * 1.01 * ((p_to.x - p1.x) / distance) + p1.x;
                 //p_to.y = this._radius * 1.01 * ((p_to.y - p1.y) / distance) + p1.y;
             } else {
-                distanceSquared = _Math.Squared(p2.x - p_to.x, p2.y - p_to.y);
+                distanceSquared = Squared(p2.x - p_to.x, p2.y - p_to.y);
                 if(distanceSquared <= this._radiusSquared) {
-                    distance = _Math.sqrt(distanceSquared);
+                    distance = Math.sqrt(distanceSquared);
                     p_to.sub(p2).div(distance).mul(rad).add(p2);
                     //p_to.x = this._radius * 1.01 * ((p_to.x - p2.x) / distance) + p2.x;
                     //p_to.y = this._radius * 1.01 * ((p_to.y - p2.y) / distance) + p2.y;
                 } else {
-                    distanceSquared = _Math.Squared(p3.x - p_to.x, p3.y - p_to.y);
+                    distanceSquared = Squared(p3.x - p_to.x, p3.y - p_to.y);
                     if(distanceSquared <= this._radiusSquared) {
-                        distance = _Math.sqrt(distanceSquared);
+                        distance = Math.sqrt(distanceSquared);
                         p_to.sub(p3).div(distance).mul(rad).add(p3);
                         //p_to.x = this._radius * 1.01 * ((p_to.x - p3.x) / distance) + p3.x;
                         //p_to.y = this._radius * 1.01 * ((p_to.y - p3.y) / distance) + p3.y;
@@ -134,10 +134,10 @@ Funnel.prototype = {
         startPoint = p_from.clone();//new Point(fromX,fromY);
         endPoint = p_to.clone();//new Point(toX,toY);
         if(listFaces.length == 1) {
-            resultPath.push(_Math.fix(startPoint.x));
-            resultPath.push(_Math.fix(startPoint.y));
-            resultPath.push(_Math.fix(endPoint.x));
-            resultPath.push(_Math.fix(endPoint.y));
+            resultPath.push(fix(startPoint.x));
+            resultPath.push(fix(startPoint.y));
+            resultPath.push(fix(endPoint.x));
+            resultPath.push(fix(endPoint.y));
             return;
         }
         var i, j, k, l, n;
@@ -392,8 +392,8 @@ Funnel.prototype = {
         l = adjustedPoints.length;
         while(n < l) {
             i = n++;
-            resultPath.push(_Math.fix(adjustedPoints[i].x));
-            resultPath.push(_Math.fix(adjustedPoints[i].y));
+            resultPath.push(fix(adjustedPoints[i].x));
+            resultPath.push(fix(adjustedPoints[i].y));
         }
 
     },
@@ -568,7 +568,7 @@ Funnel.prototype = {
     smoothAngle: function( prevPoint, pointToSmooth, nextPoint, side, encirclePoints ) {
 
         var angleType = Geom2D.getDirection(prevPoint,pointToSmooth,nextPoint);
-        var distanceSquared = _Math.Squared(prevPoint.x - nextPoint.x, prevPoint.y - nextPoint.y);
+        var distanceSquared = Squared(prevPoint.x - nextPoint.x, prevPoint.y - nextPoint.y);
         if(distanceSquared <= this._sampleCircleDistanceSquared) return;
         var index = 0;
         var side1;

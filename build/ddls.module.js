@@ -91,6 +91,14 @@ if ( Object.assign === undefined ) {
 
 var REVISION = '1.0.0';
 
+// MATH
+var torad = 0.0174532925199432957;
+var todeg = 57.295779513082320876;
+var EPSILON = 0.01;
+var EPSILON_SQUARED = 0.0001;
+var INFINITY = Infinity;
+var TwoPI = Math.PI * 2;
+
 // INTERSECTION
 
 var VERTEX = 0;
@@ -189,167 +197,6 @@ Dictionary.prototype = {
             this.h = null;
         }
     }
-
-};
-
-var _Math = {
-
-    ARRAY: (typeof Float32Array !== 'undefined') ? Float32Array : Array,
-
-    sqrt   : Math.sqrt,
-    abs    : Math.abs,
-    floor  : Math.floor,
-    cos    : Math.cos,
-    sin    : Math.sin,
-    acos   : Math.acos,
-    asin   : Math.asin,
-    atan2  : Math.atan2,
-    round  : Math.round,
-    pow    : Math.pow,
-    max    : Math.max,
-    min    : Math.min,
-    random : Math.random,
-
-    torad : 0.0174532925199432957,
-    todeg : 57.295779513082320876,
-    Pi       : 3.141592653589793,
-    PI       : 3.141592653589793,
-    TwoPI    : 6.283185307179586,
-    PI90     : 1.570796326794896,
-    PI270    : 4.712388980384689,
-    inv255   : 0.003921569,
-    golden   : 10.166407384630519,
-
-    INF      : Infinity,
-    NINF     : -Infinity,
-    EPZ      : 0.00001,
-    EPZ2      : 0.000001,
-    EPSILON   : 0.01,
-    EPSILON_SQUARED : 0.0001,
-    //NaN: Number.NaN,
-
-    Squared: function ( a, b ) { return a * a + b * b; },
-    SquaredSqrt: function ( a, b ) { return _Math.sqrt( a * a + b * b ); },
-
-    isFinite: function ( x ) { return isFinite(x); },
-    int: function(x) { return Math.floor(x); },
-    fix: function(x, n) { return x.toFixed(n || 3) * 1; },
-    //isNaN: function(x) { return isNaN(x); },
-
-    lerp: function ( x, y, t ) { return ( 1 - t ) * x + t * y; },
-    rand: function ( low, high ) { return low + Math.random() * ( high - low ); },
-    randInt: function ( low, high ) { return low + Math.floor( Math.random() * ( high - low + 1 ) ); },
-
-    nearEqual: function ( a, b, e ) { return Math.abs( a - b ) < e; },
-
-    generateUUID: function () {
-
-        // http://www.broofa.com/Tools/Math.uuid.htm
-
-        var chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split( '' );
-        var uuid = new Array( 36 );
-        var rnd = 0, r;
-
-        return function generateUUID() {
-
-            for ( var i = 0; i < 36; i ++ ) {
-
-                if ( i === 8 || i === 13 || i === 18 || i === 23 ) {
-
-                    uuid[ i ] = '-';
-
-                } else if ( i === 14 ) {
-
-                    uuid[ i ] = '4';
-
-                } else {
-
-                    if ( rnd <= 0x02 ) rnd = 0x2000000 + ( Math.random() * 0x1000000 ) | 0;
-                    r = rnd & 0xf;
-                    rnd = rnd >> 4;
-                    uuid[ i ] = chars[ ( i === 19 ) ? ( r & 0x3 ) | 0x8 : r ];
-
-                }
-
-            }
-
-            return uuid.join( '' );
-
-        };
-
-    }(),
-
-    /*int: function( x ) { 
-
-        return _Math.floor(x); 
-
-    },
-
-    fix: function( x, n ) { 
-
-        return x.toFixed(n || 3, 10); 
-
-    },*/
-
-    clamp: function ( value, min, max ) { 
-
-        return _Math.max( min, _Math.min( max, value ) ); 
-
-    },
-    
-    //clamp: function ( x, a, b ) { return ( x < a ) ? a : ( ( x > b ) ? b : x ); },
-
-    
-
-    distance: function( p1, p2 ){
-
-        var xd = p2[0]-p1[0];
-        var yd = p2[1]-p1[1];
-        var zd = p2[2]-p1[2];
-        return _Math.sqrt(xd*xd + yd*yd + zd*zd);
-
-    },
-
-    /*unwrapDegrees: function ( r ) {
-
-        r = r % 360;
-        if (r > 180) r -= 360;
-        if (r < -180) r += 360;
-        return r;
-
-    },
-
-    unwrapRadian: function( r ){
-
-        r = r % _Math.TwoPI;
-        if (r > _Math.PI) r -= _Math.TwoPI;
-        if (r < -_Math.PI) r += _Math.TwoPI;
-        return r;
-
-    },*/
-
-    acosClamp: function ( cos ) {
-
-        if(cos>1) return 0;
-        else if(cos<-1) return _Math.Pi;
-        else return _Math.acos(cos);
-
-    },
-
-    distanceVector: function( v1, v2 ){
-
-        var xd = v1.x - v2.x;
-        var yd = v1.y - v2.y;
-        var zd = v1.z - v2.z;
-        return xd * xd + yd * yd + zd * zd;
-
-    },
-
-    dotVectors: function ( a, b ) {
-
-        return a.x * b.x + a.y * b.y + a.z * b.z;
-
-    },
 
 };
 
@@ -595,6 +442,141 @@ Matrix2D.prototype = {
 
     }
 
+};
+
+// MATH function
+
+var rand = function ( low, high ){ return low + Math.random() * ( high - low ); };
+var randInt = function ( low, high ){ return low + Math.floor( Math.random() * ( high - low + 1 ) ); };
+
+var Squared = function ( a, b ) { return a * a + b * b; };
+var SquaredSqrt = function ( a, b ) { return Math.sqrt( a * a + b * b ); };
+
+var nearEqual = function ( a, b, e ) { return Math.abs( a - b ) < e; };
+
+var Integral = function(x) { return Math.floor(x); };
+var fix = function(x, n) { return x.toFixed(n || 3) * 1; };
+
+var ARRAY = (typeof Float32Array !== 'undefined') ? Float32Array : Array;
+
+//export { randInt };
+
+
+
+function ShapeSimplifier ( coords, epsilon ) {
+
+    epsilon = epsilon || 1;
+    var len = coords.length;
+    //DDLS.Debug.assertFalse((len & 1) != 0,"Wrong size",{ fileName : "ShapeSimplifier.hx", lineNumber : 18, className : "DDLS.ShapeSimplifier", methodName : "simplify"});
+    if(len <= 4) return [].concat(coords);
+    var firstPointX = coords[0];
+    var firstPointY = coords[1];
+    var lastPointX = coords[len - 2];
+    var lastPointY = coords[len - 1];
+    var index = -1;
+    var dist = 0.;
+    var _g1 = 1;
+    var _g = len >> 1;
+    while(_g1 < _g) {
+        var i = _g1++;
+        var currDist = Geom2D.distanceSquaredPointToSegment( new Point(coords[i << 1],coords[(i << 1) + 1]), new Point(firstPointX,firstPointY), new Point(lastPointX,lastPointY) );
+        //var currDist = DDLS.Geom2D.distanceSquaredPointToSegment(coords[i << 1],coords[(i << 1) + 1],firstPointX,firstPointY,lastPointX,lastPointY);
+        if(currDist > dist) {
+            dist = currDist;
+            index = i;
+        }
+    }
+    if(dist > epsilon * epsilon) {
+        var l1 = coords.slice(0,(index << 1) + 2);
+        var l2 = coords.slice(index << 1);
+        var r1 = ShapeSimplifier(l1,epsilon);
+        var r2 = ShapeSimplifier(l2,epsilon);
+        var rs = r1.slice(0,r1.length - 2).concat(r2);
+        return rs;
+    } else return [firstPointX,firstPointY,lastPointX,lastPointY];
+
+}
+
+// PIXEL DATA
+
+function PixelsData(w,h) {
+
+    this.length = w * h;
+    this.bytes = new ARRAY( this.length << 2 );
+    this.width = w;
+    this.height = h;
+
+}
+
+// IMAGE DATA
+
+function fromImageData ( image, imageData ) {
+
+    if(image){
+
+        var w = image.width;
+        var h = image.height;
+
+        var canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+
+        var ctx = canvas.getContext( "2d" );
+        ctx.drawImage( image, 0, 0, w, h );
+        imageData = ctx.getImageData( 0, 0, w, h );
+        
+    }
+
+    var pixels = new PixelsData( imageData.width, imageData.height );
+    var data = imageData.data;
+    var l = data.byteLength, n=0, i=0;
+    while(n < l) {
+        i = n++;
+        pixels.bytes[i] = data[i] & 255;
+    }
+
+    if(image){
+        ctx.clearRect(0,0,w,h);
+        canvas = null;
+        ctx = null;
+    }
+
+    return pixels;
+
+}
+
+// IMG LOADER
+
+function ImageLoader ( imageNames, loaded_ ) {
+
+    this.images = new Dictionary(2);
+    this.loaded = loaded_;
+    this.count = imageNames.length;
+    var _g = 0;
+    while(_g < imageNames.length) {
+        var name = imageNames[_g];
+        ++_g;
+        this.load(name);
+    }
+}
+
+ImageLoader.prototype = {
+    load: function(img) {
+        var image;
+        var _this = window.document;
+        image = _this.createElement("img");
+        image.style.cssText = 'position:absolute;';
+        image.onload = function(){
+            this.store( image, img.split("/").pop() );
+        }.bind(this);
+        image.src = img;
+    },
+    store: function(image,name) {
+        this.count--;
+        Log("store " + name + " " + this.count);
+        this.images.set(name,image);
+        if(this.count == 0) this.loaded();
+    }
 };
 
 function RandGenerator ( seed, min, max ) {
@@ -996,11 +978,11 @@ var Geom2D = {
         // jump and walk algorithm
 
         if(Geom2D._randGen == null) Geom2D._randGen = new RandGenerator();
-        Geom2D._randGen.seed = _Math.int(p.x * 10 + 4 * p.y);
+        Geom2D._randGen.seed = Integral(p.x * 10 + 4 * p.y);
         
         Geom2D.__samples.splice(0, Geom2D.__samples.length);
-        numSamples = _Math.int(_Math.pow(mesh._vertices.length,0.333333334));
-        //var numSamples = _Math.int(_Math.pow(mesh._vertices.length,1/3));
+        numSamples = Integral( Math.pow( mesh._vertices.length, 0.333333334 ));
+        //var numSamples = Integral(Math.pow(mesh._vertices.length,1/3));
         
         //console.log(numSamples, mesh._vertices.length);
 
@@ -1016,7 +998,7 @@ var Geom2D = {
         }
 
         var currVertex, currVertexPos, distSquared;
-        var minDistSquared = _Math.INF;
+        var minDistSquared = INFINITY;
         var closedVertex = null;
 
         i = 0;
@@ -1025,7 +1007,7 @@ var Geom2D = {
         //for ( i = 0 ; i < numSamples; i++ ){
             currVertex = Geom2D.__samples[i];
             currVertexPos = currVertex.pos;
-            distSquared = _Math.Squared( currVertexPos.x - p.x, currVertexPos.y - p.y );
+            distSquared = Squared( currVertexPos.x - p.x, currVertexPos.y - p.y );
             if( distSquared < minDistSquared ) {
                 minDistSquared = distSquared;
                 closedVertex = currVertex;
@@ -1100,13 +1082,13 @@ var Geom2D = {
         var pos;
         var distSquared;
         pos = face.edge.originVertex.pos;
-        distSquared = _Math.Squared(pos.x - p.x, pos.y - p.y);
+        distSquared = Squared(pos.x - p.x, pos.y - p.y);
         if(distSquared <= radiusSquared) return true;
         pos = face.edge.nextLeftEdge.originVertex.pos;
-        distSquared = _Math.Squared(pos.x - p.x, pos.y - p.y);
+        distSquared = Squared(pos.x - p.x, pos.y - p.y);
         if(distSquared <= radiusSquared) return true;
         pos = face.edge.nextLeftEdge.nextLeftEdge.originVertex.pos;
-        distSquared = _Math.Squared(pos.x - p.x, pos.y - p.y);
+        distSquared = Squared(pos.x - p.x, pos.y - p.y);
         if(distSquared <= radiusSquared) return true;
         var edgesToCheck = [];
         edgesToCheck.push(face.edge);
@@ -1170,7 +1152,7 @@ var Geom2D = {
     Orient2d: function ( p1, p2, p3 ) {
 
         var val = (p1.x - p3.x) * (p2.y - p3.y) - (p1.y - p3.y) * (p2.x - p3.x);
-        if (val > -_Math.EPSILON_SQUARED && val < _Math.EPSILON_SQUARED) return 0;// collinear
+        if (val > -EPSILON_SQUARED && val < EPSILON_SQUARED) return 0;// collinear
         else if (val > 0) return -1;// ccw
         else return 1;// cw
 
@@ -1204,21 +1186,21 @@ var Geom2D = {
             var y2 = v2.pos.y;
             var x3 = v3.pos.x;
             var y3 = v3.pos.y;
-            var v_v1squared = _Math.Squared(x1 - p.x, y1 - p.y);
-            var v_v2squared = _Math.Squared(x2 - p.x, y2 - p.y);
-            var v_v3squared = _Math.Squared(x3 - p.x, y3 - p.y);
-            var inv_v1_v2 = 1 / _Math.Squared(x2 - x1, y2 - y1);
-            var inv_v2_v3 = 1 / _Math.Squared(x3 - x2, y3 - y2);
-            var inv_v3_v1 = 1 / _Math.Squared(x1 - x3, y1 - y3);
+            var v_v1squared = Squared(x1 - p.x, y1 - p.y);
+            var v_v2squared = Squared(x2 - p.x, y2 - p.y);
+            var v_v3squared = Squared(x3 - p.x, y3 - p.y);
+            var inv_v1_v2 = 1 / Squared(x2 - x1, y2 - y1);
+            var inv_v2_v3 = 1 / Squared(x3 - x2, y3 - y2);
+            var inv_v3_v1 = 1 / Squared(x1 - x3, y1 - y3);
             var dot_v_v1v2 = (p.x - x1) * (x2 - x1) + (p.y - y1) * (y2 - y1);
             var dot_v_v2v3 = (p.x - x2) * (x3 - x2) + (p.y - y2) * (y3 - y2);
             var dot_v_v3v1 = (p.x - x3) * (x1 - x3) + (p.y - y3) * (y1 - y3);
             var v_e1_2squared = v_v1squared - dot_v_v1v2 * dot_v_v1v2 * inv_v1_v2;
             var v_e2_3squared = v_v2squared - dot_v_v2v3 * dot_v_v2v3 * inv_v2_v3;
             var v_e3_1squared = v_v3squared - dot_v_v3v1 * dot_v_v3v1 * inv_v3_v1;
-            var closeTo_e1_2 = v_e1_2squared <= _Math.EPSILON_SQUARED ? true:false;
-            var closeTo_e2_3 = v_e2_3squared <= _Math.EPSILON_SQUARED ? true:false;
-            var closeTo_e3_1 = v_e3_1squared <= _Math.EPSILON_SQUARED ? true:false;
+            var closeTo_e1_2 = v_e1_2squared <= EPSILON_SQUARED ? true:false;
+            var closeTo_e2_3 = v_e2_3squared <= EPSILON_SQUARED ? true:false;
+            var closeTo_e3_1 = v_e3_1squared <= EPSILON_SQUARED ? true:false;
             if(closeTo_e1_2) {
                 if(closeTo_e3_1) result = v1; 
                 else if(closeTo_e2_3) result = v2; 
@@ -1253,13 +1235,13 @@ var Geom2D = {
         if(n == 0) {
             if( Geom2D.intersections2segments(s1, s2, t2, t3, pResult1, null)) n++;
         } else if( Geom2D.intersections2segments(s1, s2, t2, t3, pResult2, null)) {
-            if(-0.01 > pResult1.x - pResult2.x || pResult1.x - pResult2.x > _Math.EPSILON || -_Math.EPSILON > pResult1.y - pResult2.y || pResult1.y - pResult2.y > _Math.EPSILON) n++;
+            if(-0.01 > pResult1.x - pResult2.x || pResult1.x - pResult2.x > EPSILON || -EPSILON > pResult1.y - pResult2.y || pResult1.y - pResult2.y > EPSILON) n++;
         }
         if(n == 0) {
             if( Geom2D.intersections2segments(s1, s2, t3, t1, pResult1, null)) n++;
         } else if(n == 1) {
             if( Geom2D.intersections2segments(s1, s2, t3, t1, pResult2, null)) {
-                if(-_Math.EPSILON > pResult1.x - pResult2.x || pResult1.x - pResult2.x > _Math.EPSILON || -_Math.EPSILON > pResult1.y - pResult2.y || pResult1.y - pResult2.y > _Math.EPSILON) n++;
+                if(-EPSILON > pResult1.x - pResult2.x || pResult1.x - pResult2.x > EPSILON || -EPSILON > pResult1.y - pResult2.y || pResult1.y - pResult2.y > EPSILON) n++;
             }
         }
         if(n == 1) {
@@ -1415,10 +1397,10 @@ var Geom2D = {
     intersections2Circles: function ( c1, r1, c2, r2, result ){
 
         var factor, a, b, first, dist, invd, trans;
-        dist = _Math.Squared(c2.x - c1.x, c2.y - c1.y);
+        dist = Squared(c2.x - c1.x, c2.y - c1.y);
         invd = 1 / (2 * dist);
         if((c1.x != c2.x || c1.y != c2.y) && dist <= (r1 + r2) * (r1 + r2) && dist >= (r1 - r2) * (r1 - r2)) {
-            trans = _Math.sqrt(((r1 + r2) * (r1 + r2) - dist) * (dist - (r2 - r1) * (r2 - r1)));
+            trans = Math.sqrt(((r1 + r2) * (r1 + r2) - dist) * (dist - (r2 - r1) * (r2 - r1)));
             factor = c2.clone().sub(c1).mul(invd);
             a = c1.clone().add(c2).mul(0.5);
             b = factor.clone().mul(r1 * r1 - r2 * r2);
@@ -1461,7 +1443,7 @@ var Geom2D = {
             }
             return true;
         } else {
-            deltaSQRT = _Math.sqrt(delta);
+            deltaSQRT = Math.sqrt(delta);
             t0 = (-b + deltaSQRT) / (2 * a);
             t1 = (-b - deltaSQRT) / (2 * a);
             var intersecting = false;
@@ -1495,7 +1477,7 @@ var Geom2D = {
             t0 = -b / (2 * a);
             result.push( p0x + t0*(p1x - p0x), p0y + t0*(p1y - p0y),  t0 );
         } else if(delta > 0) {
-            deltaSQRT = _Math.sqrt(delta);
+            deltaSQRT = Math.sqrt(delta);
             t0 = (-b + deltaSQRT) / (2 * a);
             t1 = (-b - deltaSQRT) / (2 * a);
             result.push( p0x + t0*(p1x - p0x), p0y + t0*(p1y - p0y), t0, p0x + t1*(p1x - p0x), p0y + t1*(p1y - p0y), t1 );
@@ -1506,14 +1488,14 @@ var Geom2D = {
     tangentsPointToCircle: function ( p, c, r, result ) {
 
         var c2 = p.clone().add(c).mul(0.5);
-        var r2 = 0.5 * _Math.SquaredSqrt(p.x - c.x, p.y - c.y);
+        var r2 = 0.5 * SquaredSqrt(p.x - c.x, p.y - c.y);
         return Geom2D.intersections2Circles(c2, r2, c, r, result);
 
     },
 
     tangentsCrossCircleToCircle: function ( r, c1, c2, result ) {
 
-        var distance = _Math.SquaredSqrt(c1.x - c2.x, c1.y - c2.y);
+        var distance = SquaredSqrt(c1.x - c2.x, c1.y - c2.y);
         var radius = distance * 0.25;
         var center = c2.clone().sub(c1).mul(0.25).add(c1);
 
@@ -1542,7 +1524,7 @@ var Geom2D = {
 
     tangentsParalCircleToCircle: function ( r, c1, c2, result ) {
 
-        var distance = _Math.SquaredSqrt(c1.x - c2.x, c1.y - c2.y);
+        var distance = SquaredSqrt(c1.x - c2.x, c1.y - c2.y);
         var invD = 1 / distance;
         var t1x = c1.x + r * (c2.y - c1.y) * invD;
         var t1y = c1.y + r * (-c2.x + c1.x) * invD;
@@ -1557,21 +1539,21 @@ var Geom2D = {
     },
 
     /*distanceSquaredPointToLine: function(p,a,b) {
-        var a_b_squared = _Math.Squared(b.x - a.x, b.y - a.y);
+        var a_b_squared = Squared(b.x - a.x, b.y - a.y);
         var dotProduct = (p.x - a.x) * (b.x - a.x) + (p.y - a.y) * (b.y - a.y);
-        var p_a_squared = _Math.Squared(a.x - p.x, a.y - p.y);
+        var p_a_squared = Squared(a.x - p.x, a.y - p.y);
         return p_a_squared - dotProduct * dotProduct / a_b_squared;
     },*/
 
     distanceSquaredPointToSegment: function ( p, a, b ) {
 
-        var a_b_squared = _Math.Squared(b.x - a.x, b.y - a.y);
+        var a_b_squared = Squared(b.x - a.x, b.y - a.y);
         var dotProduct = ((p.x - a.x) * (b.x - a.x) + (p.y - a.y) * (b.y - a.y)) / a_b_squared;
-        if(dotProduct < 0) return _Math.Squared(p.x - a.x, p.y - a.y); 
+        if(dotProduct < 0) return Squared(p.x - a.x, p.y - a.y); 
         else if(dotProduct <= 1) {
-            var p_a_squared = _Math.Squared(a.x - p.x, a.y - p.y);
+            var p_a_squared = Squared(a.x - p.x, a.y - p.y);
             return p_a_squared - dotProduct * dotProduct * a_b_squared;
-        } else return _Math.Squared(p.x - b.x, p.y - b.y);
+        } else return Squared(p.x - b.x, p.y - b.y);
 
     },
 
@@ -1596,7 +1578,7 @@ var Geom2D = {
             nextY = path[i + 1];
             x = nextX - fromX;
             y = nextY - fromY;
-            distance = _Math.SquaredSqrt(x, y);
+            distance = SquaredSqrt(x, y);
             sumDistance += distance;
             fromX = nextX;
             fromY = nextY;
@@ -1609,137 +1591,10 @@ var Geom2D = {
 
 };
 
-function rand( low, high ){
-    return _Math.rand( low, high );
-}
-
-function randInt( low, high ){
-    return _Math.randInt( low, high );
-}
-
-var TwoPI = _Math.TwoPI;
-
-function ShapeSimplifier ( coords, epsilon ) {
-
-    epsilon = epsilon || 1;
-    var len = coords.length;
-    //DDLS.Debug.assertFalse((len & 1) != 0,"Wrong size",{ fileName : "ShapeSimplifier.hx", lineNumber : 18, className : "DDLS.ShapeSimplifier", methodName : "simplify"});
-    if(len <= 4) return [].concat(coords);
-    var firstPointX = coords[0];
-    var firstPointY = coords[1];
-    var lastPointX = coords[len - 2];
-    var lastPointY = coords[len - 1];
-    var index = -1;
-    var dist = 0.;
-    var _g1 = 1;
-    var _g = len >> 1;
-    while(_g1 < _g) {
-        var i = _g1++;
-        var currDist = Geom2D.distanceSquaredPointToSegment( new Point(coords[i << 1],coords[(i << 1) + 1]), new Point(firstPointX,firstPointY), new Point(lastPointX,lastPointY) );
-        //var currDist = DDLS.Geom2D.distanceSquaredPointToSegment(coords[i << 1],coords[(i << 1) + 1],firstPointX,firstPointY,lastPointX,lastPointY);
-        if(currDist > dist) {
-            dist = currDist;
-            index = i;
-        }
-    }
-    if(dist > epsilon * epsilon) {
-        var l1 = coords.slice(0,(index << 1) + 2);
-        var l2 = coords.slice(index << 1);
-        var r1 = ShapeSimplifier(l1,epsilon);
-        var r2 = ShapeSimplifier(l2,epsilon);
-        var rs = r1.slice(0,r1.length - 2).concat(r2);
-        return rs;
-    } else return [firstPointX,firstPointY,lastPointX,lastPointY];
-
-}
-
-// PIXEL DATA
-
-function PixelsData(w,h) {
-
-    this.length = w * h;
-    this.bytes = new _Math.ARRAY( this.length << 2 );
-    this.width = w;
-    this.height = h;
-
-}
-
-// IMAGE DATA
-
-function fromImageData ( image, imageData ) {
-
-    if(image){
-
-        var w = image.width;
-        var h = image.height;
-
-        var canvas = document.createElement("canvas");
-        canvas.width = w;
-        canvas.height = h;
-
-        var ctx = canvas.getContext( "2d" );
-        ctx.drawImage( image, 0, 0, w, h );
-        imageData = ctx.getImageData( 0, 0, w, h );
-        
-    }
-
-    var pixels = new PixelsData( imageData.width, imageData.height );
-    var data = imageData.data;
-    var l = data.byteLength, n=0, i=0;
-    while(n < l) {
-        i = n++;
-        pixels.bytes[i] = data[i] & 255;
-    }
-
-    if(image){
-        ctx.clearRect(0,0,w,h);
-        canvas = null;
-        ctx = null;
-    }
-
-    return pixels;
-
-}
-
-// IMG LOADER
-
-function ImageLoader ( imageNames, loaded_ ) {
-
-    this.images = new Dictionary(2);
-    this.loaded = loaded_;
-    this.count = imageNames.length;
-    var _g = 0;
-    while(_g < imageNames.length) {
-        var name = imageNames[_g];
-        ++_g;
-        this.load(name);
-    }
-}
-
-ImageLoader.prototype = {
-    load: function(img) {
-        var image;
-        var _this = window.document;
-        image = _this.createElement("img");
-        image.style.cssText = 'position:absolute;';
-        image.onload = function(){
-            this.store( image, img.split("/").pop() );
-        }.bind(this);
-        image.src = img;
-    },
-    store: function(image,name) {
-        this.count--;
-        Log("store " + name + " " + this.count);
-        this.images.set(name,image);
-        if(this.count == 0) this.loaded();
-    }
-};
-
-//import { _Math } from '../math/Math';
 function Edge () {
 
     this.type = EDGE;
-    this.id = IDX.get('edge');//_Math.generateUUID();
+    this.id = IDX.get('edge');
 
     this.fromConstraintSegments = [];
     this.isConstrained = false;
@@ -1832,11 +1687,10 @@ Edge.prototype = {
 
 };
 
-//import { _Math } from '../math/Math';
 function Face() {
 
     this.type = FACE;
-    this.id = IDX.get('face');//_Math.generateUUID();
+    this.id = IDX.get('face');
 
     this.isReal = false;
     this.edge = null;
@@ -1863,13 +1717,10 @@ Face.prototype = {
 
 };
 
-//import { _Math } from '../math/Math';
 function Vertex () {
 
     this.type = VERTEX;
-    //this.colorDebug = -1;
-    this.id = IDX.get('vertex');//_Math.generateUUID();
-    //DDLS.VertexID ++;
+    this.id = IDX.get('vertex');
     this.pos = new Point();
     this.fromConstraintSegments = [];
     this.edge = null;
@@ -1918,12 +1769,9 @@ Vertex.prototype = {
 
 };
 
-//import { _Math } from '../math/Math';
-
 function Shape () {
 
-    this.id = IDX.get('shape');//_Math.generateUUID();
-    //DDLS.ShapeID ++;
+    this.id = IDX.get('shape');
     this.segments = [];
     
 }
@@ -1941,11 +1789,9 @@ Shape.prototype = {
 
 };
 
-//import { _Math } from '../math/Math';
-
 function Segment ( x, y ) {
 
-    this.id = IDX.get('segment');//_Math.generateUUID();
+    this.id = IDX.get('segment');
     //DDLS.SegmentID ++;
     this.edges = [];
     this.fromShape = null;
@@ -1985,10 +1831,9 @@ Segment.prototype = {
 
 };
 
-//import { _Math } from '../math/Math';
 function Object2D() {
 
-    this.id = IDX.get('object2D');//_Math.generateUUID();
+    this.id = IDX.get('object2D');
     this._pivot = new Point();
     this._position = new Point();
     this._scale = new Point( 1, 1 );
@@ -2084,10 +1929,9 @@ Object2D.prototype = {
 
 };
 
-//import { _Math } from '../math/Math';
 function Graph () {
 
-    this.id = IDX.get('graph');//_Math.generateUUID();
+    this.id = IDX.get('graph');
 
     this.edge = null;
     this.node = null;
@@ -2289,10 +2133,10 @@ var Potrace = {
         var b = bmpData.bytes[i+2];
         var a = bmpData.bytes[i+3];
 
-        if( mask.r !== undefined ){ if( _Math.nearEqual( r , mask.r, nearly ) ) valide = true; }
-        if( mask.g !== undefined ){ if( _Math.nearEqual( g , mask.g, nearly ) ) valide = true; }
-        if( mask.b !== undefined ){ if( _Math.nearEqual( b , mask.b, nearly ) ) valide = true; }
-        if( mask.a !== undefined ){ if( _Math.nearEqual( a , mask.a, nearly ) ) valide = true; }
+        if( mask.r !== undefined ){ if( nearEqual( r , mask.r, nearly ) ) valide = true; }
+        if( mask.g !== undefined ){ if( nearEqual( g , mask.g, nearly ) ) valide = true; }
+        if( mask.b !== undefined ){ if( nearEqual( b , mask.b, nearly ) ) valide = true; }
+        if( mask.a !== undefined ){ if( nearEqual( a , mask.a, nearly ) ) valide = true; }
 
         return valide;
 
@@ -2632,7 +2476,7 @@ var Potrace = {
             higherScore = 0;
             edge = currNode.outgoingEdge;
             while(edge != null) {
-                score = edge.data.nodesCount - edge.data.length * _Math.sqrt(edge.data.sumDistancesSquared / edge.data.nodesCount);
+                score = edge.data.nodesCount - edge.data.length * Math.sqrt(edge.data.sumDistancesSquared / edge.data.nodesCount);
                 if(score > higherScore) {
                     higherScore = score;
                     lowerScoreEdge = edge;
@@ -2670,7 +2514,7 @@ var Potrace = {
 
 function Mesh2D( width, height ) {
 
-    this.id = IDX.get('mesh2D');//_Math.generateUUID();
+    this.id = IDX.get('mesh2D');
     this.__objectsUpdateInProgress = false;
     this.__centerVertex = null;
     this.width = width;
@@ -2866,22 +2710,22 @@ Mesh2D.prototype = {
         else{
             var nx = x2 - x1;
             var ny = y2 - y1;
-            var tmin = - _Math.INF;
-            var tmax = _Math.INF;
+            var tmin = - INFINITY;
+            var tmax = INFINITY;
             
             if (nx != 0.0){
                 var tx1 = (0 - x1)/nx;
                 var tx2 = (this.width - x1)/nx;
                 
-                tmin = _Math.max(tmin, _Math.min(tx1, tx2));
-                tmax = _Math.min(tmax, _Math.max(tx1, tx2));
+                tmin = Math.max(tmin, Math.min(tx1, tx2));
+                tmax = Math.min(tmax, Math.max(tx1, tx2));
             }
             if (ny != 0.0){
                 var ty1 = (0 - y1)/ny;
                 var ty2 = (this.height - y1)/ny;
                 
-                tmin = _Math.max(tmin, _Math.min(ty1, ty2));
-                tmax = _Math.min(tmax, _Math.max(ty1, ty2));
+                tmin = Math.max(tmin, Math.min(ty1, ty2));
+                tmax = Math.min(tmax, Math.max(ty1, ty2));
             }
             if (tmax >= tmin){
                 if (tmax < 1){
@@ -2952,7 +2796,7 @@ Mesh2D.prototype = {
                         segment.addEdge(currEdge);
                         return segment;
                     }
-                    if( Geom2D.distanceSquaredVertexToEdge(currEdge.destinationVertex,tempEdgeDownUp) <= _Math.EPSILON_SQUARED) {
+                    if( Geom2D.distanceSquaredVertexToEdge(currEdge.destinationVertex,tempEdgeDownUp) <= EPSILON_SQUARED) {
                         if(!currEdge.isConstrained) {
                             currEdge.isConstrained = true;
                             currEdge.oppositeEdge.isConstrained = true;
@@ -3019,7 +2863,7 @@ Mesh2D.prototype = {
                     this.insertNewConstrainedEdge(segment, newEdgeDownUp, intersectedEdges, leftBoundingEdges, rightBoundingEdges);
                     
                     return segment;
-                } else if ( Geom2D.distanceSquaredVertexToEdge( edgeLeft.destinationVertex, tempEdgeDownUp) <= _Math.EPSILON_SQUARED ){
+                } else if ( Geom2D.distanceSquaredVertexToEdge( edgeLeft.destinationVertex, tempEdgeDownUp) <= EPSILON_SQUARED ){
                     //trace("we met a vertex");
                     leftBoundingEdges.unshift(edgeLeft.nextLeftEdge);
                     rightBoundingEdges.push(edgeLeft);
@@ -3303,8 +3147,8 @@ Mesh2D.prototype = {
         var fBot = eRight_Left.leftFace;
 
         // check distance from the position to edge end points
-        if((vLeft.pos.x - x) * (vLeft.pos.x - x) + (vLeft.pos.y - y) * (vLeft.pos.y - y) <= _Math.EPSILON_SQUARED) return vLeft;
-        if((vRight.pos.x - x) * (vRight.pos.x - x) + (vRight.pos.y - y) * (vRight.pos.y - y) <= _Math.EPSILON_SQUARED) return vRight;
+        if((vLeft.pos.x - x) * (vLeft.pos.x - x) + (vLeft.pos.y - y) * (vLeft.pos.y - y) <= EPSILON_SQUARED) return vLeft;
+        if((vRight.pos.x - x) * (vRight.pos.x - x) + (vRight.pos.y - y) * (vRight.pos.y - y) <= EPSILON_SQUARED) return vRight;
         // create new objects
         var vCenter = new Vertex();
         var eTop_Center = new Edge();
@@ -3743,16 +3587,16 @@ Mesh2D.prototype = {
                     isDelaunay = true;
                     //DDLS.Geom2D.getCircumcenter(vertexA.pos.x,vertexA.pos.y,vertexB.pos.x,vertexB.pos.y,vertexC.pos.x,vertexC.pos.y,circumcenter);
                     Geom2D.getCircumcenter(vertexA.pos, vertexB.pos, vertexC.pos, circumcenter);
-                    radiusSquared = _Math.Squared(vertexA.pos.x - circumcenter.x, vertexA.pos.y - circumcenter.y);
+                    radiusSquared = Squared(vertexA.pos.x - circumcenter.x, vertexA.pos.y - circumcenter.y);
                     // for perfect regular n-sides polygons, checking strict delaunay circumcircle condition is not possible, so we substract EPSILON to circumcircle radius:
-                    radiusSquared -= _Math.EPSILON_SQUARED;
+                    radiusSquared -= EPSILON_SQUARED;
                     var _g3 = 2;
                     var _g2 = bound.length;
                     while(_g3 < _g2) {
                         var j = _g3++;
                         if(j != i1) {
                             vertexCheck = bound[j].originVertex;
-                            distanceSquared = _Math.Squared(vertexCheck.pos.x - circumcenter.x, vertexCheck.pos.y - circumcenter.y);
+                            distanceSquared = Squared(vertexCheck.pos.x - circumcenter.x, vertexCheck.pos.y - circumcenter.y);
                             if(distanceSquared < radiusSquared) {
                                 isDelaunay = false;
                                 break;
@@ -3856,8 +3700,8 @@ Mesh2D.prototype = {
 
         dictVerticesDone.dispose();
 
-        this.AR_vertex = new _Math.ARRAY( data_vertex );
-        this.AR_edge = new _Math.ARRAY( data_edges );
+        this.AR_vertex = new ARRAY( data_vertex );
+        this.AR_edge = new ARRAY( data_edges );
 
         this.data_vertex = null;
         this.data_edges = null;
@@ -3877,6 +3721,10 @@ Mesh2D.prototype = {
 
 function AStar () {
 
+    this.fromFace = null;
+    this.toFace = null;
+    this.curFace = null;
+
     this.iterEdge = new FromFaceToInnerEdges();
     this.mesh = null;
     this._radius = 0;
@@ -3889,7 +3737,7 @@ function AStar () {
         get: function() { return this._radius; },
         set: function(value) { 
             this._radius = value;
-            this.radiusSquared = this._radius*this._radius;
+            this.radiusSquared = this._radius * this._radius;
             this.diameter = this._radius * 2;
             this.diameterSquared = this.diameter * this.diameter; 
         }
@@ -3942,7 +3790,7 @@ AStar.prototype = {
 
         var loc, distance, p1, p2, p3;
 
-        loc = Geom2D.locatePosition(from, this.mesh);
+        loc = Geom2D.locatePosition( from, this.mesh );
 
         if ( loc.type === 0 ){
             // vertex are always in constraint, so we abort
@@ -3968,100 +3816,13 @@ AStar.prototype = {
             this.toFace = loc;
         } 
 
-        
-        /*loc = Geom2D.locatePosition(from, this.mesh);
-
-        switch(loc.type) {
-            case 0:
-                //var vertex = loc[2];
-                locVertex = loc;
-                return;
-            case 1:
-                //var edge = loc[2];
-                locEdge = loc;
-                if(locEdge.isConstrained) return;
-                this.fromFace = locEdge.leftFace;
-                break;
-            case 2:
-                //var face = loc[2];
-                this.fromFace = loc;
-                break;
-            case 3:
-                break;
-
-        }
-    
-        //
-
-        loc = Geom2D.locatePosition( target, this.mesh );
-
-        switch(loc.type) {
-        case 0:
-            //var vertex1 = loc[2];
-            locVertex = loc;
-            this.toFace = locVertex.edge.leftFace;
-            break;
-        case 1:
-            //var edge1 = loc[2];
-            locEdge = loc;
-            this.toFace = locEdge.leftFace;
-            break;
-        case 2:
-            //var face1 = loc[2];
-            this.toFace = loc;
-            break;
-        case 3:
-            break;
-        }*/
-  
-
-
-       /* loc = Geom2D.locatePosition(from,this.mesh);
-        switch(loc[1]) {
-        case 0:
-            var vertex = loc[2];
-            locVertex = vertex;
-            return;
-        case 1:
-            var edge = loc[2];
-            locEdge = edge;
-            if(locEdge.isConstrained) return;
-            this.fromFace = locEdge.leftFace;
-            break;
-        case 2:
-            var face = loc[2];
-            this.fromFace = face;
-            break;
-        case 3:
-            break;
-        }
-        loc = Geom2D.locatePosition(target,this.mesh);
-        switch(loc[1]) {
-        case 0:
-            var vertex1 = loc[2];
-            locVertex = vertex1;
-            this.toFace = locVertex.edge.leftFace;
-            break;
-        case 1:
-            var edge1 = loc[2];
-            locEdge = edge1;
-            this.toFace = locEdge.leftFace;
-            break;
-        case 2:
-            var face1 = loc[2];
-            this.toFace = face1;
-            break;
-        case 3:
-            break;
-        }*/
-
         this.sortedOpenedFaces.push(this.fromFace);
         this.entryEdges.set(this.fromFace,null);
         this.entryX.set(this.fromFace,from.x);
         this.entryY.set(this.fromFace,from.y);
         this.scoreG.set(this.fromFace,0);
 
-        var dist = _Math.SquaredSqrt(target.x - from.x, target.y - from.y);
+        var dist = SquaredSqrt(target.x - from.x, target.y - from.y);
 
         this.scoreH.set(this.fromFace,dist);
         this.scoreF.set(this.fromFace,dist);
@@ -4169,7 +3930,7 @@ AStar.prototype = {
         dot = (vC.pos.x - vA.pos.x) * (vB.pos.x - vA.pos.x) + (vC.pos.y - vA.pos.y) * (vB.pos.y - vA.pos.y);
         if(dot <= 0) {
             // we compare length of AC with radius
-            distSquared = _Math.Squared(vC.pos.x - vA.pos.x, vC.pos.y - vA.pos.y);
+            distSquared = Squared(vC.pos.x - vA.pos.x, vC.pos.y - vA.pos.y);
             if(distSquared >= this.diameterSquared) return true;
             else return false;
         }
@@ -4178,7 +3939,7 @@ AStar.prototype = {
         dot = (vC.pos.x - vB.pos.x) * (vA.pos.x - vB.pos.x) + (vC.pos.y - vB.pos.y) * (vA.pos.y - vB.pos.y);
         if(dot <= 0) {
             // we compare length of BC with radius
-            distSquared = _Math.Squared(vC.pos.x - vB.pos.x, vC.pos.y - vB.pos.y);
+            distSquared = Squared(vC.pos.x - vB.pos.x, vC.pos.y - vB.pos.y);
             if(distSquared >= this.diameterSquared) return true;
             else return false;
         }
@@ -4191,12 +3952,12 @@ AStar.prototype = {
         if(adjEdge.isConstrained) {
             var proj = new Point(vC.pos.x,vC.pos.y);
             Geom2D.projectOrthogonaly( proj, adjEdge );
-            distSquared = _Math.Squared(proj.x - vC.pos.x, proj.y - vC.pos.y);
+            distSquared = Squared(proj.x - vC.pos.x, proj.y - vC.pos.y);
             if(distSquared >= this.diameterSquared) return true; 
             else return false;
         } else {// if the adjacent is not constrained
-            var distSquaredA = _Math.Squared(vC.pos.x - vA.pos.x, vC.pos.y - vA.pos.y);
-            var distSquaredB = _Math.Squared(vC.pos.x - vB.pos.x, vC.pos.y - vB.pos.y);
+            var distSquaredA = Squared(vC.pos.x - vA.pos.x, vC.pos.y - vA.pos.y);
+            var distSquaredB = Squared(vC.pos.x - vB.pos.x, vC.pos.y - vB.pos.y);
             if(distSquaredA < this.diameterSquared || distSquaredB < this.diameterSquared) return false; 
             else {
                 var vFaceToCheck = [];
@@ -4288,17 +4049,17 @@ function Funnel() {
     Object.defineProperty(this, 'radius', {
         get: function() { return this._radius; },
         set: function(value) { 
-            this._radius = _Math.max(0,value);
+            this._radius = Math.max(0,value);
             this._radiusSquared = this._radius * this._radius;
             this._sampleCircle = [];
             if(this._radius == 0) return;
             var l = this._numSamplesCircle, n = 0, r;
             while(n < l) {
                 var i = n++;
-                r = - _Math.TwoPI * i / this._numSamplesCircle;
-                this._sampleCircle.push(new Point(this._radius * _Math.cos(r),this._radius * _Math.sin(r)));
+                r = - TwoPI * i / this._numSamplesCircle;
+                this._sampleCircle.push(new Point(this._radius * Math.cos(r),this._radius * Math.sin(r)));
             }
-            this._sampleCircleDistanceSquared = _Math.Squared(this._sampleCircle[0].x - this._sampleCircle[1].x, this._sampleCircle[0].y - this._sampleCircle[1].y);
+            this._sampleCircleDistanceSquared = Squared(this._sampleCircle[0].x - this._sampleCircle[1].x, this._sampleCircle[0].y - this._sampleCircle[1].y);
         }
     });
 
@@ -4346,23 +4107,23 @@ Funnel.prototype = {
             p1 = checkFace.edge.originVertex.pos;
             p2 = checkFace.edge.destinationVertex.pos;
             p3 = checkFace.edge.nextLeftEdge.destinationVertex.pos;
-            distanceSquared = _Math.Squared(p1.x - p_from.x, p1.y - p_from.y);
+            distanceSquared = Squared(p1.x - p_from.x, p1.y - p_from.y);
             if(distanceSquared <= this._radiusSquared) {
-                distance = _Math.sqrt(distanceSquared);
+                distance = Math.sqrt(distanceSquared);
                 p_from.sub(p1).div(distance).mul(rad).add(p1);
                 //p_from.x = this._radius * 1.01 * ((p_from.x - p1.x) / distance) + p1.x;
                 //p_from.y = this._radius * 1.01 * ((p_from.y - p1.y) / distance) + p1.y;
             } else {
-                distanceSquared = _Math.Squared(p2.x - p_from.x, p2.y - p_from.y);
+                distanceSquared = Squared(p2.x - p_from.x, p2.y - p_from.y);
                 if(distanceSquared <= this._radiusSquared) {
-                    distance = _Math.sqrt(distanceSquared);
+                    distance = Math.sqrt(distanceSquared);
                     p_from.sub(p2).div(distance).mul(rad).add(p2);
                     //p_from.x = this._radius * 1.01 * ((p_from.X - p2.x) / distance) + p2.x;
                     //p_from.y = this._radius * 1.01 * ((p_from.y - p2.y) / distance) + p2.y;
                 } else {
-                    distanceSquared = _Math.Squared(p3.x - p_from.x, p3.y - p_from.y);
+                    distanceSquared = Squared(p3.x - p_from.x, p3.y - p_from.y);
                     if(distanceSquared <= this._radiusSquared) {
-                        distance = _Math.sqrt(distanceSquared);
+                        distance = Math.sqrt(distanceSquared);
                         p_from.sub(p3).div(distance).mul(rad).add(p3);
                         //p_from.x = this._radius * 1.01 * ((p_from.x - p3.x) / distance) + p3.x;
                         //p_from.y = this._radius * 1.01 * ((p_from.y - p3.y) / distance) + p3.y;
@@ -4373,23 +4134,23 @@ Funnel.prototype = {
             p1 = checkFace.edge.originVertex.pos;
             p2 = checkFace.edge.destinationVertex.pos;
             p3 = checkFace.edge.nextLeftEdge.destinationVertex.pos;
-            distanceSquared = _Math.Squared(p1.x - p_to.x, p1.y - p_to.y);
+            distanceSquared = Squared(p1.x - p_to.x, p1.y - p_to.y);
             if(distanceSquared <= this._radiusSquared) {
-                distance = _Math.sqrt(distanceSquared);
+                distance = Math.sqrt(distanceSquared);
                 p_to.sub(p1).div(distance).mul(rad).add(p1);
                 //p_to.x = this._radius * 1.01 * ((p_to.x - p1.x) / distance) + p1.x;
                 //p_to.y = this._radius * 1.01 * ((p_to.y - p1.y) / distance) + p1.y;
             } else {
-                distanceSquared = _Math.Squared(p2.x - p_to.x, p2.y - p_to.y);
+                distanceSquared = Squared(p2.x - p_to.x, p2.y - p_to.y);
                 if(distanceSquared <= this._radiusSquared) {
-                    distance = _Math.sqrt(distanceSquared);
+                    distance = Math.sqrt(distanceSquared);
                     p_to.sub(p2).div(distance).mul(rad).add(p2);
                     //p_to.x = this._radius * 1.01 * ((p_to.x - p2.x) / distance) + p2.x;
                     //p_to.y = this._radius * 1.01 * ((p_to.y - p2.y) / distance) + p2.y;
                 } else {
-                    distanceSquared = _Math.Squared(p3.x - p_to.x, p3.y - p_to.y);
+                    distanceSquared = Squared(p3.x - p_to.x, p3.y - p_to.y);
                     if(distanceSquared <= this._radiusSquared) {
-                        distance = _Math.sqrt(distanceSquared);
+                        distance = Math.sqrt(distanceSquared);
                         p_to.sub(p3).div(distance).mul(rad).add(p3);
                         //p_to.x = this._radius * 1.01 * ((p_to.x - p3.x) / distance) + p3.x;
                         //p_to.y = this._radius * 1.01 * ((p_to.y - p3.y) / distance) + p3.y;
@@ -4402,10 +4163,10 @@ Funnel.prototype = {
         startPoint = p_from.clone();//new Point(fromX,fromY);
         endPoint = p_to.clone();//new Point(toX,toY);
         if(listFaces.length == 1) {
-            resultPath.push(_Math.fix(startPoint.x));
-            resultPath.push(_Math.fix(startPoint.y));
-            resultPath.push(_Math.fix(endPoint.x));
-            resultPath.push(_Math.fix(endPoint.y));
+            resultPath.push(fix(startPoint.x));
+            resultPath.push(fix(startPoint.y));
+            resultPath.push(fix(endPoint.x));
+            resultPath.push(fix(endPoint.y));
             return;
         }
         var i, j, k, l, n;
@@ -4660,8 +4421,8 @@ Funnel.prototype = {
         l = adjustedPoints.length;
         while(n < l) {
             i = n++;
-            resultPath.push(_Math.fix(adjustedPoints[i].x));
-            resultPath.push(_Math.fix(adjustedPoints[i].y));
+            resultPath.push(fix(adjustedPoints[i].x));
+            resultPath.push(fix(adjustedPoints[i].y));
         }
 
     },
@@ -4836,7 +4597,7 @@ Funnel.prototype = {
     smoothAngle: function( prevPoint, pointToSmooth, nextPoint, side, encirclePoints ) {
 
         var angleType = Geom2D.getDirection(prevPoint,pointToSmooth,nextPoint);
-        var distanceSquared = _Math.Squared(prevPoint.x - nextPoint.x, prevPoint.y - nextPoint.y);
+        var distanceSquared = Squared(prevPoint.x - nextPoint.x, prevPoint.y - nextPoint.y);
         if(distanceSquared <= this._sampleCircleDistanceSquared) return;
         var index = 0;
         var side1;
@@ -5151,7 +4912,7 @@ LinearPathSampler.prototype = {
         while(true) {
             var pathPrev = this._path[this._iPrev];
             var pathPrev1 = this._path[this._iPrev + 1];
-            dist = _Math.SquaredSqrt(this.pos.x - pathPrev,this.pos.y - pathPrev1);
+            dist = SquaredSqrt(this.pos.x - pathPrev,this.pos.y - pathPrev1);
             if(dist < remainingDist) {
                 remainingDist -= dist;
                 this._iPrev -= 2;
@@ -5195,7 +4956,7 @@ LinearPathSampler.prototype = {
         while(true) {
             var pathNext = this._path[this._iNext];
             var pathNext1 = this._path[this._iNext + 1];
-            dist = _Math.SquaredSqrt(this.pos.x - pathNext,this.pos.y - pathNext1);
+            dist = SquaredSqrt(this.pos.x - pathNext,this.pos.y - pathNext1);
             if(dist < remainingDist) {
                 remainingDist -= dist;
                 this.pos.x = this._path[this._iNext];
@@ -5231,7 +4992,7 @@ LinearPathSampler.prototype = {
     updateEntity: function () {
 
         if(this.entity == null) return;
-        this.entity.angle = _Math.atan2( this.pos.y - this.entity.position.y, this.pos.x - this.entity.position.x );//*_Math.todeg;
+        this.entity.angle = Math.atan2( this.pos.y - this.entity.position.y, this.pos.x - this.entity.position.x );//*_Math.todeg;
         this.entity.direction.angular( this.entity.angle );
         this.entity.position.copy( this.pos );
 
@@ -5272,7 +5033,7 @@ FieldOfView.prototype = {
         //var targetY = targetEntity.y;
         var targetRadius = targetEntity.radius;
         
-        var distSquared = _Math.Squared( pos.x - target.x, pos.y - target.y );//(posX-targetX)*(posX-targetX) + (posY-targetY)*(posY-targetY);
+        var distSquared = Squared( pos.x - target.x, pos.y - target.y );//(posX-targetX)*(posX-targetX) + (posY-targetY)*(posY-targetY);
         
         // if target is completely outside field radius
         if ( distSquared >= (radius + targetRadius)*(radius + targetRadius) ){
@@ -5300,7 +5061,7 @@ FieldOfView.prototype = {
 
         var mid = pos.clone().add(target).mul(0.5);
         
-        if( result.length == 0 || _Math.Squared(mid.x-target.x, mid.y-target.y) < _Math.Squared(mid.x-leftTarget.x, mid.y-leftTarget.y) ){
+        if( result.length == 0 || Squared(mid.x-target.x, mid.y-target.y) < Squared(mid.x-leftTarget.x, mid.y-leftTarget.y) ){
             // we consider the 2 tangents from field center to target
             result.splice(0, result.length);
             Geom2D.tangentsPointToCircle(pos, target, targetRadius, result);
@@ -5351,14 +5112,14 @@ FieldOfView.prototype = {
         if ( !leftTargetInField || !rightTargetInField ){
             var p = new Point();
             var dirAngle;
-            dirAngle = _Math.atan2( direction.y, direction.x );
+            dirAngle = Math.atan2( direction.y, direction.x );
             if ( !leftTargetInField ){
-                var leftField = new Point( _Math.cos(dirAngle - angle*0.5), _Math.sin(dirAngle - angle*0.5)).add(pos);
+                var leftField = new Point( Math.cos(dirAngle - angle*0.5), Math.sin(dirAngle - angle*0.5)).add(pos);
                 Geom2D.intersections2segments(pos, leftField , leftTarget, rightTarget, p, null, true);
                 leftTarget = p.clone();
             }
             if ( !rightTargetInField ){
-                var rightField = new Point( _Math.cos(dirAngle + angle*0.5), _Math.sin(dirAngle + angle*0.5)).add(pos);
+                var rightField = new Point( Math.cos(dirAngle + angle*0.5), Math.sin(dirAngle + angle*0.5)).add(pos);
                 Geom2D.intersections2segments(pos, rightField , leftTarget, rightTarget, p, null, true);
                 rightTarget = p.clone();
             }
@@ -5463,7 +5224,7 @@ FieldOfView.prototype = {
                         wall.splice( index1+1, index2-index1-1);
                         
                         // if the window is totally covered, we stop and return false
-                        if ( wall.length == 2 && -_Math.EPSILON < wall[0] && wall[0] < _Math.EPSILON && 1-_Math.EPSILON < wall[1] && wall[1] < 1+_Math.EPSILON ) return false;
+                        if ( wall.length == 2 && -EPSILON < wall[0] && wall[0] < EPSILON && 1-EPSILON < wall[1] && wall[1] < 1+EPSILON ) return false;
                         
                     }
                     
@@ -5519,7 +5280,7 @@ function Entity ( s, world ) {
     //this.dirNormX = 1;
     //this.dirNormY = 0;
     this.angle = 0;
-    this.angleFOV = ( s.fov || 120 ) * _Math.torad;
+    this.angleFOV = ( s.fov || 120 ) * torad;
     this.radiusFOV = s.distance || 200;
     this.testSee = s.see || false;
 
@@ -5970,7 +5731,7 @@ function CircleMesh ( x, y, r, n ) {
     i = 0;
     while( i < n ) {
 
-        v[i].pos.set( x + ((r+offset) * _Math.cos( _Math.TwoPI * i * ndiv)), y + ((r+offset) * _Math.sin( _Math.TwoPI * i * ndiv)) );
+        v[i].pos.set( x + ((r+offset) * Math.cos( TwoPI * i * ndiv)), y + ((r+offset) * Math.sin( TwoPI * i * ndiv)) );
         v[i].setDatas(e[i*2]);
         i++;
 
@@ -6033,10 +5794,10 @@ function CircleMesh ( x, y, r, n ) {
     i = 0;
     while( i < n ) {
 
-        coord.push(x+(r * _Math.cos( _Math.TwoPI * i * ndiv)));
-        coord.push(y+(r * _Math.sin( _Math.TwoPI * i * ndiv)));
-        coord.push(x+(r * _Math.cos( _Math.TwoPI * (i + 1) * ndiv)));
-        coord.push(y+(r * _Math.sin( _Math.TwoPI * (i + 1) * ndiv)));
+        coord.push(x+(r * Math.cos( TwoPI * i * ndiv)));
+        coord.push(y+(r * Math.sin( TwoPI * i * ndiv)));
+        coord.push(x+(r * Math.cos( TwoPI * (i + 1) * ndiv)));
+        coord.push(y+(r * Math.sin( TwoPI * (i + 1) * ndiv)));
         i++;
 
     }
@@ -6134,7 +5895,7 @@ GridMaze.prototype = {
         this.tileHeight = height / rows | 0;
         this.cols = cols;
         this.rows = rows;
-        this.rng = new RandGenerator(_Math.randInt(1234,7259));
+        this.rng = new RandGenerator(randInt(1234,7259));
         this.makeGrid();
         this.traverseGrid();
         this.populateObject();
@@ -6257,17 +6018,17 @@ Dungeon.prototype = {
             }
         }
 
-        var room_count = _Math.randInt(10, 20);
+        var room_count = randInt(10, 20);
         var min_size = min || 5;
         var max_size = max || 15;
 
         for (var i = 0; i < room_count; i++) {
             var room = {};
 
-            room.x = _Math.randInt(1, this.w - max_size - 1);
-            room.y = _Math.randInt(1, this.h - max_size - 1);
-            room.w = _Math.randInt(min_size, max_size);
-            room.h = _Math.randInt(min_size, max_size);
+            room.x = randInt(1, this.w - max_size - 1);
+            room.y = randInt(1, this.h - max_size - 1);
+            room.w = randInt(min_size, max_size);
+            room.h = randInt(min_size, max_size);
 
             if (this.DoesCollide(room)) {
                 i--;
@@ -6286,12 +6047,12 @@ Dungeon.prototype = {
             var roomB = this.FindClosestRoom(roomA);
 
             var pointA = {
-                x: _Math.randInt(roomA.x, roomA.x + roomA.w),
-                y: _Math.randInt(roomA.y, roomA.y + roomA.h)
+                x: randInt(roomA.x, roomA.x + roomA.w),
+                y: randInt(roomA.y, roomA.y + roomA.h)
             };
             var pointB = {
-                x: _Math.randInt(roomB.x, roomB.x + roomB.w),
-                y: _Math.randInt(roomB.y, roomB.y + roomB.h)
+                x: randInt(roomB.x, roomB.x + roomB.w),
+                y: randInt(roomB.y, roomB.y + roomB.h)
             };
 
             while ((pointB.x != pointA.x) || (pointB.y != pointA.y)) {
@@ -6421,6 +6182,7 @@ Dungeon.prototype = {
 };
 
 //var DDLS = DDLS || {};
+
 function SimpleView( world ) {
 
 
@@ -6602,7 +6364,7 @@ BasicCanvas.prototype = {
     },
     drawCircle: function(x,y,radius, s, e) {
         s = s || 0;
-        e = e || _Math.TwoPI;
+        e = e || TwoPI;
         this.ctx.beginPath();
         this.ctx.arc(x,y,radius, s, e, false);
         //this.ctx.stroke();
@@ -6883,4 +6645,4 @@ Mesh2D.prototype.draw = function(){
 
 }*/
 
-export { IDX, REVISION, Main, Log, Dictionary, _Math, Point, Matrix2D, Geom2D, TwoPI, rand, randInt, ImageLoader, fromImageData, Edge, Face, Vertex, Shape, Segment, Object2D, Graph, Potrace, Mesh2D, AStar, Funnel, PathFinder, PathIterator, LinearPathSampler, FieldOfView, Entity, World, RectMesh, CircleMesh, BitmapObject, BitmapMesh, GridMaze, Dungeon, SimpleView, ThreeView };
+export { torad, todeg, TwoPI, IDX, REVISION, Main, Log, Dictionary, Point, Matrix2D, Geom2D, rand, randInt, ImageLoader, fromImageData, Edge, Face, Vertex, Shape, Segment, Object2D, Graph, Potrace, Mesh2D, AStar, Funnel, PathFinder, PathIterator, LinearPathSampler, FieldOfView, Entity, World, RectMesh, CircleMesh, BitmapObject, BitmapMesh, GridMaze, Dungeon, SimpleView, ThreeView };

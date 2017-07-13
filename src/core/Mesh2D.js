@@ -1,9 +1,9 @@
-import { _Math } from '../math/Math';
 import { Point } from '../math/Point';
 import { Matrix2D } from '../math/Matrix2D';
 import { Geom2D } from '../math/Geom2D';
 
-import { IDX, Dictionary, Log } from '../constants';
+import { IDX, Dictionary, Log, INFINITY, EPSILON_SQUARED } from '../constants';
+import { Squared, ARRAY } from '../core/Tools';
 
 import { FromVertexToOutgoingEdges, FromMeshToVertices, FromVertexToIncomingEdges } from '../core/Iterators';
 import { Shape } from '../core/Shape';
@@ -15,7 +15,7 @@ import { Vertex } from '../core/Vertex';
 
 function Mesh2D( width, height ) {
 
-    this.id = IDX.get('mesh2D');//_Math.generateUUID();
+    this.id = IDX.get('mesh2D');
     this.__objectsUpdateInProgress = false;
     this.__centerVertex = null;
     this.width = width;
@@ -211,22 +211,22 @@ Mesh2D.prototype = {
         else{
             var nx = x2 - x1;
             var ny = y2 - y1;
-            var tmin = - _Math.INF;
-            var tmax = _Math.INF;
+            var tmin = - INFINITY;
+            var tmax = INFINITY;
             
             if (nx != 0.0){
                 var tx1 = (0 - x1)/nx;
                 var tx2 = (this.width - x1)/nx;
                 
-                tmin = _Math.max(tmin, _Math.min(tx1, tx2));
-                tmax = _Math.min(tmax, _Math.max(tx1, tx2));
+                tmin = Math.max(tmin, Math.min(tx1, tx2));
+                tmax = Math.min(tmax, Math.max(tx1, tx2));
             }
             if (ny != 0.0){
                 var ty1 = (0 - y1)/ny;
                 var ty2 = (this.height - y1)/ny;
                 
-                tmin = _Math.max(tmin, _Math.min(ty1, ty2));
-                tmax = _Math.min(tmax, _Math.max(ty1, ty2));
+                tmin = Math.max(tmin, Math.min(ty1, ty2));
+                tmax = Math.min(tmax, Math.max(ty1, ty2));
             }
             if (tmax >= tmin){
                 if (tmax < 1){
@@ -297,7 +297,7 @@ Mesh2D.prototype = {
                         segment.addEdge(currEdge);
                         return segment;
                     }
-                    if( Geom2D.distanceSquaredVertexToEdge(currEdge.destinationVertex,tempEdgeDownUp) <= _Math.EPSILON_SQUARED) {
+                    if( Geom2D.distanceSquaredVertexToEdge(currEdge.destinationVertex,tempEdgeDownUp) <= EPSILON_SQUARED) {
                         if(!currEdge.isConstrained) {
                             currEdge.isConstrained = true;
                             currEdge.oppositeEdge.isConstrained = true;
@@ -364,7 +364,7 @@ Mesh2D.prototype = {
                     this.insertNewConstrainedEdge(segment, newEdgeDownUp, intersectedEdges, leftBoundingEdges, rightBoundingEdges);
                     
                     return segment;
-                } else if ( Geom2D.distanceSquaredVertexToEdge( edgeLeft.destinationVertex, tempEdgeDownUp) <= _Math.EPSILON_SQUARED ){
+                } else if ( Geom2D.distanceSquaredVertexToEdge( edgeLeft.destinationVertex, tempEdgeDownUp) <= EPSILON_SQUARED ){
                     //trace("we met a vertex");
                     leftBoundingEdges.unshift(edgeLeft.nextLeftEdge);
                     rightBoundingEdges.push(edgeLeft);
@@ -648,8 +648,8 @@ Mesh2D.prototype = {
         var fBot = eRight_Left.leftFace;
 
         // check distance from the position to edge end points
-        if((vLeft.pos.x - x) * (vLeft.pos.x - x) + (vLeft.pos.y - y) * (vLeft.pos.y - y) <= _Math.EPSILON_SQUARED) return vLeft;
-        if((vRight.pos.x - x) * (vRight.pos.x - x) + (vRight.pos.y - y) * (vRight.pos.y - y) <= _Math.EPSILON_SQUARED) return vRight;
+        if((vLeft.pos.x - x) * (vLeft.pos.x - x) + (vLeft.pos.y - y) * (vLeft.pos.y - y) <= EPSILON_SQUARED) return vLeft;
+        if((vRight.pos.x - x) * (vRight.pos.x - x) + (vRight.pos.y - y) * (vRight.pos.y - y) <= EPSILON_SQUARED) return vRight;
         // create new objects
         var vCenter = new Vertex();
         var eTop_Center = new Edge();
@@ -1088,16 +1088,16 @@ Mesh2D.prototype = {
                     isDelaunay = true;
                     //DDLS.Geom2D.getCircumcenter(vertexA.pos.x,vertexA.pos.y,vertexB.pos.x,vertexB.pos.y,vertexC.pos.x,vertexC.pos.y,circumcenter);
                     Geom2D.getCircumcenter(vertexA.pos, vertexB.pos, vertexC.pos, circumcenter);
-                    radiusSquared = _Math.Squared(vertexA.pos.x - circumcenter.x, vertexA.pos.y - circumcenter.y);
+                    radiusSquared = Squared(vertexA.pos.x - circumcenter.x, vertexA.pos.y - circumcenter.y);
                     // for perfect regular n-sides polygons, checking strict delaunay circumcircle condition is not possible, so we substract EPSILON to circumcircle radius:
-                    radiusSquared -= _Math.EPSILON_SQUARED;
+                    radiusSquared -= EPSILON_SQUARED;
                     var _g3 = 2;
                     var _g2 = bound.length;
                     while(_g3 < _g2) {
                         var j = _g3++;
                         if(j != i1) {
                             vertexCheck = bound[j].originVertex;
-                            distanceSquared = _Math.Squared(vertexCheck.pos.x - circumcenter.x, vertexCheck.pos.y - circumcenter.y);
+                            distanceSquared = Squared(vertexCheck.pos.x - circumcenter.x, vertexCheck.pos.y - circumcenter.y);
                             if(distanceSquared < radiusSquared) {
                                 isDelaunay = false;
                                 break;
@@ -1201,8 +1201,8 @@ Mesh2D.prototype = {
 
         dictVerticesDone.dispose();
 
-        this.AR_vertex = new _Math.ARRAY( data_vertex );
-        this.AR_edge = new _Math.ARRAY( data_edges );
+        this.AR_vertex = new ARRAY( data_vertex );
+        this.AR_edge = new ARRAY( data_edges );
 
         this.data_vertex = null;
         this.data_edges = null;

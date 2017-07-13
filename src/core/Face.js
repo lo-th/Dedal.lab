@@ -1,10 +1,9 @@
-//import { _Math } from '../math/Math';
 import { IDX, FACE } from '../constants';
 
 function Face() {
 
     this.type = FACE;
-    this.id = IDX.get('face');//_Math.generateUUID();
+    this.id = IDX.get('face');
 
     this.isReal = false;
     this.edge = null;

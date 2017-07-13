@@ -5,6 +5,14 @@
 
 export var REVISION = '1.0.0';
 
+// MATH
+export var torad = 0.0174532925199432957;
+export var todeg = 57.295779513082320876;
+export var EPSILON = 0.01;
+export var EPSILON_SQUARED = 0.0001;
+export var INFINITY = Infinity;
+export var TwoPI = Math.PI * 2;
+
 // INTERSECTION
 
 export var VERTEX = 0;

@@ -1,9 +1,8 @@
-//import { _Math } from '../math/Math';
 import { IDX, Dictionary, Log } from '../constants';
 
 function Graph () {
 
-    this.id = IDX.get('graph');//_Math.generateUUID();
+    this.id = IDX.get('graph');
 
     this.edge = null;
     this.node = null;

@@ -1,5 +1,4 @@
-
-import { _Math } from '../math/Math';
+import { randInt } from '../core/Tools';
 import { RandGenerator } from '../math/RandGenerator';
 import { Object2D } from '../core/Object2D';
 
@@ -35,7 +34,7 @@ GridMaze.prototype = {
         this.tileHeight = height / rows | 0;
         this.cols = cols;
         this.rows = rows;
-        this.rng = new RandGenerator(_Math.randInt(1234,7259));
+        this.rng = new RandGenerator(randInt(1234,7259));
         this.makeGrid();
         this.traverseGrid();
         this.populateObject();

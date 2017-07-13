@@ -1,4 +1,4 @@
-import { _Math } from '../math/Math';
+import { SquaredSqrt } from '../core/Tools';
 import { Point } from '../math/Point';
 
 function LinearPathSampler () {
@@ -130,7 +130,7 @@ LinearPathSampler.prototype = {
         while(true) {
             var pathPrev = this._path[this._iPrev];
             var pathPrev1 = this._path[this._iPrev + 1];
-            dist = _Math.SquaredSqrt(this.pos.x - pathPrev,this.pos.y - pathPrev1);
+            dist = SquaredSqrt(this.pos.x - pathPrev,this.pos.y - pathPrev1);
             if(dist < remainingDist) {
                 remainingDist -= dist;
                 this._iPrev -= 2;
@@ -174,7 +174,7 @@ LinearPathSampler.prototype = {
         while(true) {
             var pathNext = this._path[this._iNext];
             var pathNext1 = this._path[this._iNext + 1];
-            dist = _Math.SquaredSqrt(this.pos.x - pathNext,this.pos.y - pathNext1);
+            dist = SquaredSqrt(this.pos.x - pathNext,this.pos.y - pathNext1);
             if(dist < remainingDist) {
                 remainingDist -= dist;
                 this.pos.x = this._path[this._iNext];
@@ -210,7 +210,7 @@ LinearPathSampler.prototype = {
     updateEntity: function () {
 
         if(this.entity == null) return;
-        this.entity.angle = _Math.atan2( this.pos.y - this.entity.position.y, this.pos.x - this.entity.position.x );//*_Math.todeg;
+        this.entity.angle = Math.atan2( this.pos.y - this.entity.position.y, this.pos.x - this.entity.position.x );//*_Math.todeg;
         this.entity.direction.angular( this.entity.angle );
         this.entity.position.copy( this.pos );
 

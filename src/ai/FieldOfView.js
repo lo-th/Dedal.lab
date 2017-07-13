@@ -1,5 +1,5 @@
-import { Dictionary } from '../constants';
-import { _Math } from '../math/Math';
+import { Dictionary, EPSILON } from '../constants';
+import { Squared } from '../core/Tools';
 import { Point } from '../math/Point';
 import { Geom2D } from '../math/Geom2D';
 
@@ -33,7 +33,7 @@ FieldOfView.prototype = {
         //var targetY = targetEntity.y;
         var targetRadius = targetEntity.radius
         
-        var distSquared = _Math.Squared( pos.x - target.x, pos.y - target.y );//(posX-targetX)*(posX-targetX) + (posY-targetY)*(posY-targetY);
+        var distSquared = Squared( pos.x - target.x, pos.y - target.y );//(posX-targetX)*(posX-targetX) + (posY-targetY)*(posY-targetY);
         
         // if target is completely outside field radius
         if ( distSquared >= (radius + targetRadius)*(radius + targetRadius) ){
@@ -61,7 +61,7 @@ FieldOfView.prototype = {
 
         var mid = pos.clone().add(target).mul(0.5);
         
-        if( result.length == 0 || _Math.Squared(mid.x-target.x, mid.y-target.y) < _Math.Squared(mid.x-leftTarget.x, mid.y-leftTarget.y) ){
+        if( result.length == 0 || Squared(mid.x-target.x, mid.y-target.y) < Squared(mid.x-leftTarget.x, mid.y-leftTarget.y) ){
             // we consider the 2 tangents from field center to target
             result.splice(0, result.length);
             Geom2D.tangentsPointToCircle(pos, target, targetRadius, result);
@@ -112,14 +112,14 @@ FieldOfView.prototype = {
         if ( !leftTargetInField || !rightTargetInField ){
             var p = new Point();
             var dirAngle;
-            dirAngle = _Math.atan2( direction.y, direction.x );
+            dirAngle = Math.atan2( direction.y, direction.x );
             if ( !leftTargetInField ){
-                var leftField = new Point( _Math.cos(dirAngle - angle*0.5), _Math.sin(dirAngle - angle*0.5)).add(pos);
+                var leftField = new Point( Math.cos(dirAngle - angle*0.5), Math.sin(dirAngle - angle*0.5)).add(pos);
                 Geom2D.intersections2segments(pos, leftField , leftTarget, rightTarget, p, null, true);
                 leftTarget = p.clone();
             }
             if ( !rightTargetInField ){
-                var rightField = new Point( _Math.cos(dirAngle + angle*0.5), _Math.sin(dirAngle + angle*0.5)).add(pos);
+                var rightField = new Point( Math.cos(dirAngle + angle*0.5), Math.sin(dirAngle + angle*0.5)).add(pos);
                 Geom2D.intersections2segments(pos, rightField , leftTarget, rightTarget, p, null, true);
                 rightTarget = p.clone();
             }
@@ -224,7 +224,7 @@ FieldOfView.prototype = {
                         wall.splice( index1+1, index2-index1-1);
                         
                         // if the window is totally covered, we stop and return false
-                        if ( wall.length == 2 && -_Math.EPSILON < wall[0] && wall[0] < _Math.EPSILON && 1-_Math.EPSILON < wall[1] && wall[1] < 1+_Math.EPSILON ) return false;
+                        if ( wall.length == 2 && -EPSILON < wall[0] && wall[0] < EPSILON && 1-EPSILON < wall[1] && wall[1] < 1+EPSILON ) return false;
                         
                     }
                     

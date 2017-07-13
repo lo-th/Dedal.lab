@@ -1,8 +1,8 @@
-import { _Math } from '../math/Math';
+import { Integral, Squared, SquaredSqrt } from '../core/Tools';
 import { Point } from '../math/Point';
 import { RandGenerator } from '../math/RandGenerator';
 
-import { VERTEX, EDGE, FACE, NULL, Dictionary, Log } from '../constants';
+import { VERTEX, EDGE, FACE, NULL, Dictionary, Log, INFINITY, EPSILON_SQUARED, EPSILON } from '../constants';
 import { FromFaceToInnerEdges, FromMeshToVertices, FromVertexToHoldingFaces, FromVertexToIncomingEdges } from '../core/Iterators';
 
 var Geom2D = {
@@ -18,11 +18,11 @@ var Geom2D = {
         // jump and walk algorithm
 
         if(Geom2D._randGen == null) Geom2D._randGen = new RandGenerator();
-        Geom2D._randGen.seed = _Math.int(p.x * 10 + 4 * p.y);
+        Geom2D._randGen.seed = Integral(p.x * 10 + 4 * p.y);
         
         Geom2D.__samples.splice(0, Geom2D.__samples.length);
-        numSamples = _Math.int(_Math.pow(mesh._vertices.length,0.333333334));
-        //var numSamples = _Math.int(_Math.pow(mesh._vertices.length,1/3));
+        numSamples = Integral( Math.pow( mesh._vertices.length, 0.333333334 ));
+        //var numSamples = Integral(Math.pow(mesh._vertices.length,1/3));
         
         //console.log(numSamples, mesh._vertices.length);
 
@@ -38,7 +38,7 @@ var Geom2D = {
         }
 
         var currVertex, currVertexPos, distSquared;
-        var minDistSquared = _Math.INF;
+        var minDistSquared = INFINITY;
         var closedVertex = null;
 
         i = 0;
@@ -47,7 +47,7 @@ var Geom2D = {
         //for ( i = 0 ; i < numSamples; i++ ){
             currVertex = Geom2D.__samples[i];
             currVertexPos = currVertex.pos;
-            distSquared = _Math.Squared( currVertexPos.x - p.x, currVertexPos.y - p.y );
+            distSquared = Squared( currVertexPos.x - p.x, currVertexPos.y - p.y );
             if( distSquared < minDistSquared ) {
                 minDistSquared = distSquared;
                 closedVertex = currVertex;
@@ -122,13 +122,13 @@ var Geom2D = {
         var pos;
         var distSquared;
         pos = face.edge.originVertex.pos;
-        distSquared = _Math.Squared(pos.x - p.x, pos.y - p.y);
+        distSquared = Squared(pos.x - p.x, pos.y - p.y);
         if(distSquared <= radiusSquared) return true;
         pos = face.edge.nextLeftEdge.originVertex.pos;
-        distSquared = _Math.Squared(pos.x - p.x, pos.y - p.y);
+        distSquared = Squared(pos.x - p.x, pos.y - p.y);
         if(distSquared <= radiusSquared) return true;
         pos = face.edge.nextLeftEdge.nextLeftEdge.originVertex.pos;
-        distSquared = _Math.Squared(pos.x - p.x, pos.y - p.y);
+        distSquared = Squared(pos.x - p.x, pos.y - p.y);
         if(distSquared <= radiusSquared) return true;
         var edgesToCheck = [];
         edgesToCheck.push(face.edge);
@@ -192,7 +192,7 @@ var Geom2D = {
     Orient2d: function ( p1, p2, p3 ) {
 
         var val = (p1.x - p3.x) * (p2.y - p3.y) - (p1.y - p3.y) * (p2.x - p3.x);
-        if (val > -_Math.EPSILON_SQUARED && val < _Math.EPSILON_SQUARED) return 0;// collinear
+        if (val > -EPSILON_SQUARED && val < EPSILON_SQUARED) return 0;// collinear
         else if (val > 0) return -1;// ccw
         else return 1;// cw
 
@@ -226,21 +226,21 @@ var Geom2D = {
             var y2 = v2.pos.y;
             var x3 = v3.pos.x;
             var y3 = v3.pos.y;
-            var v_v1squared = _Math.Squared(x1 - p.x, y1 - p.y);
-            var v_v2squared = _Math.Squared(x2 - p.x, y2 - p.y);
-            var v_v3squared = _Math.Squared(x3 - p.x, y3 - p.y);
-            var inv_v1_v2 = 1 / _Math.Squared(x2 - x1, y2 - y1);
-            var inv_v2_v3 = 1 / _Math.Squared(x3 - x2, y3 - y2);
-            var inv_v3_v1 = 1 / _Math.Squared(x1 - x3, y1 - y3);
+            var v_v1squared = Squared(x1 - p.x, y1 - p.y);
+            var v_v2squared = Squared(x2 - p.x, y2 - p.y);
+            var v_v3squared = Squared(x3 - p.x, y3 - p.y);
+            var inv_v1_v2 = 1 / Squared(x2 - x1, y2 - y1);
+            var inv_v2_v3 = 1 / Squared(x3 - x2, y3 - y2);
+            var inv_v3_v1 = 1 / Squared(x1 - x3, y1 - y3);
             var dot_v_v1v2 = (p.x - x1) * (x2 - x1) + (p.y - y1) * (y2 - y1);
             var dot_v_v2v3 = (p.x - x2) * (x3 - x2) + (p.y - y2) * (y3 - y2);
             var dot_v_v3v1 = (p.x - x3) * (x1 - x3) + (p.y - y3) * (y1 - y3);
             var v_e1_2squared = v_v1squared - dot_v_v1v2 * dot_v_v1v2 * inv_v1_v2;
             var v_e2_3squared = v_v2squared - dot_v_v2v3 * dot_v_v2v3 * inv_v2_v3;
             var v_e3_1squared = v_v3squared - dot_v_v3v1 * dot_v_v3v1 * inv_v3_v1;
-            var closeTo_e1_2 = v_e1_2squared <= _Math.EPSILON_SQUARED ? true:false;
-            var closeTo_e2_3 = v_e2_3squared <= _Math.EPSILON_SQUARED ? true:false;
-            var closeTo_e3_1 = v_e3_1squared <= _Math.EPSILON_SQUARED ? true:false;
+            var closeTo_e1_2 = v_e1_2squared <= EPSILON_SQUARED ? true:false;
+            var closeTo_e2_3 = v_e2_3squared <= EPSILON_SQUARED ? true:false;
+            var closeTo_e3_1 = v_e3_1squared <= EPSILON_SQUARED ? true:false;
             if(closeTo_e1_2) {
                 if(closeTo_e3_1) result = v1; 
                 else if(closeTo_e2_3) result = v2; 
@@ -275,13 +275,13 @@ var Geom2D = {
         if(n == 0) {
             if( Geom2D.intersections2segments(s1, s2, t2, t3, pResult1, null)) n++;
         } else if( Geom2D.intersections2segments(s1, s2, t2, t3, pResult2, null)) {
-            if(-0.01 > pResult1.x - pResult2.x || pResult1.x - pResult2.x > _Math.EPSILON || -_Math.EPSILON > pResult1.y - pResult2.y || pResult1.y - pResult2.y > _Math.EPSILON) n++;
+            if(-0.01 > pResult1.x - pResult2.x || pResult1.x - pResult2.x > EPSILON || -EPSILON > pResult1.y - pResult2.y || pResult1.y - pResult2.y > EPSILON) n++;
         }
         if(n == 0) {
             if( Geom2D.intersections2segments(s1, s2, t3, t1, pResult1, null)) n++;
         } else if(n == 1) {
             if( Geom2D.intersections2segments(s1, s2, t3, t1, pResult2, null)) {
-                if(-_Math.EPSILON > pResult1.x - pResult2.x || pResult1.x - pResult2.x > _Math.EPSILON || -_Math.EPSILON > pResult1.y - pResult2.y || pResult1.y - pResult2.y > _Math.EPSILON) n++;
+                if(-EPSILON > pResult1.x - pResult2.x || pResult1.x - pResult2.x > EPSILON || -EPSILON > pResult1.y - pResult2.y || pResult1.y - pResult2.y > EPSILON) n++;
             }
         }
         if(n == 1) {
@@ -437,10 +437,10 @@ var Geom2D = {
     intersections2Circles: function ( c1, r1, c2, r2, result ){
 
         var factor, a, b, first, dist, invd, trans;
-        dist = _Math.Squared(c2.x - c1.x, c2.y - c1.y);
+        dist = Squared(c2.x - c1.x, c2.y - c1.y);
         invd = 1 / (2 * dist);
         if((c1.x != c2.x || c1.y != c2.y) && dist <= (r1 + r2) * (r1 + r2) && dist >= (r1 - r2) * (r1 - r2)) {
-            trans = _Math.sqrt(((r1 + r2) * (r1 + r2) - dist) * (dist - (r2 - r1) * (r2 - r1)));
+            trans = Math.sqrt(((r1 + r2) * (r1 + r2) - dist) * (dist - (r2 - r1) * (r2 - r1)));
             factor = c2.clone().sub(c1).mul(invd);
             a = c1.clone().add(c2).mul(0.5);
             b = factor.clone().mul(r1 * r1 - r2 * r2);
@@ -483,7 +483,7 @@ var Geom2D = {
             }
             return true;
         } else {
-            deltaSQRT = _Math.sqrt(delta);
+            deltaSQRT = Math.sqrt(delta);
             t0 = (-b + deltaSQRT) / (2 * a);
             t1 = (-b - deltaSQRT) / (2 * a);
             var intersecting = false;
@@ -517,7 +517,7 @@ var Geom2D = {
             t0 = -b / (2 * a);
             result.push( p0x + t0*(p1x - p0x), p0y + t0*(p1y - p0y),  t0 );
         } else if(delta > 0) {
-            deltaSQRT = _Math.sqrt(delta);
+            deltaSQRT = Math.sqrt(delta);
             t0 = (-b + deltaSQRT) / (2 * a);
             t1 = (-b - deltaSQRT) / (2 * a);
             result.push( p0x + t0*(p1x - p0x), p0y + t0*(p1y - p0y), t0, p0x + t1*(p1x - p0x), p0y + t1*(p1y - p0y), t1 );
@@ -528,14 +528,14 @@ var Geom2D = {
     tangentsPointToCircle: function ( p, c, r, result ) {
 
         var c2 = p.clone().add(c).mul(0.5);
-        var r2 = 0.5 * _Math.SquaredSqrt(p.x - c.x, p.y - c.y);
+        var r2 = 0.5 * SquaredSqrt(p.x - c.x, p.y - c.y);
         return Geom2D.intersections2Circles(c2, r2, c, r, result);
 
     },
 
     tangentsCrossCircleToCircle: function ( r, c1, c2, result ) {
 
-        var distance = _Math.SquaredSqrt(c1.x - c2.x, c1.y - c2.y);
+        var distance = SquaredSqrt(c1.x - c2.x, c1.y - c2.y);
         var radius = distance * 0.25;
         var center = c2.clone().sub(c1).mul(0.25).add(c1);
 
@@ -564,7 +564,7 @@ var Geom2D = {
 
     tangentsParalCircleToCircle: function ( r, c1, c2, result ) {
 
-        var distance = _Math.SquaredSqrt(c1.x - c2.x, c1.y - c2.y);
+        var distance = SquaredSqrt(c1.x - c2.x, c1.y - c2.y);
         var invD = 1 / distance;
         var t1x = c1.x + r * (c2.y - c1.y) * invD;
         var t1y = c1.y + r * (-c2.x + c1.x) * invD;
@@ -579,21 +579,21 @@ var Geom2D = {
     },
 
     /*distanceSquaredPointToLine: function(p,a,b) {
-        var a_b_squared = _Math.Squared(b.x - a.x, b.y - a.y);
+        var a_b_squared = Squared(b.x - a.x, b.y - a.y);
         var dotProduct = (p.x - a.x) * (b.x - a.x) + (p.y - a.y) * (b.y - a.y);
-        var p_a_squared = _Math.Squared(a.x - p.x, a.y - p.y);
+        var p_a_squared = Squared(a.x - p.x, a.y - p.y);
         return p_a_squared - dotProduct * dotProduct / a_b_squared;
     },*/
 
     distanceSquaredPointToSegment: function ( p, a, b ) {
 
-        var a_b_squared = _Math.Squared(b.x - a.x, b.y - a.y);
+        var a_b_squared = Squared(b.x - a.x, b.y - a.y);
         var dotProduct = ((p.x - a.x) * (b.x - a.x) + (p.y - a.y) * (b.y - a.y)) / a_b_squared;
-        if(dotProduct < 0) return _Math.Squared(p.x - a.x, p.y - a.y); 
+        if(dotProduct < 0) return Squared(p.x - a.x, p.y - a.y); 
         else if(dotProduct <= 1) {
-            var p_a_squared = _Math.Squared(a.x - p.x, a.y - p.y);
+            var p_a_squared = Squared(a.x - p.x, a.y - p.y);
             return p_a_squared - dotProduct * dotProduct * a_b_squared;
-        } else return _Math.Squared(p.x - b.x, p.y - b.y);
+        } else return Squared(p.x - b.x, p.y - b.y);
 
     },
 
@@ -618,7 +618,7 @@ var Geom2D = {
             nextY = path[i + 1];
             x = nextX - fromX;
             y = nextY - fromY;
-            distance = _Math.SquaredSqrt(x, y);
+            distance = SquaredSqrt(x, y);
             sumDistance += distance;
             fromX = nextX;
             fromY = nextY;

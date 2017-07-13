@@ -1,5 +1,4 @@
-
-import { _Math } from '../math/Math';
+import { randInt } from '../core/Tools';
 import { fromImageData } from '../core/Tools';
 import { BitmapObject } from '../factories/BitmapObject';
 
@@ -29,17 +28,17 @@ Dungeon.prototype = {
             }
         }
 
-        var room_count = _Math.randInt(10, 20);
+        var room_count = randInt(10, 20);
         var min_size = min || 5;
         var max_size = max || 15;
 
         for (var i = 0; i < room_count; i++) {
             var room = {};
 
-            room.x = _Math.randInt(1, this.w - max_size - 1);
-            room.y = _Math.randInt(1, this.h - max_size - 1);
-            room.w = _Math.randInt(min_size, max_size);
-            room.h = _Math.randInt(min_size, max_size);
+            room.x = randInt(1, this.w - max_size - 1);
+            room.y = randInt(1, this.h - max_size - 1);
+            room.w = randInt(min_size, max_size);
+            room.h = randInt(min_size, max_size);
 
             if (this.DoesCollide(room)) {
                 i--;
@@ -58,12 +57,12 @@ Dungeon.prototype = {
             var roomB = this.FindClosestRoom(roomA);
 
             var pointA = {
-                x: _Math.randInt(roomA.x, roomA.x + roomA.w),
-                y: _Math.randInt(roomA.y, roomA.y + roomA.h)
+                x: randInt(roomA.x, roomA.x + roomA.w),
+                y: randInt(roomA.y, roomA.y + roomA.h)
             };
             var pointB = {
-                x: _Math.randInt(roomB.x, roomB.x + roomB.w),
-                y: _Math.randInt(roomB.y, roomB.y + roomB.h)
+                x: randInt(roomB.x, roomB.x + roomB.w),
+                y: randInt(roomB.y, roomB.y + roomB.h)
             };
 
             while ((pointB.x != pointA.x) || (pointB.y != pointA.y)) {

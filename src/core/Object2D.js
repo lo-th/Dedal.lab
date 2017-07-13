@@ -1,11 +1,10 @@
 import { IDX } from '../constants';
-//import { _Math } from '../math/Math';
 import { Point } from '../math/Point';
 import { Matrix2D } from '../math/Matrix2D';
 
 function Object2D() {
 
-    this.id = IDX.get('object2D');//_Math.generateUUID();
+    this.id = IDX.get('object2D');
     this._pivot = new Point();
     this._position = new Point();
     this._scale = new Point( 1, 1 );
