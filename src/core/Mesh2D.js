@@ -1,8 +1,9 @@
 import { _Math } from '../math/Math';
 import { Point } from '../math/Point';
+import { Matrix2D } from '../math/Matrix2D';
 import { Geom2D } from '../math/Geom2D';
 
-import { Dictionary, Log } from '../constants';
+import { IDX, Dictionary, Log } from '../constants';
 
 import { FromVertexToOutgoingEdges, FromMeshToVertices, FromVertexToIncomingEdges } from '../core/Iterators';
 import { Shape } from '../core/Shape';
@@ -14,7 +15,7 @@ import { Vertex } from '../core/Vertex';
 
 function Mesh2D( width, height ) {
 
-    this.id = _Math.generateUUID();
+    this.id = IDX.get('mesh2D');//_Math.generateUUID();
     this.__objectsUpdateInProgress = false;
     this.__centerVertex = null;
     this.width = width;
@@ -104,13 +105,13 @@ Mesh2D.prototype = {
         var coordinates = o.coordinates;
         
         o.updateMatrixFromValues();
-        var m = o.matrix;
+        var m = o.matrix || new Matrix2D();
         var p1 = new Point();
         var p2 = new Point();
 
         var l = coordinates.length, i = 0;
-        while(i < l) {
-        //for (i=0; i<l; i+=4){
+        //while(i < l) {
+        for (i=0; i<l; i+=4){
             p1.set( coordinates[i], coordinates[i+1] ).transformMat2D(m);
             p2.set( coordinates[i+2], coordinates[i+3] ).transformMat2D(m);
             segment = this.insertConstraintSegment( p1.x, p1.y, p2.x, p2.y );
@@ -118,7 +119,7 @@ Mesh2D.prototype = {
                 segment.fromShape = shape;
                 shape.segments.push(segment);
             }
-            i += 4;
+            //i += 4;
         }
 
         this._constraintShapes.push( shape );
@@ -247,7 +248,7 @@ Mesh2D.prototype = {
         if(vertexDown == null) return null;
         var vertexUp = this.insertVertex(newX2,newY2);
         if(vertexUp == null) return null;
-        if(vertexDown.id == vertexUp.id) return null;
+        if(vertexDown.id === vertexUp.id) return null;
         //if(vertexDown === vertexUp) return null;
 
         // useful
@@ -284,7 +285,7 @@ Mesh2D.prototype = {
                 iterVertexToOutEdges.fromVertex = currVertex;
                 while((currEdge = iterVertexToOutEdges.next()) != null) {
                     //if(currEdge.destinationVertex == vertexUp) {
-                    if(currEdge.destinationVertex.id == vertexUp.id) {
+                    if(currEdge.destinationVertex.id === vertexUp.id) {
                         if(!currEdge.isConstrained) {
                             currEdge.isConstrained = true;
                             currEdge.oppositeEdge.isConstrained = true;
@@ -323,7 +324,7 @@ Mesh2D.prototype = {
                             iterVertexToOutEdges.fromVertex = currVertex;
                             while((currEdge = iterVertexToOutEdges.next()) != null){
                                 //if(currEdge.destinationVertex == vertexDown) {
-                                if(currEdge.destinationVertex.id == vertexDown.id) {
+                                if(currEdge.destinationVertex.id === vertexDown.id) {
                                     currEdge.isConstrained = true;
                                     currEdge.oppositeEdge.isConstrained = true;
                                     currEdge.addFromConstraintSegment(segment);
@@ -348,7 +349,7 @@ Mesh2D.prototype = {
             } else if ( currObjet.type === 1 ){
                 currEdge = currObjet;
                 edgeLeft = currEdge.nextLeftEdge;
-                if ( edgeLeft.destinationVertex.id == vertexUp.id ){
+                if ( edgeLeft.destinationVertex.id === vertexUp.id ){
                 //if ( edgeLeft.destinationVertex == vertexUp ){
                     //trace("end point reached");
                     leftBoundingEdges.unshift(edgeLeft.nextLeftEdge);
@@ -433,8 +434,8 @@ Mesh2D.prototype = {
                             }*/
 
                             while ( (currEdge = iterVertexToOutEdges.next()) != null ){
-                                if (currEdge.destinationVertex.id == leftBoundingEdges[0].originVertex.id) leftBoundingEdges.unshift(currEdge);
-                                if (currEdge.destinationVertex.id == rightBoundingEdges[rightBoundingEdges.length-1].destinationVertex.id) rightBoundingEdges.push(currEdge.oppositeEdge);
+                                if (currEdge.destinationVertex.id === leftBoundingEdges[0].originVertex.id) leftBoundingEdges.unshift(currEdge);
+                                if (currEdge.destinationVertex.id === rightBoundingEdges[rightBoundingEdges.length-1].destinationVertex.id) rightBoundingEdges.push(currEdge.oppositeEdge);
                             }
                             
                             newEdgeDownUp = new Edge();
@@ -464,7 +465,7 @@ Mesh2D.prototype = {
             }
         }
 
-        //return segment;
+        return segment;
 
     },
 
@@ -601,8 +602,8 @@ Mesh2D.prototype = {
         // check the edge references of TOP and BOTTOM vertice
         //if(vTop.edge === eTop_Bot) vTop.setDatas(eTop_Left);
         //if(vBot.edge === eBot_Top) vBot.setDatas(eBot_Right);
-        if(vTop.edge.id == eTop_Bot.id) vTop.setDatas(eTop_Left);
-        if(vBot.edge.id == eBot_Top.id) vBot.setDatas(eBot_Right);
+        if(vTop.edge.id === eTop_Bot.id) vTop.setDatas(eTop_Left);
+        if(vBot.edge.id === eBot_Top.id) vBot.setDatas(eBot_Right);
         // set the new edge and face references for the 4 bouding edges
         eTop_Left.nextLeftEdge = eLeft_Right;
         eTop_Left.leftFace = fTop;
@@ -902,7 +903,7 @@ Mesh2D.prototype = {
                 var i1 = _g1++;
                 edges = vertex.fromConstraintSegments[i1].edges;
                 //if(edges[0].originVertex == vertex || edges[edges.length - 1].destinationVertex == vertex) return false;
-                if(edges[0].originVertex.id == vertex.id || edges[edges.length - 1].destinationVertex.id == vertex.id) return false;
+                if(edges[0].originVertex.id === vertex.id || edges[edges.length - 1].destinationVertex.id === vertex.id) return false;
             }
             // we check the count of adjacent constrained edges
             var count = 0;

@@ -24,10 +24,10 @@ function RectMesh ( w, h ) {
 
     while(i--){
 
-        f.push(new Face());
-        v.push(new Vertex());
-        s.push(new Segment());
-        e.push(new Edge(), new Edge(), new Edge());
+        f.push( new Face() );
+        v.push( new Vertex() );
+        s.push( new Segment() );
+        e.push( new Edge(), new Edge(), new Edge() );
 
     }
 
@@ -85,13 +85,13 @@ function RectMesh ( w, h ) {
     s[1].fromShape = boundShape;
     s[2].fromShape = boundShape;
     s[3].fromShape = boundShape;
-    boundShape.segments.push(s[0], s[1], s[2], s[3]);
+    boundShape.segments.push( s[0], s[1], s[2], s[3] );
 
-    var mesh = new Mesh2D(w,h);
+    var mesh = new Mesh2D( w, h );
     mesh._vertices = v;
     mesh._edges = e;
     mesh._faces = f;
-    mesh._constraintShapes.push(boundShape);
+    //mesh._constraintShapes.push( boundShape );
 
     mesh.clipping = false;
     mesh.insertConstraintShape( [ 0,0,w,0,  w,0,w,h,  w,h,0,h,  0,h,0,0 ] );

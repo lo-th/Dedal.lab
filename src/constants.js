@@ -5,6 +5,13 @@
 
 export var REVISION = '1.0.0';
 
+// INTERSECTION
+
+export var VERTEX = 0;
+export var EDGE = 1;
+export var FACE = 2;
+export var NULL = 3;
+
 // MAIN
 
 var Main = {
@@ -22,12 +29,24 @@ var Main = {
 
 export { Main };
 
-// INTERSECTION
+var IDX = {
 
-export var VERTEX = 0;
-export var EDGE = 1;
-export var FACE = 2;
-export var NULL = 3;
+    id: { segment:0, shape:0, edge:0, face:0, mesh2D:0, object2D:0, vertex:0, graph:0, graphEdge:0, graphNode:0 },
+
+    get: function ( type ){
+        this.id[type] ++;
+        return this.id[type];
+    },
+
+    reset: function (){
+        this.id = { segment:0, shape:0, edge:0, face:0, mesh2D:0, object2D:0, vertex:0, graph:0, graphEdge:0, graphNode:0 }
+    }
+
+}
+
+export { IDX };
+
+
 
 // LOG
 

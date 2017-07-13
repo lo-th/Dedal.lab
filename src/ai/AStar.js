@@ -69,34 +69,83 @@ AStar.prototype = {
         this.scoreH = new Dictionary(1);
         
 
-        var loc, locEdge, locVertex, distance, p1, p2, p3;
+        var loc, distance, p1, p2, p3;
 
         loc = Geom2D.locatePosition(from, this.mesh);
-        if ( loc.type == 0 ){
+
+        if ( loc.type === 0 ){
             // vertex are always in constraint, so we abort
-            locVertex = loc; return;
-        } else if ( loc.type == 1 ){
-            locEdge = loc
+            return;
+        } else if ( loc.type === 1 ){
             // if the vertex lies on a constrained edge, we abort
-            if (locEdge.isConstrained) return;
-            this.fromFace = locEdge.leftFace;
-        } else {
+            if ( loc.isConstrained ) return;
+            this.fromFace = loc.leftFace;
+        } else if ( loc.type === 2 ) {
             this.fromFace = loc;
-        }
+        } 
+
         //
+
         loc = Geom2D.locatePosition( target, this.mesh );
-        if ( loc.type == 0 ){
+
+        if ( loc.type === 0 ){
+            this.toFace = loc.edge.leftFace;
+        } else if ( loc.type === 1 ){
+            //locEdge = loc;
+            this.toFace = loc.leftFace;
+        } else if ( loc.type === 2 ) {
+            this.toFace = loc;
+        } 
+
+        
+        /*loc = Geom2D.locatePosition(from, this.mesh);
+
+        switch(loc.type) {
+            case 0:
+                //var vertex = loc[2];
+                locVertex = loc;
+                return;
+            case 1:
+                //var edge = loc[2];
+                locEdge = loc;
+                if(locEdge.isConstrained) return;
+                this.fromFace = locEdge.leftFace;
+                break;
+            case 2:
+                //var face = loc[2];
+                this.fromFace = loc;
+                break;
+            case 3:
+                break;
+
+        }
+    
+        //
+
+        loc = Geom2D.locatePosition( target, this.mesh );
+
+        switch(loc.type) {
+        case 0:
+            //var vertex1 = loc[2];
             locVertex = loc;
             this.toFace = locVertex.edge.leftFace;
-        }else if ( loc.type == 1 ){
+            break;
+        case 1:
+            //var edge1 = loc[2];
             locEdge = loc;
             this.toFace = locEdge.leftFace;
-        }else{
+            break;
+        case 2:
+            //var face1 = loc[2];
             this.toFace = loc;
-        }
+            break;
+        case 3:
+            break;
+        }*/
+  
 
 
-        /*loc = Geom2D.locatePosition(fromX,fromY,this.mesh);
+       /* loc = Geom2D.locatePosition(from,this.mesh);
         switch(loc[1]) {
         case 0:
             var vertex = loc[2];
@@ -115,7 +164,7 @@ AStar.prototype = {
         case 3:
             break;
         }
-        loc = Geom2D.locatePosition(toX,toY,this.mesh);
+        loc = Geom2D.locatePosition(target,this.mesh);
         switch(loc[1]) {
         case 0:
             var vertex1 = loc[2];
@@ -134,6 +183,7 @@ AStar.prototype = {
         case 3:
             break;
         }*/
+
         this.sortedOpenedFaces.push(this.fromFace);
         this.entryEdges.set(this.fromFace,null);
         this.entryX.set(this.fromFace,from.x);

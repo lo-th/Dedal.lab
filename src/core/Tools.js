@@ -67,7 +67,7 @@ function PixelsData(w,h) {
 
 // IMAGE DATA
 
-function fromImageData ( image, img ) {
+function fromImageData ( image, imageData ) {
 
     if(image){
 
@@ -78,16 +78,14 @@ function fromImageData ( image, img ) {
         canvas.width = w;
         canvas.height = h;
 
-        var ctx = canvas.getContext("2d");
-        ctx.drawImage( image, 0, 0, w, h);
-        img = ctx.getImageData(0,0,w,h);
+        var ctx = canvas.getContext( "2d" );
+        ctx.drawImage( image, 0, 0, w, h );
+        imageData = ctx.getImageData( 0, 0, w, h );
+        
     }
 
-    
-
-
-    var pixels = new PixelsData( img.width, img.height );
-    var data = img.data;
+    var pixels = new PixelsData( imageData.width, imageData.height );
+    var data = imageData.data;
     var l = data.byteLength, n=0, i=0;
     while(n < l) {
         i = n++;

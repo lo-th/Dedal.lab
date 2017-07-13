@@ -10,27 +10,40 @@ function NodeData() {};
 
 var Potrace = {
 
+    color: { r:255, g:255, b:255 },
+    nearly : 50,
+
     //DDLS.Potrace.MAX_INT = 2147483647;
     maxDistance: 1,
 
+    setColor: function ( color ) { Potrace.color = color; },
+    setNearly: function ( n ) { Potrace.nearly = n; },
+
     getWhite: function( bmpData, col, row ){
+
+        var mask = Potrace.color;
+        var nearly = Potrace.nearly;
+        var valide = false
         //col = col | 0;
         //row = row | 0;
-        if(col>bmpData.width || col<0) return false;
-        if(row>bmpData.height || row<0) return false;
+        if(col > bmpData.width || col<0) return false;
+        if(row > bmpData.height || row<0) return false;
         //var p = row * bmpData.width + col << 2;
-        var p = row * (bmpData.width*4) + (col*4);
+        var i = row * (bmpData.width*4) + (col*4);
         //var p = (row-1) * (bmpData.width*4) + ((col-1)*4);
         //var p = row * (bmpData.width) + (col*4);
-        var r = bmpData.bytes[p+0];
-        var g = bmpData.bytes[p+1];
-        var b = bmpData.bytes[p+2];
-        var a = bmpData.bytes[p+3];
+        var r = bmpData.bytes[i+0];
+        var g = bmpData.bytes[i+1];
+        var b = bmpData.bytes[i+2];
+        var a = bmpData.bytes[i+3];
 
-        if( a === 0 ) return true;
-        if( r === 255 && g === 255 && b === 255 ) return true;
+        if( mask.r !== undefined ){ if( _Math.nearEqual( r , mask.r, nearly ) ) valide = true; }
+        if( mask.g !== undefined ){ if( _Math.nearEqual( g , mask.g, nearly ) ) valide = true; }
+        if( mask.b !== undefined ){ if( _Math.nearEqual( b , mask.b, nearly ) ) valide = true; }
+        if( mask.a !== undefined ){ if( _Math.nearEqual( a , mask.a, nearly ) ) valide = true; }
 
-        return false;
+        return valide;
+
     },
 
     /*DDLS.getPixel = function( bmpData, col, row ){
@@ -129,6 +142,7 @@ var Potrace = {
 
 
     buildShape: function( bmpData, fromPixelRow, fromPixelCol, dictPixelsDone ) {
+        
         var newX = fromPixelCol;
         var newY = fromPixelRow;
         var path = [newX,newY];

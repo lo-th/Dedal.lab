@@ -1,12 +1,13 @@
-import { _Math } from '../math/Math';
+//import { _Math } from '../math/Math';
+import { IDX, VERTEX } from '../constants';
 import { Point } from '../math/Point';
-import { VERTEX } from '../constants';
+
 
 function Vertex () {
 
     this.type = VERTEX;
     //this.colorDebug = -1;
-    this.id = _Math.generateUUID();
+    this.id = IDX.get('vertex');//_Math.generateUUID();
     //DDLS.VertexID ++;
     this.pos = new Point();
     this.fromConstraintSegments = [];

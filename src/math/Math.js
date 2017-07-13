@@ -46,6 +46,8 @@ var _Math = {
     rand: function ( low, high ) { return low + Math.random() * ( high - low ); },
     randInt: function ( low, high ) { return low + Math.floor( Math.random() * ( high - low + 1 ) ); },
 
+    nearEqual: function ( a, b, e ) { return Math.abs( a - b ) < e; },
+
     generateUUID: function () {
 
         // http://www.broofa.com/Tools/Math.uuid.htm

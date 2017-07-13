@@ -1,7 +1,7 @@
 import { _Math } from '../math/Math';
 import { Point } from '../math/Point';
 import { Geom2D } from '../math/Geom2D';
-import { Dictionary, Log } from '../constants';
+import { Dictionary, Log, EDGE } from '../constants';
 
 function Funnel() {
 
@@ -144,10 +144,20 @@ Funnel.prototype = {
         var currEdge = null;
         var currVertex = null;
         var direction;
+
+
+
         // first we skip the first face and first edge if the starting point lies on the first interior edge:
-        if ( listEdges[0] == Geom2D.isInFace(p_from, listFaces[0]) ){
-            listEdges.shift();
-            listFaces.shift();
+
+        var edgeTmp = Geom2D.isInFace( p_from, listFaces[0] );
+
+        if ( edgeTmp.type === EDGE ){
+            if ( listEdges[0] === edgeTmp ){
+                if( listEdges.length > 1 ) listEdges.shift();
+                if( listFaces.length > 1 ) listFaces.shift();
+                //if(listEdges === undefined ) listEdges = [];
+                console.log('isShift', edgeTmp, listEdges, listFaces )
+            }
         }
         //{
            /* var _g = Geom2D.isInFacePrime(fromX,fromY,listFaces[0]);
@@ -163,6 +173,9 @@ Funnel.prototype = {
             default:
             }*/
         //}
+
+        // our funnels, inited with starting point  
+
         var funnelLeft = [];
         var funnelRight = [];
         funnelLeft.push(startPoint);

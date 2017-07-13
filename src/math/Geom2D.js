@@ -170,14 +170,7 @@ var Geom2D = {
 
     },
 
-    Orient2d: function ( p1, p2, p3 ) {
-
-        var val = (p1.x - p3.x) * (p2.y - p3.y) - (p1.y - p3.y) * (p2.x - p3.x);
-        if (val > -_Math.EPSILON_SQUARED && val < _Math.EPSILON_SQUARED) return 0;// collinear
-        else if (val > 0) return -1;// ccw
-        else return 1;// cw
-
-    },
+    
 
     getRelativePosition: function ( p, eUp ) {
 
@@ -187,7 +180,21 @@ var Geom2D = {
 
     getRelativePosition2: function ( p, eUp ) {
 
+        if( eUp === undefined ) {
+            console.log( 'error no eUp' );//eUp.originVertex.pos, eUp.destinationVertex.pos, p )
+            return 0;
+        }
+
         return Geom2D.Orient2d( eUp.originVertex.pos, eUp.destinationVertex.pos, p );
+
+    },
+
+    Orient2d: function ( p1, p2, p3 ) {
+
+        var val = (p1.x - p3.x) * (p2.y - p3.y) - (p1.y - p3.y) * (p2.x - p3.x);
+        if (val > -_Math.EPSILON_SQUARED && val < _Math.EPSILON_SQUARED) return 0;// collinear
+        else if (val > 0) return -1;// ccw
+        else return 1;// cw
 
     },
 

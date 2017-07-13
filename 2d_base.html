@@ -1,7 +1,8 @@
+
 <!DOCTYPE html>
 <!-- saved from url=(0014)about:internet -->
 <head>
-<title>DDLS bitmap 2</title>
+<title>DDLS basic</title>
 <meta name="Description" content="" />
 <meta name="Keywords"  content="" />
 <meta http-equiv="X-UA-Compatible" content="IE=11" />
@@ -11,69 +12,84 @@
 <link rel="stylesheet" href="css/style.css">
 
 <script src="js/libs/stats.min.js"></script>
-<script src="js/pool.js"></script>
 <script src="build/ddls.js"></script>
 
 </head>
 <body>
-
 <script>
+var world, view, stats;
 
-var world, view, loader, stats;
+/*var l = 10, n=0, i = 0;
+while( i < l ) {
+    //i = n++;
 
-pool.load(['assets/maze.png'], init );
+    console.log( i );
+    i++;
+    
+}*/
 
-function init ( p ){
 
-    var img = p.maze;
+init();
 
-    //var images = loader.images;
+function init() {
+    
+    //basicCanvas = new DDLS.BasicCanvas(600,600, '#000000', 60);
+    
 
-    //var imgNB = images.get("p2_nb.png");
-    //var img = images.get("p2_c.png");
-
-    world = new DDLS.World( img.width, img.height );
+    world = new DDLS.World( 465, 465 );
     view = new DDLS.SimpleView( world );
 
+    view.drawMesh( world.mesh );
 
+    world.addHeroe({x:30, y:20, r:4, speed:10, see:true });
 
-    view.drawImage( img );
-    world.addBitmapZone( { img:img, precision:1.8, color:{r:255} } );
+    //var segment = world.mesh.insertConstraintSegment(70,300,530,320);
 
-    /*var pixels = DDLS.fromImageData( imgNB );
-    var mesh = DDLS.BitmapObject.buildFromBmpData( pixels, 1.8 );
+    /*var i = 5;
+    while(i--){
+        world.addObject({x:DDLS.rand(50,415), y:DDLS.rand(50,415), w:DDLS.rand(4,60), h:DDLS.rand(4,60)})
+    }
 
-    world.mesh.insertObject( mesh );
+    view.drawMesh( world.mesh );
 
-    view.drawMesh( world.mesh );*/
+    
 
-    world.addHeroe({ x:500, y:500, r:6, speed:10 });
-
+    world.addHeroe({x:300, y:300, r:4, speed:10, see:true });
+    
+*/
     view.domElement.onmousedown = onMouseDown;
 
     stats = new Stats();
     document.body.appendChild( stats.dom );
 
     render();
-
-}
+    
+};
 
 function onMouseDown (e) {
-
+    view.drawMesh(world.mesh,true);
     var rect = e.target.getBoundingClientRect();
     world.heroes[0].setTarget(e.clientX - rect.left, e.clientY - rect.top);
-
 };
 
 function render() {
 
     requestAnimationFrame( render );
 
+    var i = world.objects.length, h;
+    while(i--){
+        world.objects[i].rotation += 0.001; 
+    }
+
+    world.updateMesh();
+
+    view.drawMesh( world.mesh, true );
+
     world.update();
 
     view.clear();
 
-    var i = world.heroes.length, h;
+    i = world.heroes.length, h;
     while(i--){
 
         h = world.heroes[i];

@@ -54,6 +54,7 @@ var DrawCanvas = function(){
     this.ctx.rect(0,0,1024, 1024);
     this.ctx.fill();*/
     this.isDrawing = false; 
+    this.needUpdate = false;
     this.lastPoint = {};
 
     this.texture = new THREE.Texture(this.drawcanvas);
@@ -86,6 +87,7 @@ DrawCanvas.prototype = {
         }
         this.lastPoint = currentPoint;
         this.texture.needsUpdate = true;
+        this.needUpdate = true;
 
         //this.update();
     },
@@ -95,11 +97,17 @@ DrawCanvas.prototype = {
         this.update();
     },
     update:function(){
+
+        if(this.needUpdate){ 
+            
+            world.addBitmapZone( { canvas: this.drawcanvas, precision:1.8, color:{a:0} } );
+            this.needUpdate = false;
+        }
         
-        var pixels = DDLS.fromImageData(null, this.ctx.getImageData(0,0,1024,1024));
+        /*var pixels = DDLS.fromImageData(null, this.ctx.getImageData(0,0,1024,1024));
         var m = DDLS.BitmapObject.buildFromBmpData( pixels, 1.8 );
         world.reset();
-        world.mesh.insertObject( m );
+        world.mesh.insertObject( m );*/
 
 
     }

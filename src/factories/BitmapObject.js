@@ -4,18 +4,21 @@ import { Object2D } from '../core/Object2D';
 
 var BitmapObject = {};
 
-BitmapObject.buildFromBmpData = function( bmpData, simpleEpsilon, debugBmp, debugShape ) {
+BitmapObject.buildFromBmpData = function( pixel, precision, color ) {
 
-    if(simpleEpsilon == null) simpleEpsilon = 1;
+    if( color !== undefined ) Potrace.setColor( color );
+    //if( revers !== undefined ) Potrace.setRevers( revers );
+
+    precision = precision || 1;
     var i, j;
     //DDLS.Debug.assertTrue(bmpData.width > 0 && bmpData.height > 0,"Invalid `bmpData` size (" + bmpData.width + ", " + bmpData.height + ")",{ fileName : "BitmapObject.js", lineNumber : 24, className : "DDLS.BitmapObject", methodName : "buildFromBmpData"});
-    var shapes = Potrace.buildShapes(bmpData,debugBmp,debugShape);
-    if(simpleEpsilon >= 1) {
+    var shapes = Potrace.buildShapes( pixel );
+    if( precision >= 1 ) {
         var _g1 = 0;
         var _g = shapes.length;
         while(_g1 < _g) {
             var i1 = _g1++;
-            shapes[i1] = ShapeSimplifier(shapes[i1],simpleEpsilon);
+            shapes[i1] = ShapeSimplifier( shapes[i1], precision );
         }
     }
     var graphs = [];
@@ -30,7 +33,7 @@ BitmapObject.buildFromBmpData = function( bmpData, simpleEpsilon, debugBmp, debu
     var _g3 = graphs.length;
     while(_g12 < _g3) {
         var i3 = _g12++;
-        polygons.push( Potrace.buildPolygon(graphs[i3],debugShape));
+        polygons.push( Potrace.buildPolygon( graphs[i3] ));
     }
     var obj = new Object2D();
     var _g13 = 0;

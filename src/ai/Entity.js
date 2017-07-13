@@ -45,7 +45,7 @@ function Entity ( s, world ) {
     this.pathSampler.samplingDistance = s.speed || 10;
 
     // compatibility issue
-    this.entity = this;
+    //this.entity = this;
 
 };
 

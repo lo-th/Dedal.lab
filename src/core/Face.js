@@ -1,10 +1,10 @@
-import { _Math } from '../math/Math';
-import { FACE } from '../constants';
+//import { _Math } from '../math/Math';
+import { IDX, FACE } from '../constants';
 
 function Face() {
 
     this.type = FACE;
-    this.id = _Math.generateUUID();
+    this.id = IDX.get('face');//_Math.generateUUID();
 
     this.isReal = false;
     this.edge = null;
@@ -25,6 +25,7 @@ Face.prototype = {
     dispose: function() {
 
         this.edge = null;
+        this.isReal = false;
 
     }
 

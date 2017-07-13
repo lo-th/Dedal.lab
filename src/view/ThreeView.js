@@ -49,6 +49,10 @@ ThreeView.prototype = {
 
     constructor: ThreeView,
 
+    drawMesh: function ( mesh, clean ) {
+        
+    },
+
     collapseBuffer : function() {
 
         var i = this.maxVertices;

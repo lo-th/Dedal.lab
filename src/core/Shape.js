@@ -1,8 +1,9 @@
-import { _Math } from '../math/Math';
+import { IDX } from '../constants';
+//import { _Math } from '../math/Math';
 
 function Shape () {
 
-    this.id = _Math.generateUUID();
+    this.id = IDX.get('shape');//_Math.generateUUID();
     //DDLS.ShapeID ++;
     this.segments = [];
     

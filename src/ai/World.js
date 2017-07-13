@@ -1,10 +1,17 @@
+import { Main } from '../constants';
 import { RectMesh } from '../factories/RectMesh';
+import { BitmapObject } from '../factories/BitmapObject';
 import { PathFinder } from '../ai/PathFinder';
 import { Object2D } from '../core/Object2D';
 import { Entity } from '../ai/Entity';
-
+import { fromImageData } from '../core/Tools';
 
 function World ( w, h ) {
+
+    this.heroes = [];
+    this.shapes = [];
+    this.segments = [];
+    this.objects = [];
     
     this.w = w || 512;
     this.h = h || 512;
@@ -13,11 +20,6 @@ function World ( w, h ) {
 
     this.pathFinder = new PathFinder();
     this.pathFinder.mesh = this.mesh;
-
-    this.heroes = [];
-    this.shapes = [];
-    this.segments = [];
-    this.objects = [];
 
 };
 
@@ -119,6 +121,61 @@ World.prototype = {
         }
 
     },
+
+    addBitmapZone: function ( o ) {
+
+        o = o || {};
+
+        if( o.url ){ // by image url
+
+            var img = document.createElement( 'img' );
+
+            img.onload = function(){
+
+                o.pixel = fromImageData( img );
+                o.w = img.width;
+                o.h = img.height;
+                this.updateBitmapZone( o );
+
+            }.bind( this )
+
+            img.src = o.url;
+
+        }
+
+        if( o.canvas ){ // by canvas 
+
+            o.w = o.canvas.width;
+            o.h = o.canvas.height;
+            o.pixel = fromImageData( null, o.canvas.getContext('2d').getImageData( 0, 0, o.w, o.h ) );
+            this.updateBitmapZone( o );
+
+        }
+
+        if( o.img ){ // by direct image
+
+            o.w = o.img.width;
+            o.h = o.img.height;
+            o.pixel = fromImageData( o.img );
+            this.updateBitmapZone( o );
+
+        }
+
+    },
+
+    updateBitmapZone: function ( o ) {
+
+        o = o || {};
+
+        var obj = BitmapObject.buildFromBmpData( o.pixel, o.precision || 1.8, o.color, o.revers );
+        this.reset( o.w, o.h );
+        this.mesh.insertObject( obj );
+        //this.add( obj );
+
+        var view = Main.get();
+        if( view ) view.drawMesh( this.mesh );
+
+    }
     
 
 

@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="css/style.css">
 
 <script src="js/libs/stats.min.js"></script>
+<script src="js/pool.js"></script>
 <script src="build/ddls.js"></script>
 
 </head>
@@ -20,28 +21,35 @@
 
 var world, view, loader, stats;
 
-loader = new DDLS.ImageLoader(["assets/galapagosBW.png","assets/galapagosColor.png"], init );
+pool.load(['assets/island.png'], init );
 
-function init (){
+//loader = new DDLS.ImageLoader(["assets/galapagosBW.png","assets/galapagosColor.png"], init );
 
-    var images = loader.images;
+function init ( p ){
 
-    var imgNB = images.get("galapagosBW.png");
-    var img = images.get("galapagosColor.png");
+    var img = p.island;
 
-    world = new DDLS.World( img.width, img.height );
+    //var images = loader.images;
+
+    //var imgNB = images.get("galapagosBW.png");
+    //var img = images.get("galapagosColor.png");
+
+    world = new DDLS.World( 1000, 1000 );
     view = new DDLS.SimpleView( world );
 
     view.drawImage( img );
 
-    var pixels = DDLS.fromImageData( imgNB );
+    //world.addBitmapZone( { url:'assets/island.png', precision:1.8, color:[0,0,0,0] } );
+    world.addBitmapZone( { img:img, precision:1.8, color:{a:0} } );
+
+    /*var pixels = DDLS.fromImageData( imgNB );
     var mesh = DDLS.BitmapObject.buildFromBmpData( pixels, 1.8 );
 
     world.mesh.insertObject( mesh );
 
-    view.drawMesh( world.mesh );
+    view.drawMesh( world.mesh );*/
 
-    world.addHeroe({ x:50, y:50, r:4, speed:10 });
+    world.addHeroe({ x:295, y:182, r:4, speed:10 });
 
     view.domElement.onmousedown = onMouseDown;
 
@@ -51,6 +59,7 @@ function init (){
     render();
 
 }
+
 
 function onMouseDown (e) {
 

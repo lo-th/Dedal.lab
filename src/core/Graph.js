@@ -1,9 +1,9 @@
-import { _Math } from '../math/Math';
-import { Dictionary, Log } from '../constants';
+//import { _Math } from '../math/Math';
+import { IDX, Dictionary, Log } from '../constants';
 
 function Graph () {
 
-    this.id = _Math.generateUUID();
+    this.id = IDX.get('graph');//_Math.generateUUID();
 
     this.edge = null;
     this.node = null;
@@ -119,7 +119,7 @@ export { Graph };
 
 function GraphEdge () {
 
-    this.id = _Math.generateUUID();
+    this.id = IDX.get('graphEdge');//_Math.generateUUID();
     //DDLS.GraphEdgeID++;
     this.next = null;
     this.prev = null;
@@ -133,6 +133,14 @@ function GraphEdge () {
 
 GraphEdge.prototype = {
     dispose: function() {
+        this.next = null;
+        this.prev = null;
+        this.rotPrevEdge = null;
+        this.rotNextEdge = null;
+        this.oppositeEdge = null;
+        this.sourceNode = null;
+        this.destinationNode = null;
+        this.data = null;
     }
 };
 
@@ -142,7 +150,7 @@ GraphEdge.prototype = {
 
 function GraphNode () {
 
-    this.id = _Math.generateUUID();
+    this.id = IDX.get('graphNode');//_Math.generateUUID();
     //DDLS.GraphNodeID++;
     this.successorNodes = new Dictionary(1);
     this.prev = null;
