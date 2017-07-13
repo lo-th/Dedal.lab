@@ -62,7 +62,7 @@ export { ShapeSimplifier };
 function PixelsData(w,h) {
 
     this.length = w * h;
-    this.bytes = new ARRAY( this.length << 2 );
+    this.bytes = new ARRAY( this.length * 4 );
     this.width = w;
     this.height = h;
 

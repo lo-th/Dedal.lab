@@ -3,25 +3,25 @@ import { Mesh2D } from '../core/Mesh2D';
 import { Entity } from '../ai/Entity';
 
 
-//var THREE;
+//var TH;
 
+function ThreeView( scene, world, THREE ) {
 
-
-function ThreeView( scene, world ) {
+    var TH = THREE;
 
     this.world = world;
 
     this.maxVertices = 30000;
     this.currentVertex = 0;
 
-    var geometry = new THREE.BufferGeometry();
-    geometry.addAttribute('position', new THREE.BufferAttribute( new Float32Array( this.maxVertices * 3 ), 3 ));
-    geometry.addAttribute('color', new THREE.BufferAttribute( new Float32Array( this.maxVertices * 3 ), 3 ));
+    var geometry = new TH.BufferGeometry();
+    geometry.addAttribute('position', new TH.BufferAttribute( new Float32Array( this.maxVertices * 3 ), 3 ));
+    geometry.addAttribute('color', new TH.BufferAttribute( new Float32Array( this.maxVertices * 3 ), 3 ));
     this.positions = geometry.attributes.position.array;
     this.colors = geometry.attributes.color.array;
     geometry.computeBoundingSphere();
 
-    this.buffer = new THREE.LineSegments(geometry, new THREE.LineBasicMaterial({ vertexColors: true }));
+    this.buffer = new TH.LineSegments(geometry, new TH.LineBasicMaterial({ vertexColors: true }));
     this.buffer.frustumCulled = false;
     scene.add(this.buffer);
 
@@ -30,14 +30,14 @@ function ThreeView( scene, world ) {
     this.maxPathVertices = 1000;
     this.currentPathVertex = 0;
 
-    var geometryPath = new THREE.BufferGeometry();
-    geometryPath.addAttribute('position', new THREE.BufferAttribute( new Float32Array( this.maxPathVertices * 3 ), 3 ));
-    geometryPath.addAttribute('color', new THREE.BufferAttribute( new Float32Array( this.maxPathVertices * 3 ), 3 ));
+    var geometryPath = new TH.BufferGeometry();
+    geometryPath.addAttribute('position', new TH.BufferAttribute( new Float32Array( this.maxPathVertices * 3 ), 3 ));
+    geometryPath.addAttribute('color', new TH.BufferAttribute( new Float32Array( this.maxPathVertices * 3 ), 3 ));
     this.positionsPath = geometryPath.attributes.position.array;
     this.colorsPath = geometryPath.attributes.color.array;
     geometry.computeBoundingSphere();
     
-    this.bufferPath = new THREE.LineSegments(geometryPath, new THREE.LineBasicMaterial({ vertexColors: true }));
+    this.bufferPath = new TH.LineSegments(geometryPath, new TH.LineBasicMaterial({ vertexColors: true }));
     this.bufferPath.frustumCulled = false;
     scene.add(this.bufferPath);
 

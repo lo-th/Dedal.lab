@@ -11,9 +11,10 @@
 body { margin: 0px; background-color: #6a6a6a; overflow: hidden; background-image:url(assets/bg.png); background-repeat:repeat-x;}
 canvas { position: absolute; top:0; left:0; pointer-events:auto; width:100%; height:100%; }
 </style>
-<script src="build/ddls.js"></script>
+
 <script src="js/libs//three.min.js"></script>
 <script src="js/libs/sea3d.min.js"></script>
+<script src="build/ddls.js"></script>
 <script src="js/controls/OrbitControls.js"></script>
 <script src="js/pool.js"></script>
 </head>
@@ -171,7 +172,7 @@ function init() {
     // init DDLS
 
     world = new DDLS.World(1024, 1024);
-    ddlsRender = new DDLS.ThreeView( scene, world );
+    ddlsRender = new DDLS.ThreeView( scene, world, THREE );
 
 
     //

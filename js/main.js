@@ -148,7 +148,7 @@ function demo(){
 
     }
 
-    ddlsRender = new DDLS.ThreeView( scene, world );
+    ddlsRender = new DDLS.ThreeView( scene, world, THREE );
 
     var i = 29;
     while(i--){

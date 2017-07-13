@@ -167,7 +167,7 @@ World.prototype = {
 
         o = o || {};
 
-        var obj = BitmapObject.buildFromBmpData( o.pixel, o.precision || 1.8, o.color, o.revers );
+        var obj = BitmapObject.buildFromBmpData( o.pixel, o.precision || 1.8, o.color );
         this.reset( o.w, o.h );
         this.mesh.insertObject( obj );
         //this.add( obj );

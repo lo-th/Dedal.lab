@@ -1,11 +1,11 @@
 import './polyfills.js';
 
-export { torad, todeg, TwoPI, IDX, REVISION, Main, Log, Dictionary } from './constants.js';
+export * from './constants.js';
 export { Point } from './math/Point.js';
 export { Matrix2D } from './math/Matrix2D.js';
 export { Geom2D } from './math/Geom2D.js';
 
-export { rand, randInt, ImageLoader, fromImageData } from './core/Tools.js';
+export * from './core/Tools.js';
 export { Edge } from './core/Edge.js';
 export { Face } from './core/Face.js';
 export { Vertex } from './core/Vertex.js';

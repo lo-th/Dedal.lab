@@ -465,7 +465,7 @@ Mesh2D.prototype = {
             }
         }
 
-        return segment;
+        //return segment;
 
     },
 
