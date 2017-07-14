@@ -8,11 +8,10 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11" />
 <meta http-equiv="Pragma" content="no-cache">
 <link rel="shortcut icon" href="favicon.ico">
-
 <link rel="stylesheet" href="css/style.css">
 
-<script src="js/libs/stats.min.js"></script>
-<script src="build/ddls.js"></script>
+<script src="./build/ddls.js"></script>
+<script src="./js/gui.js"></script>
 
 </head>
 <body>
@@ -20,51 +19,31 @@
 
 var world, view, stats;
 
-/*var l = 10, n=0, i = 0;
-while( i < l ) {
-    //i = n++;
-
-    console.log( i );
-    i++;
-    
-}*/
-
-
 init();
+render();
 
 function init() {
-    
-    //basicCanvas = new DDLS.BasicCanvas(600,600, '#000000', 60);
-    
 
     world = new DDLS.World( 465, 465 );
     view = new DDLS.SimpleView( world );
 
-    view.drawMesh( world.mesh );
-
-    world.addHeroe({x:30, y:30, r:4, speed:10, see:true });
-
     //var segment = world.mesh.insertConstraintSegment(70,300,530,320);
 
-    /*var i = 5;
+    var i = 5;
     while(i--){
         world.addObject({x:DDLS.rand(50,415), y:DDLS.rand(50,415), w:DDLS.rand(4,60), h:DDLS.rand(4,60)})
     }
 
     view.drawMesh( world.mesh );
 
-    
+    world.addHeroe({x:20, y:20, r:4, speed:10, see:true });
 
     world.addHeroe({x:300, y:300, r:4, speed:10, see:true });
     
-*/
     view.domElement.onmousedown = onMouseDown;
 
-    stats = new Stats();
-    document.body.appendChild( stats.dom );
+    gui.init();
 
-    render();
-    
 };
 
 function onMouseDown (e) {
@@ -74,7 +53,6 @@ function onMouseDown (e) {
 };
 
 function render() {
-
     requestAnimationFrame( render );
 
     var i = world.objects.length, h;
@@ -99,7 +77,8 @@ function render() {
 
     }
 
-    stats.update();
+    gui.update();
+    
 };
         
 </script>

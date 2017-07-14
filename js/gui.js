@@ -5,7 +5,7 @@ var gui = ( function () {
 	var content, menu, topText;
 	var t = { now:0, delta:0, then:0, inter:0, tmp:0, n:0 };
 
-	var demos = [ 'index', 'index_draw', '2d_basic', '2d_bitmap', '2d_bitmap2', '2d_bitmap3', '2d_dungeon', '2d_gridmaze', '2d_pathfinder', 'SOURCE' ];
+	var demos = [ 'index', 'index_draw', '2d_basic', '2d_bitmap', '2d_bitmap2', '2d_bitmap3', '2d_dungeon', '2d_gridmaze', '2d_pathfinder', '2d_dynamics', 'SOURCE' ];
 
 	gui = {
 

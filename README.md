@@ -11,13 +11,14 @@ and convert to full javascript without extra lib<br><br>
 
 ## 2D DEMOS
 
-- [2d dynamics](http://lo-th.github.io/Dedal.lab/2d_basic.html)
+- [2d basic](http://lo-th.github.io/Dedal.lab/2d_basic.html)
 - [2d bitmap](http://lo-th.github.io/Dedal.lab/2d_bitmap.html)
 - [2d bitmap 2](http://lo-th.github.io/Dedal.lab/2d_bitmap2.html)
 - [2d bitmap 3](http://lo-th.github.io/Dedal.lab/2d_bitmap3.html)
 - [2d gridmaze](http://lo-th.github.io/Dedal.lab/2d_gridmaze.html)
 - [2d dungeon](http://lo-th.github.io/Dedal.lab/2d_dungeon.html)
 - [2d pathfinder](http://lo-th.github.io/Dedal.lab/2d_pathfinder.html)
+- [2d dynamics](http://lo-th.github.io/Dedal.lab/2d_dynamics.html)
 
 ## Setup
 
