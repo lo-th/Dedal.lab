@@ -6,6 +6,8 @@
 export var REVISION = '1.0.0';
 
 // MATH
+
+export var TTIER = 0.3333333333333333;
 export var torad = 0.0174532925199432957;
 export var todeg = 57.295779513082320876;
 export var EPSILON = 0.01;
@@ -27,10 +29,15 @@ var Main = {
     view: null,
 
     get: function (){
+
         return this.view;
+
     },
+
     set: function ( o ){
+
         this.view = o;
+
     }
     
 }
@@ -42,12 +49,16 @@ var IDX = {
     id: { segment:0, shape:0, edge:0, face:0, mesh2D:0, object2D:0, vertex:0, graph:0, graphEdge:0, graphNode:0 },
 
     get: function ( type ){
+
         this.id[type] ++;
         return this.id[type];
+
     },
 
     reset: function (){
-        this.id = { segment:0, shape:0, edge:0, face:0, mesh2D:0, object2D:0, vertex:0, graph:0, graphEdge:0, graphNode:0 }
+
+        this.id = { segment:0, shape:0, edge:0, face:0, mesh2D:0, object2D:0, vertex:0, graph:0, graphEdge:0, graphNode:0 };
+
     }
 
 }
@@ -58,66 +69,88 @@ export { IDX };
 
 // LOG
 
-function Log ( str ){ console.log( str ); };
-
-export { Log };
+export var Log = function Log ( str ){ console.log( str ); };
 
 // DICTIONARY
 
-function Dictionary ( type, overwrite ){
+function Dictionary ( type ){
 
     this.type = type || 0;
 
-    if(this.type===0){
-        //this.overwrite = overwrite == true;
+    if( this.type === 0 ){
+
         this.k = [];
         this.v = [];
 
-    }else{
+    } else {
+
         this.h = {};
+
     }
-}
+
+};
 
 Dictionary.prototype = {
 
     set: function ( key, value ) {
 
-        if(this.type===2){
-            this.h[key] = value;
-        }else if(this.type===1){
-            this.h[key.id] = value;
-        }else{
-            //if(!this.overwrite || this.k.indexOf(key) == -1){
-                this.k.push(key);
-                this.v.push(value);
-            //}
+        var t = this.type;
+
+        if( t === 0 ){
+
+            this.k.push(key);
+            this.v.push(value);
+
         }
+
+        if( t === 1 ) this.h[ key.id ] = value;
+        if( t === 2 ) this.h[ key ] = value;
 
     },
 
     get: function ( key ) {
 
-        if( this.type===2 ){
-            return this.h[key];
-        }else if(this.type===1){
-            return this.h[key.id];
-        }else{
-            var i = this.k.indexOf(key);
-            if(i != -1) return this.v[i];
+        var t = this.type, i;
+
+        if( t === 0 ){
+
+            i = this.k.indexOf( key );
+            if(i != -1) return this.v[ i ];
+
         }
+
+        if( t === 1 ) return this.h[ key.id ];
+        if( t === 2 ) return this.h[ key ];
 
     },
 
     dispose: function () {
 
-        if(this.type===0){
+        var t = this.type;
+
+        if( t === 0 ){
+
             while( this.k.length > 0 ) this.k.pop();
             while( this.v.length > 0 ) this.v.pop();
             this.k = null;
             this.v = null;
-        }else{
-            this.h = null;
+
         }
+
+        if( t === 1 ){ 
+
+            for ( var key in this.h ) this.h[ key.id ] = undefined;
+            this.h = null;
+
+        }
+
+        if( t === 2 ){ 
+
+            for ( var key in this.h ) this.h[ key ] = undefined;
+            this.h = null;
+
+        }
+
     }
 
 }

@@ -1,17 +1,10 @@
 
 function RandGenerator ( seed, min, max ) {
 
-    this.rangeMin = min || 0;
-    this.rangeMax = max || 1;
-    this._originalSeed = this._currSeed = seed || 1234;
-    this._numIter = 0;
-
-    Object.defineProperty( this, 'seed', {
-
-        get: function() { return this._originalSeed; },
-        set: function( value ) { this._originalSeed = this._currSeed = value; }
-
-    });
+    this.min = min || 0;
+    this.max = max || 1;
+    this.seed = this.currentSeed = seed || 1234;
+    this.nid = 0;
 
 };
 
@@ -19,24 +12,35 @@ RandGenerator.prototype = {
 
     constructor: RandGenerator,
 
+    getSeed: function () {
+
+        return this.seed;
+
+    }, 
+
+    setSeed: function ( value ) {
+
+        this.seed = this.currentSeed = value;
+
+    },
+
     reset: function() {
 
-        this._currSeed = this._originalSeed;
-        this._numIter = 0;
+        this.currentSeed = this.seed;
+        this.nid = 0;
 
     },
 
     next: function () {
 
-        var tmp = this._currSeed * 1;
-        this._tempString = (tmp*tmp).toString();
-        while( this._tempString.length < 8 ) this._tempString = "0" + this._tempString;
-
-        this._currSeed = parseInt( this._tempString.substr( 1 , 5 ) );
-        var res = Math.round( this.rangeMin + ( this._currSeed / 99999 ) * ( this.rangeMax - this.rangeMin ));
-        if( this._currSeed === 0 ) this._currSeed = this._originalSeed + this._numIter;
-        this._numIter++;
-        if( this._numIter === 200 ) this.reset();
+        var tmp = this.currentSeed * 1;
+        var temp = ( tmp * tmp ).toString();
+        while( temp.length < 8 ) temp = "0" + temp;
+        this.currentSeed = parseInt( temp.substr( 1 , 5 ) );
+        var res = Math.round( this.min + ( this.currentSeed / 99999 ) * ( this.max - this.min ));
+        if( this.currentSeed === 0 ) this.currentSeed = this.seed + this.nid;
+        this.nid++;
+        if( this.nid === 200 ) this.reset();
 
         return res;
 
@@ -44,8 +48,8 @@ RandGenerator.prototype = {
 
     nextInRange: function( min, max ) {
 
-        this.rangeMin = min;
-        this.rangeMax = max;
+        this.min = min;
+        this.max = max;
         return this.next();
 
     },
@@ -54,10 +58,9 @@ RandGenerator.prototype = {
 
         var i = ar.length, n, t;
 
-        while( i > 0 ) {
+        while( i -- ) {
 
-            n = this.nextInRange( 0, i - 1 );
-            i--;
+            n = this.nextInRange( 0, i );
             t = ar[i];
             ar[i] = ar[n];
             ar[n] = t;

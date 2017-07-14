@@ -8,33 +8,21 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11" />
 <meta http-equiv="Pragma" content="no-cache">
 <link rel="shortcut icon" href="favicon.ico">
-
 <link rel="stylesheet" href="css/style.css">
 
-<script src="js/libs/stats.min.js"></script>
-<script src="build/ddls.js"></script>
+<script src="./build/ddls.js"></script>
+<script src="./js/gui.js"></script>
 
 </head>
 <body>
 <script>
+
 var world, view, stats;
 
-/*var l = 10, n=0, i = 0;
-while( i < l ) {
-    //i = n++;
-
-    console.log( i );
-    i++;
-    
-}*/
-
-
 init();
+render();
 
 function init() {
-    
-    //basicCanvas = new DDLS.BasicCanvas(600,600, '#000000', 60);
-    
 
     world = new DDLS.World( 465, 465 );
     view = new DDLS.SimpleView( world );
@@ -52,14 +40,10 @@ function init() {
 
     world.addHeroe({x:300, y:300, r:4, speed:10, see:true });
     
-
     view.domElement.onmousedown = onMouseDown;
 
-    stats = new Stats();
-    document.body.appendChild( stats.dom );
+    gui.init();
 
-    render();
-    
 };
 
 function onMouseDown (e) {
@@ -93,7 +77,8 @@ function render() {
 
     }
 
-    stats.update();
+    gui.update();
+    
 };
         
 </script>

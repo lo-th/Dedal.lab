@@ -2,7 +2,7 @@ import { Integral, Squared, SquaredSqrt } from '../core/Tools';
 import { Point } from '../math/Point';
 import { RandGenerator } from '../math/RandGenerator';
 
-import { VERTEX, EDGE, FACE, NULL, Dictionary, Log, INFINITY, EPSILON_SQUARED, EPSILON } from '../constants';
+import { VERTEX, EDGE, FACE, NULL, Dictionary, Log, INFINITY, EPSILON_SQUARED, EPSILON, TTIER } from '../constants';
 import { FromFaceToInnerEdges, FromMeshToVertices, FromVertexToHoldingFaces, FromVertexToIncomingEdges } from '../core/Iterators';
 
 var Geom2D = {
@@ -17,23 +17,24 @@ var Geom2D = {
 
         // jump and walk algorithm
 
-        if(Geom2D._randGen == null) Geom2D._randGen = new RandGenerator();
-        Geom2D._randGen.seed = Integral(p.x * 10 + 4 * p.y);
+        if( Geom2D._randGen === null ) Geom2D._randGen = new RandGenerator();
+
+        Geom2D._randGen.setSeed( Integral( p.x * 10 + 4 * p.y ) );
         
-        Geom2D.__samples.splice(0, Geom2D.__samples.length);
-        numSamples = Integral( Math.pow( mesh._vertices.length, 0.333333334 ));
-        //var numSamples = Integral(Math.pow(mesh._vertices.length,1/3));
+        Geom2D.__samples.splice( 0, Geom2D.__samples.length );
+        numSamples = Integral( Math.pow( mesh._vertices.length, TTIER ));
+        //var numSamples = Integral(Math.pow(mesh._vertices.length,));
         
         //console.log(numSamples, mesh._vertices.length);
 
-        Geom2D._randGen.rangeMin = 0;
-        Geom2D._randGen.rangeMax = mesh._vertices.length - 1;
+        Geom2D._randGen.min = 0;
+        Geom2D._randGen.max = mesh._vertices.length - 1;
 
         i = 0;
         while( i < numSamples ) {
         //while(i--){
         //for ( i = 0 ; i < numSamples; i++ ){
-            Geom2D.__samples.push( mesh._vertices[Geom2D._randGen.next()] );
+            Geom2D.__samples.push( mesh._vertices[ Geom2D._randGen.next() ] );
             i++;
         }
 
@@ -55,7 +56,6 @@ var Geom2D = {
             i++;
         }
 
-        //var currFace;
         var iterFace = new FromVertexToHoldingFaces();
 
         if(closedVertex===null){ 
@@ -67,7 +67,7 @@ var Geom2D = {
 
         var currFace = iterFace.next();
 
-        var faceVisited = new Dictionary();
+        var faceVisited = new Dictionary( 0 );
         var currEdge;
         var iterEdge = new FromFaceToInnerEdges();
         var relativPos = 0;
@@ -75,16 +75,16 @@ var Geom2D = {
 
         var objectContainer = Geom2D.isInFace( p, currFace );
 
-        while( faceVisited.get(currFace) || objectContainer.type === NULL ){
+        while( faceVisited.get( currFace ) || objectContainer.type === NULL ){
 
             
 
-            faceVisited.set(currFace, true);
+            faceVisited.set( currFace, true );
             numIter++;
-            if(numIter == 50) Log("WALK TAKE MORE THAN 50 LOOP");
+            if(numIter == 50) Log( "WALK TAKE MORE THAN 50 LOOP" );
             if(numIter == 1000){ 
-                Log("WALK TAKE MORE THAN 1000 LOOP -> WE ESCAPE"); 
-                objectContainer = {type:NULL}; 
+                Log( "WALK TAKE MORE THAN 1000 LOOP -> WE ESCAPE" ); 
+                objectContainer = { type: NULL }; 
                 break; 
             }
             iterEdge.fromFace = currFace;
@@ -135,7 +135,7 @@ var Geom2D = {
         edgesToCheck.push(face.edge.nextLeftEdge);
         edgesToCheck.push(face.edge.nextLeftEdge.nextLeftEdge);
         var edge, pos1, pos2;
-        var checkedEdges = new Dictionary(0);
+        var checkedEdges = new Dictionary( 0 );
         var intersecting;
         while(edgesToCheck.length > 0) {
             edge = edgesToCheck.pop();

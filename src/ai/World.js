@@ -1,4 +1,4 @@
-import { Main } from '../constants';
+import { Main, IDX } from '../constants';
 import { RectMesh } from '../factories/RectMesh';
 import { BitmapObject } from '../factories/BitmapObject';
 import { PathFinder } from '../ai/PathFinder';
@@ -7,6 +7,8 @@ import { Entity } from '../ai/Entity';
 import { fromImageData } from '../core/Tools';
 
 function World ( w, h ) {
+
+    IDX.reset();
 
     this.heroes = [];
     this.shapes = [];

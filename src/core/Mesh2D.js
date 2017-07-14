@@ -1003,7 +1003,7 @@ Mesh2D.prototype = {
     untriangulate: function ( edgesList ) {
         // we clean useless faces and adjacent vertices
         var i;
-        var verticesCleaned = new Dictionary(1);
+        var verticesCleaned = new Dictionary( 1 );
         var currEdge;
         var outEdge;
         var _g1 = 0;
@@ -1186,7 +1186,7 @@ Mesh2D.prototype = {
         iterVertices.fromMesh = this;
         var iterEdges;
         iterEdges = new FromVertexToIncomingEdges();
-        var dictVerticesDone = new Dictionary(1);
+        var dictVerticesDone = new Dictionary( 1 );
         while((vertex = iterVertices.next()) != null) {
             dictVerticesDone.set(vertex,true);
             if(!this.vertexIsInsideAABB(vertex,this)) continue;

@@ -10,14 +10,15 @@
 
 <link rel="stylesheet" href="css/style.css">
 
-<script src="js/libs/stats.min.js"></script>
-<script src="build/ddls.js"></script>
+<script src="./build/ddls.js"></script>
+<script src="./js/gui.js"></script>
 
 </head>
 
 <body>
 <script>
-var world, basicCanvas, view, stats;
+
+var world, basicCanvas, view;
 
 init();
 render();
@@ -41,7 +42,6 @@ function init(){
 
     //world.addObject( new DDLS.CircleMesh( 200, 200, 20 ) );
 
-
     world.addHeroe({x:20, y:20, r:4, speed:10, see:true });
 
     world.addHeroe({x:40, y:20, r:4, speed:10, see:true });
@@ -50,8 +50,7 @@ function init(){
 
     view.domElement.onmousedown = onMouseDown;
 
-    stats = new Stats();
-    document.body.appendChild( stats.dom );
+    gui.init();
     
 };
 
@@ -78,7 +77,7 @@ function render() {
         
     }
     
-    stats.update();
+    gui.update();
 
 };
 

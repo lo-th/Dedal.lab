@@ -151,7 +151,7 @@ function GraphNode () {
 
     this.id = IDX.get('graphNode');//_Math.generateUUID();
     //DDLS.GraphNodeID++;
-    this.successorNodes = new Dictionary(1);
+    this.successorNodes = new Dictionary( 1 );
     this.prev = null;
     this.next = null;
     this.outgoingEdge = null;

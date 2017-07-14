@@ -15,9 +15,9 @@ and convert to full javascript without extra lib<br><br>
 - [2d bitmap](http://lo-th.github.io/Dedal.lab/2d_bitmap.html)
 - [2d bitmap 2](http://lo-th.github.io/Dedal.lab/2d_bitmap2.html)
 - [2d bitmap 3](http://lo-th.github.io/Dedal.lab/2d_bitmap3.html)
-- [2d gridmaze](http://lo-th.github.io/Dedal.lab/2d_GridMaze.html)
+- [2d gridmaze](http://lo-th.github.io/Dedal.lab/2d_gridmaze.html)
 - [2d dungeon](http://lo-th.github.io/Dedal.lab/2d_dungeon.html)
-- [2d path finding](http://lo-th.github.io/Dedal.lab/2d_Pathfinding.html)
+- [2d pathfinder](http://lo-th.github.io/Dedal.lab/2d_pathfinder.html)
 
 ## Setup
 

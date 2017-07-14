@@ -10,15 +10,15 @@
 
 <link rel="stylesheet" href="css/style.css">
 
-<script src="js/libs/stats.min.js"></script>
-<script src="build/ddls.js"></script>
+<script src="./build/ddls.js"></script>
+<script src="./js/gui.js"></script>
 
 </head>
 
 <body>
 <script>
 
-var world, view, grid, stats;
+var world, view, grid;
 
 init();
 
@@ -37,8 +37,7 @@ function init() {
     view.domElement.onmousedown = onMouseDown;
     window.document.onkeydown = onKeyDown;
 
-    stats = new Stats();
-    document.body.appendChild( stats.dom );
+    gui.init();
     
     render();
 
@@ -67,7 +66,7 @@ function render() {
         view.drawEntity( h );
     }
 
-    stats.update();
+    gui.update();
     
 };
 

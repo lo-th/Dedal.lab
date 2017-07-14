@@ -156,7 +156,7 @@ Funnel.prototype = {
                 if( listEdges.length > 1 ) listEdges.shift();
                 if( listFaces.length > 1 ) listFaces.shift();
                 //if(listEdges === undefined ) listEdges = [];
-                console.log('isShift', edgeTmp, listEdges, listFaces )
+                Log( '!! isShift' )
             }
         }
         //{
@@ -180,10 +180,10 @@ Funnel.prototype = {
         var funnelRight = [];
         funnelLeft.push(startPoint);
         funnelRight.push(startPoint);
-        var verticesDoneSide = new Dictionary(1);
+        var verticesDoneSide = new Dictionary( 1 );
         var pointsList = [];
-        var pointSides = new Dictionary(0);
-        var pointSuccessor = new Dictionary(0);
+        var pointSides = new Dictionary( 0 );
+        var pointSuccessor = new Dictionary( 0 );
         pointSides.set(startPoint,0);
         //0;
         currEdge = listEdges[0];
@@ -240,7 +240,7 @@ Funnel.prototype = {
         pointSides.set(endPoint,0);
 
         var pathPoints = [];
-        var pathSides = new Dictionary(1);
+        var pathSides = new Dictionary( 1 );
         pathPoints.push(startPoint);
         pathSides.set(startPoint,0);
         //0;

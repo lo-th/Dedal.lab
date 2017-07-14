@@ -129,9 +129,9 @@ FieldOfView.prototype = {
         // now we have a triangle called the window defined by: posX, posY, rightTargetX, rightTargetY, leftTargetX, leftTargetY
         
         // we set a dictionnary of faces done
-        var facesDone = new Dictionary();
+        var facesDone = new Dictionary( 0 );
         // we set a dictionnary of edges done
-        var edgesDone = new Dictionary();
+        var edgesDone = new Dictionary( 0 );
         // we set the window wall
         var wall = [];
         // we localize the field center
@@ -145,7 +145,7 @@ FieldOfView.prototype = {
         
         // we put the face where the field center is lying in open list
         var openFacesList = [];
-        var openFaces = new Dictionary();
+        var openFaces = new Dictionary( 0 );
         openFacesList.push(startFace);
         openFaces[startFace] = true;
         

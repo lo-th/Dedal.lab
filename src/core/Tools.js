@@ -108,7 +108,7 @@ function fromImageData ( image, imageData ) {
 export { fromImageData };
 
 // IMG LOADER
-
+/*
 function ImageLoader ( imageNames, loaded_ ) {
 
     this.images = new Dictionary(2);
@@ -142,3 +142,4 @@ ImageLoader.prototype = {
 };
 
 export { ImageLoader };
+*/

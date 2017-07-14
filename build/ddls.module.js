@@ -92,6 +92,8 @@ if ( Object.assign === undefined ) {
 var REVISION = '1.0.0';
 
 // MATH
+
+var TTIER = 0.3333333333333333;
 var torad = 0.0174532925199432957;
 var todeg = 57.295779513082320876;
 var EPSILON = 0.01;
@@ -113,10 +115,15 @@ var Main = {
     view: null,
 
     get: function (){
+
         return this.view;
+
     },
+
     set: function ( o ){
+
         this.view = o;
+
     }
     
 };
@@ -126,76 +133,104 @@ var IDX = {
     id: { segment:0, shape:0, edge:0, face:0, mesh2D:0, object2D:0, vertex:0, graph:0, graphEdge:0, graphNode:0 },
 
     get: function ( type ){
+
         this.id[type] ++;
         return this.id[type];
+
     },
 
     reset: function (){
+
         this.id = { segment:0, shape:0, edge:0, face:0, mesh2D:0, object2D:0, vertex:0, graph:0, graphEdge:0, graphNode:0 };
+
     }
 
 };
 
 // LOG
 
-function Log ( str ){ console.log( str ); }
+var Log = function Log ( str ){ console.log( str ); };
 
 // DICTIONARY
 
-function Dictionary ( type, overwrite ){
+function Dictionary ( type ){
 
     this.type = type || 0;
 
-    if(this.type===0){
-        //this.overwrite = overwrite == true;
+    if( this.type === 0 ){
+
         this.k = [];
         this.v = [];
 
-    }else{
+    } else {
+
         this.h = {};
+
     }
+
 }
 
 Dictionary.prototype = {
 
     set: function ( key, value ) {
 
-        if(this.type===2){
-            this.h[key] = value;
-        }else if(this.type===1){
-            this.h[key.id] = value;
-        }else{
-            //if(!this.overwrite || this.k.indexOf(key) == -1){
-                this.k.push(key);
-                this.v.push(value);
-            //}
+        var t = this.type;
+
+        if( t === 0 ){
+
+            this.k.push(key);
+            this.v.push(value);
+
         }
+
+        if( t === 1 ) this.h[ key.id ] = value;
+        if( t === 2 ) this.h[ key ] = value;
 
     },
 
     get: function ( key ) {
 
-        if( this.type===2 ){
-            return this.h[key];
-        }else if(this.type===1){
-            return this.h[key.id];
-        }else{
-            var i = this.k.indexOf(key);
-            if(i != -1) return this.v[i];
+        var t = this.type, i;
+
+        if( t === 0 ){
+
+            i = this.k.indexOf( key );
+            if(i != -1) return this.v[ i ];
+
         }
+
+        if( t === 1 ) return this.h[ key.id ];
+        if( t === 2 ) return this.h[ key ];
 
     },
 
     dispose: function () {
 
-        if(this.type===0){
+        var t = this.type;
+
+        if( t === 0 ){
+
             while( this.k.length > 0 ) this.k.pop();
             while( this.v.length > 0 ) this.v.pop();
             this.k = null;
             this.v = null;
-        }else{
-            this.h = null;
+
         }
+
+        if( t === 1 ){ 
+
+            for ( var key in this.h ) this.h[ key.id ] = undefined;
+            this.h = null;
+
+        }
+
+        if( t === 2 ){ 
+
+            for ( var key in this.h ) this.h[ key ] = undefined;
+            this.h = null;
+
+        }
+
     }
 
 };
@@ -545,8 +580,10 @@ function fromImageData ( image, imageData ) {
 
 }
 
-// IMG LOADER
 
+
+// IMG LOADER
+/*
 function ImageLoader ( imageNames, loaded_ ) {
 
     this.images = new Dictionary(2);
@@ -558,7 +595,7 @@ function ImageLoader ( imageNames, loaded_ ) {
         ++_g;
         this.load(name);
     }
-}
+};
 
 ImageLoader.prototype = {
     load: function(img) {
@@ -579,19 +616,15 @@ ImageLoader.prototype = {
     }
 };
 
+export { ImageLoader };
+*/
+
 function RandGenerator ( seed, min, max ) {
 
-    this.rangeMin = min || 0;
-    this.rangeMax = max || 1;
-    this._originalSeed = this._currSeed = seed || 1234;
-    this._numIter = 0;
-
-    Object.defineProperty( this, 'seed', {
-
-        get: function() { return this._originalSeed; },
-        set: function( value ) { this._originalSeed = this._currSeed = value; }
-
-    });
+    this.min = min || 0;
+    this.max = max || 1;
+    this.seed = this.currentSeed = seed || 1234;
+    this.nid = 0;
 
 }
 
@@ -599,24 +632,35 @@ RandGenerator.prototype = {
 
     constructor: RandGenerator,
 
+    getSeed: function () {
+
+        return this.seed;
+
+    }, 
+
+    setSeed: function ( value ) {
+
+        this.seed = this.currentSeed = value;
+
+    },
+
     reset: function() {
 
-        this._currSeed = this._originalSeed;
-        this._numIter = 0;
+        this.currentSeed = this.seed;
+        this.nid = 0;
 
     },
 
     next: function () {
 
-        var tmp = this._currSeed * 1;
-        this._tempString = (tmp*tmp).toString();
-        while( this._tempString.length < 8 ) this._tempString = "0" + this._tempString;
-
-        this._currSeed = parseInt( this._tempString.substr( 1 , 5 ) );
-        var res = Math.round( this.rangeMin + ( this._currSeed / 99999 ) * ( this.rangeMax - this.rangeMin ));
-        if( this._currSeed === 0 ) this._currSeed = this._originalSeed + this._numIter;
-        this._numIter++;
-        if( this._numIter === 200 ) this.reset();
+        var tmp = this.currentSeed * 1;
+        var temp = ( tmp * tmp ).toString();
+        while( temp.length < 8 ) temp = "0" + temp;
+        this.currentSeed = parseInt( temp.substr( 1 , 5 ) );
+        var res = Math.round( this.min + ( this.currentSeed / 99999 ) * ( this.max - this.min ));
+        if( this.currentSeed === 0 ) this.currentSeed = this.seed + this.nid;
+        this.nid++;
+        if( this.nid === 200 ) this.reset();
 
         return res;
 
@@ -624,8 +668,8 @@ RandGenerator.prototype = {
 
     nextInRange: function( min, max ) {
 
-        this.rangeMin = min;
-        this.rangeMax = max;
+        this.min = min;
+        this.max = max;
         return this.next();
 
     },
@@ -634,10 +678,9 @@ RandGenerator.prototype = {
 
         var i = ar.length, n, t;
 
-        while( i > 0 ) {
+        while( i -- ) {
 
-            n = this.nextInRange( 0, i - 1 );
-            i--;
+            n = this.nextInRange( 0, i );
             t = ar[i];
             ar[i] = ar[n];
             ar[n] = t;
@@ -977,23 +1020,24 @@ var Geom2D = {
 
         // jump and walk algorithm
 
-        if(Geom2D._randGen == null) Geom2D._randGen = new RandGenerator();
-        Geom2D._randGen.seed = Integral(p.x * 10 + 4 * p.y);
+        if( Geom2D._randGen === null ) Geom2D._randGen = new RandGenerator();
+
+        Geom2D._randGen.setSeed( Integral( p.x * 10 + 4 * p.y ) );
         
-        Geom2D.__samples.splice(0, Geom2D.__samples.length);
-        numSamples = Integral( Math.pow( mesh._vertices.length, 0.333333334 ));
-        //var numSamples = Integral(Math.pow(mesh._vertices.length,1/3));
+        Geom2D.__samples.splice( 0, Geom2D.__samples.length );
+        numSamples = Integral( Math.pow( mesh._vertices.length, TTIER ));
+        //var numSamples = Integral(Math.pow(mesh._vertices.length,));
         
         //console.log(numSamples, mesh._vertices.length);
 
-        Geom2D._randGen.rangeMin = 0;
-        Geom2D._randGen.rangeMax = mesh._vertices.length - 1;
+        Geom2D._randGen.min = 0;
+        Geom2D._randGen.max = mesh._vertices.length - 1;
 
         i = 0;
         while( i < numSamples ) {
         //while(i--){
         //for ( i = 0 ; i < numSamples; i++ ){
-            Geom2D.__samples.push( mesh._vertices[Geom2D._randGen.next()] );
+            Geom2D.__samples.push( mesh._vertices[ Geom2D._randGen.next() ] );
             i++;
         }
 
@@ -1015,7 +1059,6 @@ var Geom2D = {
             i++;
         }
 
-        //var currFace;
         var iterFace = new FromVertexToHoldingFaces();
 
         if(closedVertex===null){ 
@@ -1027,7 +1070,7 @@ var Geom2D = {
 
         var currFace = iterFace.next();
 
-        var faceVisited = new Dictionary();
+        var faceVisited = new Dictionary( 0 );
         var currEdge;
         var iterEdge = new FromFaceToInnerEdges();
         var relativPos = 0;
@@ -1035,16 +1078,16 @@ var Geom2D = {
 
         var objectContainer = Geom2D.isInFace( p, currFace );
 
-        while( faceVisited.get(currFace) || objectContainer.type === NULL ){
+        while( faceVisited.get( currFace ) || objectContainer.type === NULL ){
 
             
 
-            faceVisited.set(currFace, true);
+            faceVisited.set( currFace, true );
             numIter++;
-            if(numIter == 50) Log("WALK TAKE MORE THAN 50 LOOP");
+            if(numIter == 50) Log( "WALK TAKE MORE THAN 50 LOOP" );
             if(numIter == 1000){ 
-                Log("WALK TAKE MORE THAN 1000 LOOP -> WE ESCAPE"); 
-                objectContainer = {type:NULL}; 
+                Log( "WALK TAKE MORE THAN 1000 LOOP -> WE ESCAPE" ); 
+                objectContainer = { type: NULL }; 
                 break; 
             }
             iterEdge.fromFace = currFace;
@@ -1095,7 +1138,7 @@ var Geom2D = {
         edgesToCheck.push(face.edge.nextLeftEdge);
         edgesToCheck.push(face.edge.nextLeftEdge.nextLeftEdge);
         var edge, pos1, pos2;
-        var checkedEdges = new Dictionary(0);
+        var checkedEdges = new Dictionary( 0 );
         var intersecting;
         while(edgesToCheck.length > 0) {
             edge = edgesToCheck.pop();
@@ -2078,7 +2121,7 @@ function GraphNode () {
 
     this.id = IDX.get('graphNode');//_Math.generateUUID();
     //DDLS.GraphNodeID++;
-    this.successorNodes = new Dictionary(1);
+    this.successorNodes = new Dictionary( 1 );
     this.prev = null;
     this.next = null;
     this.outgoingEdge = null;
@@ -2113,6 +2156,29 @@ var Potrace = {
     setColor: function ( color ) { Potrace.color = color; },
     setNearly: function ( n ) { Potrace.nearly = n; },
 
+    buildShapes: function ( bmpData ) {
+
+        var shapes = [];
+        var dictPixelsDone = new Dictionary( 2 );
+
+        var r = bmpData.height-1;
+        var c = bmpData.width-1;
+
+        for (var row = 1; row < r; row++){
+            for (var col = 0 ; col < c; col++){
+
+                if ( Potrace.getWhite(bmpData, col, row) && !Potrace.getWhite( bmpData, col+1, row ) ){
+
+                    if ( !dictPixelsDone.get( (col+1) + "_" + row) ) shapes.push( Potrace.buildShape( bmpData, row, col + 1 , dictPixelsDone ));
+                }
+            }
+        }
+
+        dictPixelsDone.dispose();
+        return shapes;
+
+    },
+
     getWhite: function ( bmpData, col, row ){
 
         var valide = false;
@@ -2129,32 +2195,6 @@ var Potrace = {
         if( mask.a !== undefined ){ if( nearEqual( bytes[id+3] , mask.a, nearly ) ) valide = true; }
 
         return valide;
-
-    },
-
-    buildShapes: function ( bmpData ) {
-
-        var shapes = [];
-        //var dictPixelsDone = new DDLS.StringMap();
-        var dictPixelsDone = new Dictionary(2);
-
-        var r = bmpData.height-1;
-        var c = bmpData.width-1;
-
-        for (var row = 1; row < r; row++){
-            for (var col = 0 ; col < c; col++){
-                //console.log( DDLS.getPixel(bmpData, col, row) )
-                if ( Potrace.getWhite(bmpData, col, row) && !Potrace.getWhite( bmpData, col+1, row ) ){
-                //if ( DDLS.getPixel(bmpData, col, row) === 0xFFFFFF && DDLS.getPixel( bmpData, col+1, row ) < 0xFFFFFF ){
-                    if (!dictPixelsDone.get( (col+1) + "_" + row) )//[(col+1) + "_" + row])
-                        shapes.push( Potrace.buildShape( bmpData, row, col + 1 , dictPixelsDone ));
-                        //shapes.push( buildShape(bmpData, row, col+1, dictPixelsDone, debugBmp, debugShape) );
-                }
-            }
-        }
-
-        dictPixelsDone.dispose();
-        return shapes;
 
     },
 
@@ -2233,17 +2273,20 @@ var Potrace = {
 
     buildGraph: function ( shape ) {
 
-        var i;
+        var i = 0;
         var graph = new Graph();
         var node;
-        i = 0;
-        while(i < shape.length) {
+
+        while( i < shape.length ) {
+
             node = graph.insertNode();
             node.data = new NodeData();
             node.data.index = i;
             node.data.point = new Point(shape[i],shape[i + 1]);
             i += 2;
+
         }
+
         var node1;
         var node2;
         var subNode;
@@ -2254,15 +2297,17 @@ var Potrace = {
         var edge;
         var edgeData;
         node1 = graph.node;
-        while(node1 != null) {
+
+        while( node1 != null ) {
+
             if(node1.next != null) node2 = node1.next; else node2 = graph.node;
-            while(node2 != node1) {
+            while( node2 != node1 ) {
                 isValid = true;
                 //subNode = node1.next ? node1.next : graph.node;
                 if(node1.next != null) subNode = node1.next; else subNode = graph.node;
                 count = 2;
                 sumDistSqrd = 0;
-                while(subNode != node2) {
+                while( subNode != node2 ) {
                     distSqrd = Geom2D.distanceSquaredPointToSegment(subNode.data.point,node1.data.point,node2.data.point);
                     if(distSqrd < 0) distSqrd = 0;
                     if(distSqrd >= Potrace.maxDistance) {
@@ -2273,7 +2318,7 @@ var Potrace = {
                     sumDistSqrd += distSqrd;
                     if(subNode.next != null) subNode = subNode.next; else subNode = graph.node;
                 }
-                if(!isValid) break;
+                if( !isValid ) break;
                 edge = graph.insertEdge(node1,node2);
                 edgeData = new EdgeData();
                 edgeData.sumDistancesSquared = sumDistSqrd;
@@ -2286,45 +2331,49 @@ var Potrace = {
         }
         //console.log('graph done');
         return graph;
+
     },
 
     buildPolygon: function ( graph ) {
+
         var polygon = [], p1, p2, p3;
-        var currNode;
         var minNodeIndex = 2147483647;
         var edge;
         var score;
         var higherScore;
         var lowerScoreEdge = null;
-        currNode = graph.node;
-        while(currNode.data.index < minNodeIndex) {
+        var currNode = graph.node;
+
+        while( currNode.data.index < minNodeIndex ) {
+
             minNodeIndex = currNode.data.index;
-            polygon.push(currNode.data.point.x);
-            polygon.push(currNode.data.point.y);
+            polygon.push( currNode.data.point.x );
+            polygon.push( currNode.data.point.y );
             higherScore = 0;
             edge = currNode.outgoingEdge;
-            while(edge != null) {
-                score = edge.data.nodesCount - edge.data.length * Math.sqrt(edge.data.sumDistancesSquared / edge.data.nodesCount);
-                if(score > higherScore) {
+            while( edge != null ) {
+                score = edge.data.nodesCount - edge.data.length * Math.sqrt( edge.data.sumDistancesSquared / edge.data.nodesCount );
+                if( score > higherScore ) {
                     higherScore = score;
                     lowerScoreEdge = edge;
                 }
                 edge = edge.rotNextEdge;
             }
             currNode = lowerScoreEdge.destinationNode;
+
         }
 
+        p1 = new Point( polygon[polygon.length - 2], polygon[polygon.length - 1] );
+        p2 = new Point( polygon[0], polygon[1] );
+        p3 = new Point( polygon[2], polygon[3] );
 
-        p1 = new Point(polygon[polygon.length - 2],polygon[polygon.length - 1]);
-        p2 = new Point(polygon[0],polygon[1]);
-        p3 = new Point(polygon[2],polygon[3]);
-
-        if(Geom2D.getDirection(p1,p2,p3) == 0) {
+        if( Geom2D.getDirection( p1, p2, p3 ) === 0 ) {
             polygon.shift();
             polygon.shift();
         }
 
         return polygon;
+
     }
 
 };
@@ -3319,7 +3368,7 @@ Mesh2D.prototype = {
     untriangulate: function ( edgesList ) {
         // we clean useless faces and adjacent vertices
         var i;
-        var verticesCleaned = new Dictionary(1);
+        var verticesCleaned = new Dictionary( 1 );
         var currEdge;
         var outEdge;
         var _g1 = 0;
@@ -3502,7 +3551,7 @@ Mesh2D.prototype = {
         iterVertices.fromMesh = this;
         var iterEdges;
         iterEdges = new FromVertexToIncomingEdges();
-        var dictVerticesDone = new Dictionary(1);
+        var dictVerticesDone = new Dictionary( 1 );
         while((vertex = iterVertices.next()) != null) {
             dictVerticesDone.set(vertex,true);
             if(!this.vertexIsInsideAABB(vertex,this)) continue;
@@ -3594,15 +3643,15 @@ AStar.prototype = {
     findPath: function ( from, target, resultListFaces, resultListEdges ) {
 
         this.sortedOpenedFaces = [];
-        this.closedFaces = new Dictionary(1);
-        this.openedFaces = new Dictionary(1);
-        this.entryEdges = new Dictionary(1);
-        this.predecessor = new Dictionary(1);
-        this.entryX = new Dictionary(1);
-        this.entryY = new Dictionary(1);
-        this.scoreF = new Dictionary(1);
-        this.scoreG = new Dictionary(1);
-        this.scoreH = new Dictionary(1);
+        this.closedFaces = new Dictionary( 1 );
+        this.openedFaces = new Dictionary( 1 );
+        this.entryEdges = new Dictionary( 1 );
+        this.predecessor = new Dictionary( 1 );
+        this.entryX = new Dictionary( 1 );
+        this.entryY = new Dictionary( 1 );
+        this.scoreF = new Dictionary( 1 );
+        this.scoreG = new Dictionary( 1 );
+        this.scoreH = new Dictionary( 1 );
         
 
         var loc, distance, p1, p2, p3;
@@ -3779,7 +3828,7 @@ AStar.prototype = {
             else {
                 var vFaceToCheck = [];
                 var vFaceIsFromEdge = [];
-                var facesDone = new Dictionary(1);
+                var facesDone = new Dictionary( 1 );
                 vFaceIsFromEdge.push(adjEdge);
                 if(adjEdge.leftFace == throughFace) {
                     vFaceToCheck.push(adjEdge.rightFace);
@@ -4002,7 +4051,7 @@ Funnel.prototype = {
                 if( listEdges.length > 1 ) listEdges.shift();
                 if( listFaces.length > 1 ) listFaces.shift();
                 //if(listEdges === undefined ) listEdges = [];
-                console.log('isShift', edgeTmp, listEdges, listFaces );
+                Log( '!! isShift' );
             }
         }
         //{
@@ -4026,10 +4075,10 @@ Funnel.prototype = {
         var funnelRight = [];
         funnelLeft.push(startPoint);
         funnelRight.push(startPoint);
-        var verticesDoneSide = new Dictionary(1);
+        var verticesDoneSide = new Dictionary( 1 );
         var pointsList = [];
-        var pointSides = new Dictionary(0);
-        var pointSuccessor = new Dictionary(0);
+        var pointSides = new Dictionary( 0 );
+        var pointSuccessor = new Dictionary( 0 );
         pointSides.set(startPoint,0);
         //0;
         currEdge = listEdges[0];
@@ -4086,7 +4135,7 @@ Funnel.prototype = {
         pointSides.set(endPoint,0);
 
         var pathPoints = [];
-        var pathSides = new Dictionary(1);
+        var pathSides = new Dictionary( 1 );
         pathPoints.push(startPoint);
         pathSides.set(startPoint,0);
         //0;
@@ -4946,9 +4995,9 @@ FieldOfView.prototype = {
         // now we have a triangle called the window defined by: posX, posY, rightTargetX, rightTargetY, leftTargetX, leftTargetY
         
         // we set a dictionnary of faces done
-        var facesDone = new Dictionary();
+        var facesDone = new Dictionary( 0 );
         // we set a dictionnary of edges done
-        var edgesDone = new Dictionary();
+        var edgesDone = new Dictionary( 0 );
         // we set the window wall
         var wall = [];
         // we localize the field center
@@ -4962,7 +5011,7 @@ FieldOfView.prototype = {
         
         // we put the face where the field center is lying in open list
         var openFacesList = [];
-        var openFaces = new Dictionary();
+        var openFaces = new Dictionary( 0 );
         openFacesList.push(startFace);
         openFaces[startFace] = true;
         
@@ -5345,6 +5394,8 @@ BitmapObject.buildFromBmpData = function( pixel, precision, color ) {
 
 function World ( w, h ) {
 
+    IDX.reset();
+
     this.heroes = [];
     this.shapes = [];
     this.segments = [];
@@ -5681,7 +5732,7 @@ BitmapMesh.buildFromBmpData = function ( bmpData, simpleEpsilon ) {
 
 };
 
-function Cell (col,row) {
+function Cell ( col, row ) {
 
     this.visited = false;
     this.col = col;
@@ -5697,7 +5748,7 @@ function Cell (col,row) {
 
 }
 
-function GridMaze (width,height,cols,rows) {
+function GridMaze ( width, height, cols, rows ) {
 
     this.generate(width,height,cols,rows);
 
@@ -5707,18 +5758,20 @@ GridMaze.prototype = {
 
     constructor: GridMaze,
 
-    generate : function(width,height,cols,rows) {
+    generate: function( width, height, cols, rows ) {
+
         this.tileWidth = width / cols | 0;
         this.tileHeight = height / rows | 0;
         this.cols = cols;
         this.rows = rows;
-        this.rng = new RandGenerator(randInt(1234,7259));
+        this.rng = new RandGenerator( randInt( 1234, 7259 ) );
         this.makeGrid();
         this.traverseGrid();
         this.populateObject();
+
     },
 
-    makeGrid : function() {
+    makeGrid: function () {
 
         this.grid = [];
         var _g1 = 0;
@@ -5742,22 +5795,23 @@ GridMaze.prototype = {
                 if(r != 0 || c != 0) cell.walls[3] = topLeft.concat(bottomLeft);
             }
         }
+
     },
 
-    traverseGrid : function() {
+    traverseGrid: function () {
 
         var DX = [0,1,0,-1];
         var DY = [-1,0,1,0];
         var REVERSED_DIR = [2,3,0,1];
-        var c = this.rng.nextInRange(0,this.cols - 1);
-        var r = this.rng.nextInRange(0,this.rows - 1);
+        var c = this.rng.nextInRange( 0, this.cols - 1 );
+        var r = this.rng.nextInRange( 0, this.rows - 1 );
         var cells = [this.grid[c][r]];
         while(cells.length > 0) {
             var idx = cells.length - 1;
             var currCell = cells[idx];
             currCell.visited = true;
             var dirs = [0,1,2,3];
-            this.rng.shuffle(dirs);
+            this.rng.shuffle( dirs );
             var _g = 0;
             while(_g < dirs.length) {
                 var dir = dirs[_g];
@@ -5778,7 +5832,7 @@ GridMaze.prototype = {
         }
     },
 
-    populateObject : function() {
+    populateObject: function () {
 
         this.object = new Object2D();
         var coords = [];
@@ -5806,6 +5860,7 @@ GridMaze.prototype = {
             }
         }
         this.object.coordinates = coords;
+
     }
 };
 
@@ -6462,4 +6517,4 @@ Mesh2D.prototype.draw = function(){
 
 }*/
 
-export { Point, Matrix2D, Geom2D, Edge, Face, Vertex, Shape, Segment, Object2D, Graph, Potrace, Mesh2D, AStar, Funnel, PathFinder, PathIterator, LinearPathSampler, FieldOfView, Entity, World, RectMesh, CircleMesh, BitmapObject, BitmapMesh, GridMaze, Dungeon, SimpleView, ThreeView, REVISION, torad, todeg, EPSILON, EPSILON_SQUARED, INFINITY, TwoPI, VERTEX, EDGE, FACE, NULL, Main, IDX, Log, Dictionary, rand, randInt, Squared, SquaredSqrt, nearEqual, Integral, fix, ARRAY, ShapeSimplifier, fromImageData, ImageLoader };
+export { Point, Matrix2D, Geom2D, Edge, Face, Vertex, Shape, Segment, Object2D, Graph, Potrace, Mesh2D, AStar, Funnel, PathFinder, PathIterator, LinearPathSampler, FieldOfView, Entity, World, RectMesh, CircleMesh, BitmapObject, BitmapMesh, GridMaze, Dungeon, SimpleView, ThreeView, REVISION, TTIER, torad, todeg, EPSILON, EPSILON_SQUARED, INFINITY, TwoPI, VERTEX, EDGE, FACE, NULL, Main, IDX, Log, Dictionary, rand, randInt, Squared, SquaredSqrt, nearEqual, Integral, fix, ARRAY, ShapeSimplifier, fromImageData };

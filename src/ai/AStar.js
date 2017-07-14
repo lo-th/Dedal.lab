@@ -62,15 +62,15 @@ AStar.prototype = {
     findPath: function ( from, target, resultListFaces, resultListEdges ) {
 
         this.sortedOpenedFaces = [];
-        this.closedFaces = new Dictionary(1);
-        this.openedFaces = new Dictionary(1);
-        this.entryEdges = new Dictionary(1);
-        this.predecessor = new Dictionary(1);
-        this.entryX = new Dictionary(1);
-        this.entryY = new Dictionary(1);
-        this.scoreF = new Dictionary(1);
-        this.scoreG = new Dictionary(1);
-        this.scoreH = new Dictionary(1);
+        this.closedFaces = new Dictionary( 1 );
+        this.openedFaces = new Dictionary( 1 );
+        this.entryEdges = new Dictionary( 1 );
+        this.predecessor = new Dictionary( 1 );
+        this.entryX = new Dictionary( 1 );
+        this.entryY = new Dictionary( 1 );
+        this.scoreF = new Dictionary( 1 );
+        this.scoreG = new Dictionary( 1 );
+        this.scoreH = new Dictionary( 1 );
         
 
         var loc, distance, p1, p2, p3;
@@ -247,7 +247,7 @@ AStar.prototype = {
             else {
                 var vFaceToCheck = [];
                 var vFaceIsFromEdge = [];
-                var facesDone = new Dictionary(1);
+                var facesDone = new Dictionary( 1 );
                 vFaceIsFromEdge.push(adjEdge);
                 if(adjEdge.leftFace == throughFace) {
                     vFaceToCheck.push(adjEdge.rightFace);

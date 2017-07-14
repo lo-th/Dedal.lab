@@ -97,6 +97,8 @@ function init() {
 
     window.addEventListener( 'resize', onWindowResize, false );
 
+    gui.init();
+
     // load assets
 
     pool.load(['assets/basic.sea'], loadComplete );
@@ -380,5 +382,7 @@ function animate() {
     if( ddlsRender ) ddlsRender.update();
 
     renderer.render( scene, camera );
+
+    gui.update();
 
 }

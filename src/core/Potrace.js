@@ -17,6 +17,29 @@ var Potrace = {
     setColor: function ( color ) { Potrace.color = color; },
     setNearly: function ( n ) { Potrace.nearly = n; },
 
+    buildShapes: function ( bmpData ) {
+
+        var shapes = [];
+        var dictPixelsDone = new Dictionary( 2 );
+
+        var r = bmpData.height-1;
+        var c = bmpData.width-1;
+
+        for (var row = 1; row < r; row++){
+            for (var col = 0 ; col < c; col++){
+
+                if ( Potrace.getWhite(bmpData, col, row) && !Potrace.getWhite( bmpData, col+1, row ) ){
+
+                    if ( !dictPixelsDone.get( (col+1) + "_" + row) ) shapes.push( Potrace.buildShape( bmpData, row, col + 1 , dictPixelsDone ));
+                }
+            }
+        }
+
+        dictPixelsDone.dispose();
+        return shapes;
+
+    },
+
     getWhite: function ( bmpData, col, row ){
 
         var valide = false;
@@ -33,32 +56,6 @@ var Potrace = {
         if( mask.a !== undefined ){ if( nearEqual( bytes[id+3] , mask.a, nearly ) ) valide = true; }
 
         return valide;
-
-    },
-
-    buildShapes: function ( bmpData ) {
-
-        var shapes = [];
-        //var dictPixelsDone = new DDLS.StringMap();
-        var dictPixelsDone = new Dictionary(2);
-
-        var r = bmpData.height-1;
-        var c = bmpData.width-1;
-
-        for (var row = 1; row < r; row++){
-            for (var col = 0 ; col < c; col++){
-                //console.log( DDLS.getPixel(bmpData, col, row) )
-                if ( Potrace.getWhite(bmpData, col, row) && !Potrace.getWhite( bmpData, col+1, row ) ){
-                //if ( DDLS.getPixel(bmpData, col, row) === 0xFFFFFF && DDLS.getPixel( bmpData, col+1, row ) < 0xFFFFFF ){
-                    if (!dictPixelsDone.get( (col+1) + "_" + row) )//[(col+1) + "_" + row])
-                        shapes.push( Potrace.buildShape( bmpData, row, col + 1 , dictPixelsDone ));
-                        //shapes.push( buildShape(bmpData, row, col+1, dictPixelsDone, debugBmp, debugShape) );
-                }
-            }
-        }
-
-        dictPixelsDone.dispose();
-        return shapes;
 
     },
 
@@ -137,17 +134,20 @@ var Potrace = {
 
     buildGraph: function ( shape ) {
 
-        var i;
+        var i = 0;
         var graph = new Graph();
         var node;
-        i = 0;
-        while(i < shape.length) {
+
+        while( i < shape.length ) {
+
             node = graph.insertNode();
             node.data = new NodeData();
             node.data.index = i;
             node.data.point = new Point(shape[i],shape[i + 1]);
             i += 2;
+
         }
+
         var node1;
         var node2;
         var subNode;
@@ -158,15 +158,17 @@ var Potrace = {
         var edge;
         var edgeData;
         node1 = graph.node;
-        while(node1 != null) {
+
+        while( node1 != null ) {
+
             if(node1.next != null) node2 = node1.next; else node2 = graph.node;
-            while(node2 != node1) {
+            while( node2 != node1 ) {
                 isValid = true;
                 //subNode = node1.next ? node1.next : graph.node;
                 if(node1.next != null) subNode = node1.next; else subNode = graph.node;
                 count = 2;
                 sumDistSqrd = 0;
-                while(subNode != node2) {
+                while( subNode != node2 ) {
                     distSqrd = Geom2D.distanceSquaredPointToSegment(subNode.data.point,node1.data.point,node2.data.point);
                     if(distSqrd < 0) distSqrd = 0;
                     if(distSqrd >= Potrace.maxDistance) {
@@ -177,7 +179,7 @@ var Potrace = {
                     sumDistSqrd += distSqrd;
                     if(subNode.next != null) subNode = subNode.next; else subNode = graph.node;
                 }
-                if(!isValid) break;
+                if( !isValid ) break;
                 edge = graph.insertEdge(node1,node2);
                 edgeData = new EdgeData();
                 edgeData.sumDistancesSquared = sumDistSqrd;
@@ -190,45 +192,49 @@ var Potrace = {
         }
         //console.log('graph done');
         return graph;
+
     },
 
     buildPolygon: function ( graph ) {
+
         var polygon = [], p1, p2, p3;
-        var currNode;
         var minNodeIndex = 2147483647;
         var edge;
         var score;
         var higherScore;
         var lowerScoreEdge = null;
-        currNode = graph.node;
-        while(currNode.data.index < minNodeIndex) {
+        var currNode = graph.node;
+
+        while( currNode.data.index < minNodeIndex ) {
+
             minNodeIndex = currNode.data.index;
-            polygon.push(currNode.data.point.x);
-            polygon.push(currNode.data.point.y);
+            polygon.push( currNode.data.point.x );
+            polygon.push( currNode.data.point.y );
             higherScore = 0;
             edge = currNode.outgoingEdge;
-            while(edge != null) {
-                score = edge.data.nodesCount - edge.data.length * Math.sqrt(edge.data.sumDistancesSquared / edge.data.nodesCount);
-                if(score > higherScore) {
+            while( edge != null ) {
+                score = edge.data.nodesCount - edge.data.length * Math.sqrt( edge.data.sumDistancesSquared / edge.data.nodesCount );
+                if( score > higherScore ) {
                     higherScore = score;
                     lowerScoreEdge = edge;
                 }
                 edge = edge.rotNextEdge;
             }
             currNode = lowerScoreEdge.destinationNode;
+
         }
 
+        p1 = new Point( polygon[polygon.length - 2], polygon[polygon.length - 1] );
+        p2 = new Point( polygon[0], polygon[1] );
+        p3 = new Point( polygon[2], polygon[3] );
 
-        p1 = new Point(polygon[polygon.length - 2],polygon[polygon.length - 1]);
-        p2 = new Point(polygon[0],polygon[1]);
-        p3 = new Point(polygon[2],polygon[3]);
-
-        if(Geom2D.getDirection(p1,p2,p3) == 0) {
+        if( Geom2D.getDirection( p1, p2, p3 ) === 0 ) {
             polygon.shift();
             polygon.shift();
         }
 
         return polygon;
+
     }
 
 }

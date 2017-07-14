@@ -3,7 +3,7 @@ import { RandGenerator } from '../math/RandGenerator';
 import { Object2D } from '../core/Object2D';
 
 
-function Cell (col,row) {
+function Cell ( col, row ) {
 
     this.visited = false;
     this.col = col;
@@ -19,7 +19,7 @@ function Cell (col,row) {
 
 };
 
-function GridMaze (width,height,cols,rows) {
+function GridMaze ( width, height, cols, rows ) {
 
     this.generate(width,height,cols,rows);
 
@@ -29,18 +29,20 @@ GridMaze.prototype = {
 
     constructor: GridMaze,
 
-    generate : function(width,height,cols,rows) {
+    generate: function( width, height, cols, rows ) {
+
         this.tileWidth = width / cols | 0;
         this.tileHeight = height / rows | 0;
         this.cols = cols;
         this.rows = rows;
-        this.rng = new RandGenerator(randInt(1234,7259));
+        this.rng = new RandGenerator( randInt( 1234, 7259 ) );
         this.makeGrid();
         this.traverseGrid();
         this.populateObject();
+
     },
 
-    makeGrid : function() {
+    makeGrid: function () {
 
         this.grid = [];
         var _g1 = 0;
@@ -64,22 +66,23 @@ GridMaze.prototype = {
                 if(r != 0 || c != 0) cell.walls[3] = topLeft.concat(bottomLeft);
             }
         }
+
     },
 
-    traverseGrid : function() {
+    traverseGrid: function () {
 
         var DX = [0,1,0,-1];
         var DY = [-1,0,1,0];
         var REVERSED_DIR = [2,3,0,1];
-        var c = this.rng.nextInRange(0,this.cols - 1);
-        var r = this.rng.nextInRange(0,this.rows - 1);
+        var c = this.rng.nextInRange( 0, this.cols - 1 );
+        var r = this.rng.nextInRange( 0, this.rows - 1 );
         var cells = [this.grid[c][r]];
         while(cells.length > 0) {
             var idx = cells.length - 1;
             var currCell = cells[idx];
             currCell.visited = true;
             var dirs = [0,1,2,3];
-            this.rng.shuffle(dirs);
+            this.rng.shuffle( dirs );
             var _g = 0;
             while(_g < dirs.length) {
                 var dir = dirs[_g];
@@ -100,7 +103,7 @@ GridMaze.prototype = {
         }
     },
 
-    populateObject : function() {
+    populateObject: function () {
 
         this.object = new Object2D();
         var coords = [];
@@ -128,6 +131,7 @@ GridMaze.prototype = {
             }
         }
         this.object.coordinates = coords;
+
     }
 }
 
