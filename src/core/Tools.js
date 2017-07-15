@@ -15,7 +15,7 @@ export var nearEqual = function ( a, b, e ) { return Math.abs( a - b ) < e; };
 export var Integral = function(x) { return Math.floor(x); };
 export var fix = function(x, n) { return x.toFixed(n || 3) * 1; };
 
-export var ARRAY = (typeof Float32Array !== 'undefined') ? Float32Array : Array;
+//export var ARRAY = (typeof Float32Array !== 'undefined') ? Float32Array : Array;
 
 //export { randInt };
 
@@ -62,7 +62,7 @@ export { ShapeSimplifier };
 function PixelsData(w,h) {
 
     this.length = w * h;
-    this.bytes = new ARRAY( this.length * 4 );
+    this.bytes = [];//new ARRAY( this.length * 4 );
     this.width = w;
     this.height = h;
 
@@ -72,7 +72,7 @@ function PixelsData(w,h) {
 
 function fromImageData ( image, imageData ) {
 
-    if(image){
+    if( image ){
 
         var w = image.width;
         var h = image.height;
@@ -89,11 +89,17 @@ function fromImageData ( image, imageData ) {
 
     var pixels = new PixelsData( imageData.width, imageData.height );
     var data = imageData.data;
-    var l = data.byteLength, n=0, i=0;
-    while(n < l) {
+    var l = data.byteLength, i=0;
+
+    for( i = 0; i < l; i++ ){
+
+        pixels.bytes.push( data[i] & 255 );
+
+    }
+    /*while(n < l) {
         i = n++;
         pixels.bytes[i] = data[i] & 255;
-    }
+    }*/
 
     if(image){
         ctx.clearRect(0,0,w,h);

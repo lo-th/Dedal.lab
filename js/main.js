@@ -22,6 +22,8 @@ animate();
 
 function init() {
 
+    DDLS.Debug.callback = gui.log;
+
     canvas = document.getElementById( 'canvas' );
 
     camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 10000 );

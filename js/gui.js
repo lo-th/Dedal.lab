@@ -2,10 +2,11 @@ var gui = ( function () {
 
 	'use strict';
 
-	var content, menu, topText;
+	var content, menu, topText, debug;
 	var t = { now:0, delta:0, then:0, inter:0, tmp:0, n:0 };
 
 	var demos = [ 'index', 'index_draw', '2d_basic', '2d_bitmap', '2d_bitmap2', '2d_bitmap3', '2d_dungeon', '2d_gridmaze', '2d_pathfinder', '2d_dynamics', 'SOURCE' ];
+	var txt = [];
 
 	gui = {
 
@@ -24,9 +25,23 @@ var gui = ( function () {
             topText.innerHTML = t.n + ' fps';
             content.appendChild( topText );
 
+            debug = document.createElement( 'div' );
+            debug.style.cssText = 'position: absolute; bottom:10px; left:10px; color:#0c0; font-size: 10px; margin:0px 0px; padding: 3px 10px; pointer-events:none; width:180px; height:200px; text-align: left; border:1px solid rgba(0,200,0,0.3); overflow:hidden; display: inline-block; vertical-align: bottom; ';
+            //debug.innerHTML = t.n + ' fps';
+            content.appendChild( debug );
+
+            this.log()
+
             for( var i = 0; i < demos.length; i++ ) this.addButton(i);
 
 		},
+
+	    log: function ( s ) {
+	    	if(s) txt.push( s + '<br>' );
+	    	if(txt.length > 16 ) txt.shift();
+	    	//debug.innerHTML += s + '<br>';
+	    	if(debug)debug.innerHTML = txt.join( "\n" );
+	    },
 
 		addButton: function ( i ) {
 

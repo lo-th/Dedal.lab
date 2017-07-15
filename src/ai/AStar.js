@@ -119,7 +119,7 @@ AStar.prototype = {
         var fillDatas = false;
         while(true) {
             if(this.sortedOpenedFaces.length == 0) {
-                Log("AStar no path found");
+                Log("NO PATH FOUND (AStar)");
                 this.curFace = null;
                 break;
             }

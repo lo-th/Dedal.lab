@@ -24,17 +24,16 @@ Vertex.prototype = {
 
     },
 
-    addFromConstraintSegment: function( segment ) {
+    addFromConstraintSegment: function ( segment ) {
 
-        if ( this.fromConstraintSegments.indexOf(segment) == -1 ) this.fromConstraintSegments.push(segment);
+        if ( this.fromConstraintSegments.indexOf(segment) === -1 ) this.fromConstraintSegments.push( segment );
 
     },
 
-    removeFromConstraintSegment: function( segment ) {
+    removeFromConstraintSegment: function ( segment ) {
 
-        //if(this.fromConstraintSegments == null) return;
         var index = this.fromConstraintSegments.indexOf( segment );
-        if ( index != -1 ) this.fromConstraintSegments.splice(index, 1);
+        if ( index !== -1 ) this.fromConstraintSegments.splice( index, 1 );
 
     },
 

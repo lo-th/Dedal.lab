@@ -13,38 +13,41 @@ function Edge () {
     this.nextLeftEdge = null;
     this.leftFace = null;
 
-    Object.defineProperty(this, 'destinationVertex', {
-        get: function() { return this.oppositeEdge.originVertex; }
-    });
-
-    Object.defineProperty(this, 'nextRightEdge', {
-        get: function() { return this.oppositeEdge.nextLeftEdge.nextLeftEdge.oppositeEdge; }
-    });
-
-    Object.defineProperty(this, 'prevRightEdge', {
-        get: function() { return this.oppositeEdge.nextLeftEdge.oppositeEdge; }
-    });
-
-    Object.defineProperty(this, 'prevLeftEdge', {
-        get: function() { return this.nextLeftEdge.nextLeftEdge; }
-    });
-
-    Object.defineProperty(this, 'rotLeftEdge', {
-        get: function() { return this.nextLeftEdge.nextLeftEdge.oppositeEdge; }
-    });
-
-    Object.defineProperty(this, 'rotRightEdge', {
-        get: function() { return this.oppositeEdge.nextLeftEdge; }
-    });
-
-    Object.defineProperty(this, 'rightFace', {
-        get: function() { return this.oppositeEdge.leftFace; }
-    });
-
-
 };
 
-Edge.prototype = {
+Object.defineProperties( Edge.prototype, {
+
+    destinationVertex: {
+        get: function() { return this.oppositeEdge.originVertex; }
+    },
+
+    nextRightEdge: {
+        get: function() { return this.oppositeEdge.nextLeftEdge.nextLeftEdge.oppositeEdge; }
+    },
+
+    prevRightEdge: {
+        get: function() { return this.oppositeEdge.nextLeftEdge.oppositeEdge; }
+    },
+
+    prevLeftEdge: {
+        get: function() { return this.nextLeftEdge.nextLeftEdge; }
+    },
+
+    rotLeftEdge: {
+        get: function() { return this.nextLeftEdge.nextLeftEdge.oppositeEdge; }
+    },
+
+    rotRightEdge: {
+        get: function() { return this.oppositeEdge.nextLeftEdge; }
+    },
+
+    rightFace: {
+        get: function() { return this.oppositeEdge.leftFace; }
+    },
+
+} );
+
+Object.assign( Edge.prototype, {
 
     constructor: Edge,
 
@@ -59,13 +62,13 @@ Edge.prototype = {
 
     },
 
-    getDatas:function(){
+    getDatas: function () {
 
         return [ this.originVertex.pos.x, this.originVertex.pos.y, this.destinationVertex.pos.x, this.destinationVertex.pos.y, this.isConstrained ? 1:0 ];
 
     },
 
-    addFromConstraintSegment: function( segment ) {
+    addFromConstraintSegment: function ( segment ) {
 
         if ( this.fromConstraintSegments.indexOf(segment) === -1 ) this.fromConstraintSegments.push(segment);
 
@@ -94,6 +97,6 @@ Edge.prototype = {
 
     }
 
-};
+} );
 
 export { Edge };

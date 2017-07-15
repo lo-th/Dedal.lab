@@ -14,7 +14,7 @@ Face.prototype = {
 
     constructor: Face,
 
-    setDatas: function( edge, isReal ) {
+    setDatas: function ( edge, isReal ) {
 
         this.isReal = isReal !== undefined ? isReal : true;
         this.edge = edge;

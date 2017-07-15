@@ -1,9 +1,9 @@
-import { Point } from '../math/Point';
+ import { Point } from '../math/Point';
 import { Matrix2D } from '../math/Matrix2D';
 import { Geom2D } from '../math/Geom2D';
 
 import { IDX, Dictionary, Log, INFINITY, EPSILON_SQUARED } from '../constants';
-import { Squared, ARRAY } from '../core/Tools';
+import { Squared } from '../core/Tools';
 
 import { FromVertexToOutgoingEdges, FromMeshToVertices, FromVertexToIncomingEdges } from '../core/Iterators';
 import { Shape } from '../core/Shape';
@@ -277,10 +277,10 @@ Mesh2D.prototype = {
         currVertex = vertexDown;
 
         currObjet = currVertex;
-        currObjet = currVertex;
-        while(true) {
+        //currObjet = currVertex;
+        while( true ) {
             done = false;
-            if ( currObjet.type === 0 ){
+            if ( currObjet.type === 0 ){ // VERTEX
                 currVertex = currObjet;
                 iterVertexToOutEdges.fromVertex = currVertex;
                 while((currEdge = iterVertexToOutEdges.next()) != null) {
@@ -313,7 +313,7 @@ Mesh2D.prototype = {
                         break;
                     }
                 }
-                if(done) continue;
+                if( done ) continue;
 
                 iterVertexToOutEdges.fromVertex = currVertex;
                 while((currEdge = iterVertexToOutEdges.next()) != null) {
@@ -346,7 +346,7 @@ Mesh2D.prototype = {
                         break;
                     }
                 }
-            } else if ( currObjet.type === 1 ){
+            } else if ( currObjet.type === 1 ){ // EDGE
                 currEdge = currObjet;
                 edgeLeft = currEdge.nextLeftEdge;
                 if ( edgeLeft.destinationVertex.id === vertexUp.id ){
@@ -462,6 +462,9 @@ Mesh2D.prototype = {
                         }
                     }
                 }
+            } else {
+                Log( 'not finding') 
+                return null;
             }
         }
 
@@ -1174,47 +1177,49 @@ Mesh2D.prototype = {
 
     },
 
+    // for drawing
+
     compute_Data: function () {
 
-        var data_vertex = [];
-        var data_edges = [];
+        this.AR_vertex = [];
+        this.AR_edge = [];
+
+        //var data_vertex = [];
+        //var data_edges = [];
         var vertex;
         var edge;
         var holdingFace;
-        var iterVertices;
-        iterVertices = new FromMeshToVertices();
+        var iterVertices = new FromMeshToVertices();
         iterVertices.fromMesh = this;
-        var iterEdges;
-        iterEdges = new FromVertexToIncomingEdges();
+        var iterEdges = new FromVertexToIncomingEdges();
         var dictVerticesDone = new Dictionary( 1 );
+
         while((vertex = iterVertices.next()) != null) {
+
             dictVerticesDone.set(vertex,true);
-            if(!this.vertexIsInsideAABB(vertex,this)) continue;
-            data_vertex.push(vertex.pos.x, vertex.pos.y);
+            if( !this.vertexIsInsideAABB( vertex, this ) ) continue;
+            this.AR_vertex.push(vertex.pos.x, vertex.pos.y);
             iterEdges.fromVertex = vertex;
             while((edge = iterEdges.next()) != null){ 
                 if(!dictVerticesDone.get(edge.originVertex)){  
-                    data_edges = data_edges.concat(edge.getDatas());
+                    this.AR_edge = this.AR_edge.concat(edge.getDatas());
                 }
             }
         }
 
         dictVerticesDone.dispose();
 
-        this.AR_vertex = new ARRAY( data_vertex );
+        /*this.AR_vertex = new ARRAY( data_vertex );
         this.AR_edge = new ARRAY( data_edges );
 
-        this.data_vertex = null;
-        this.data_edges = null;
+        data_vertex = null;
+        data_edges = null;*/
 
     },
 
     vertexIsInsideAABB: function ( vertex, mesh ) {
 
-        return !(vertex.pos.x < 0 || vertex.pos.x > mesh.width || vertex.pos.y < 0 || vertex.pos.y > mesh.height); 
-
-        //if(vertex.pos.x < 0 || vertex.pos.x > mesh.width || vertex.pos.y < 0 || vertex.pos.y > mesh.height) return false; 
-        //else return true;
+        return !( vertex.pos.x < 0 || vertex.pos.x > mesh.width || vertex.pos.y < 0 || vertex.pos.y > mesh.height );
 
     }
 

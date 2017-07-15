@@ -69,7 +69,26 @@ export { IDX };
 
 // LOG
 
-export var Log = function Log ( str ){ console.log( str ); };
+var Debug = {
+
+    callback: function( s ){
+        console.log( s );
+    },
+
+    log: function ( s ) {
+
+        this.callback( s );
+        
+    }
+} 
+
+export { Debug };
+
+export var Log = function Log ( str ){ Debug.log( str ); };
+
+
+
+
 
 // DICTIONARY
 

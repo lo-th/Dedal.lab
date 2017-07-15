@@ -24,6 +24,8 @@ render();
 
 function init() {
 
+    DDLS.Debug.callback = gui.log;
+
     world = new DDLS.World( 465, 465 );
     view = new DDLS.SimpleView( world );
 

@@ -24,6 +24,8 @@ init();
 
 function init() {
 
+    DDLS.Debug.callback = gui.log;
+
     world = new DDLS.World( 600, 600 );
     view = new DDLS.SimpleView( world );
     grid = new DDLS.Dungeon( 600,600, 5, 15 );

@@ -57,7 +57,7 @@ Graph.prototype = {
 
     },
 
-    insertEdge: function( fromNode, toNode ) {
+    insertEdge: function ( fromNode, toNode ) {
 
         if( fromNode.successorNodes.get( toNode ) != null ) return null;
 
@@ -86,7 +86,7 @@ Graph.prototype = {
 
     },
     
-    deleteEdge: function( edge ) {
+    deleteEdge: function ( edge ) {
 
         if(this.edge == edge) {
             if(edge.next != null) {
@@ -118,8 +118,7 @@ export { Graph };
 
 function GraphEdge () {
 
-    this.id = IDX.get('graphEdge');//_Math.generateUUID();
-    //DDLS.GraphEdgeID++;
+    this.id = IDX.get('graphEdge');
     this.next = null;
     this.prev = null;
     this.rotPrevEdge = null;
@@ -128,10 +127,13 @@ function GraphEdge () {
     this.sourceNode = null;
     this.destinationNode = null;
     this.data = null;
+
 };
 
 GraphEdge.prototype = {
-    dispose: function() {
+
+    dispose: function () {
+
         this.next = null;
         this.prev = null;
         this.rotPrevEdge = null;
@@ -140,7 +142,9 @@ GraphEdge.prototype = {
         this.sourceNode = null;
         this.destinationNode = null;
         this.data = null;
+
     }
+
 };
 
 //export { GraphEdge };
@@ -149,8 +153,7 @@ GraphEdge.prototype = {
 
 function GraphNode () {
 
-    this.id = IDX.get('graphNode');//_Math.generateUUID();
-    //DDLS.GraphNodeID++;
+    this.id = IDX.get('graphNode');
     this.successorNodes = new Dictionary( 1 );
     this.prev = null;
     this.next = null;
@@ -161,13 +164,15 @@ function GraphNode () {
 
 GraphNode.prototype = {
 
-    dispose: function() {
+    dispose: function () {
+
         this.successorNodes.dispose();
         this.prev = null;
         this.next = null;
         this.outgoingEdge = null;
         this.successorNodes = null;
         this.data = null;
+
     }
 
 };

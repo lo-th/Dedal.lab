@@ -52,7 +52,8 @@ PathFinder.prototype = {
         var start = this.entity.position;
         this.astar.findPath( start, target, this.listFaces, this.listEdges );
         if(this.listFaces.length == 0) {
-            Log("PathFinder listFaces.length == 0");
+            Log("PATH LENGTH = 0 (PathFinder)");
+            //Log("PathFinder listFaces.length == 0");
             return;
         }
         this.funnel.findPath( start, target, this.listFaces, this.listEdges, resultPath );

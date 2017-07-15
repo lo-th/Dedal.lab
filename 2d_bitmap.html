@@ -25,6 +25,8 @@ pool.load(['assets/island.png'], init );
 
 function init ( p ){
 
+    DDLS.Debug.callback = gui.log;
+
     var img = p.island;
 
     world = new DDLS.World( img.width, img.height );
@@ -43,7 +45,6 @@ function init ( p ){
     render();
 
 }
-
 
 function onMouseDown (e) {
 

@@ -25,8 +25,14 @@ pool.load(['assets/maze.png'], init );
 
 function init ( p ){
 
+    
+    
+
+
     var img = p.maze;
 
+    DDLS.Debug.callback = gui.log;
+    
     world = new DDLS.World( img.width, img.height );
     view = new DDLS.SimpleView( world );
 
@@ -37,7 +43,7 @@ function init ( p ){
     world.addHeroe({ x:500, y:500, r:6, speed:10 });
 
     view.domElement.onmousedown = onMouseDown;
-
+    
     gui.init();
 
     render();

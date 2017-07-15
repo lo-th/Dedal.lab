@@ -11,7 +11,7 @@ Shape.prototype = {
 
     constructor: Shape,
 
-    dispose: function() {
+    dispose: function () {
 
         while(this.segments.length > 0) this.segments.pop().dispose();
         this.segments = null;

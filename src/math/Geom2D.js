@@ -2,7 +2,7 @@ import { Integral, Squared, SquaredSqrt } from '../core/Tools';
 import { Point } from '../math/Point';
 import { RandGenerator } from '../math/RandGenerator';
 
-import { VERTEX, EDGE, FACE, NULL, Dictionary, Log, INFINITY, EPSILON_SQUARED, EPSILON, TTIER } from '../constants';
+import { VERTEX, EDGE, FACE, NULL, Dictionary, Log, Debug, INFINITY, EPSILON_SQUARED, EPSILON, TTIER } from '../constants';
 import { FromFaceToInnerEdges, FromMeshToVertices, FromVertexToHoldingFaces, FromVertexToIncomingEdges } from '../core/Iterators';
 
 var Geom2D = {

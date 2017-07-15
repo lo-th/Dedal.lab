@@ -155,7 +155,24 @@
 
 	// LOG
 
-	var Log = function Log ( str ){ console.log( str ); };
+	var Debug = {
+
+	    callback: function( s ){
+	        console.log( s );
+	    },
+
+	    log: function ( s ) {
+
+	        this.callback( s );
+	        
+	    }
+	}; 
+
+	var Log = function Log ( str ){ Debug.log( str ); };
+
+
+
+
 
 	// DICTIONARY
 
@@ -498,7 +515,7 @@
 	var Integral = function(x) { return Math.floor(x); };
 	var fix = function(x, n) { return x.toFixed(n || 3) * 1; };
 
-	var ARRAY = (typeof Float32Array !== 'undefined') ? Float32Array : Array;
+	//export var ARRAY = (typeof Float32Array !== 'undefined') ? Float32Array : Array;
 
 	//export { randInt };
 
@@ -543,7 +560,7 @@
 	function PixelsData(w,h) {
 
 	    this.length = w * h;
-	    this.bytes = new ARRAY( this.length * 4 );
+	    this.bytes = [];//new ARRAY( this.length * 4 );
 	    this.width = w;
 	    this.height = h;
 
@@ -553,7 +570,7 @@
 
 	function fromImageData ( image, imageData ) {
 
-	    if(image){
+	    if( image ){
 
 	        var w = image.width;
 	        var h = image.height;
@@ -570,11 +587,17 @@
 
 	    var pixels = new PixelsData( imageData.width, imageData.height );
 	    var data = imageData.data;
-	    var l = data.byteLength, n=0, i=0;
-	    while(n < l) {
+	    var l = data.byteLength, i=0;
+
+	    for( i = 0; i < l; i++ ){
+
+	        pixels.bytes.push( data[i] & 255 );
+
+	    }
+	    /*while(n < l) {
 	        i = n++;
 	        pixels.bytes[i] = data[i] & 255;
-	    }
+	    }*/
 
 	    if(image){
 	        ctx.clearRect(0,0,w,h);
@@ -1653,38 +1676,41 @@
 	    this.nextLeftEdge = null;
 	    this.leftFace = null;
 
-	    Object.defineProperty(this, 'destinationVertex', {
-	        get: function() { return this.oppositeEdge.originVertex; }
-	    });
-
-	    Object.defineProperty(this, 'nextRightEdge', {
-	        get: function() { return this.oppositeEdge.nextLeftEdge.nextLeftEdge.oppositeEdge; }
-	    });
-
-	    Object.defineProperty(this, 'prevRightEdge', {
-	        get: function() { return this.oppositeEdge.nextLeftEdge.oppositeEdge; }
-	    });
-
-	    Object.defineProperty(this, 'prevLeftEdge', {
-	        get: function() { return this.nextLeftEdge.nextLeftEdge; }
-	    });
-
-	    Object.defineProperty(this, 'rotLeftEdge', {
-	        get: function() { return this.nextLeftEdge.nextLeftEdge.oppositeEdge; }
-	    });
-
-	    Object.defineProperty(this, 'rotRightEdge', {
-	        get: function() { return this.oppositeEdge.nextLeftEdge; }
-	    });
-
-	    Object.defineProperty(this, 'rightFace', {
-	        get: function() { return this.oppositeEdge.leftFace; }
-	    });
-
-
 	}
 
-	Edge.prototype = {
+	Object.defineProperties( Edge.prototype, {
+
+	    destinationVertex: {
+	        get: function() { return this.oppositeEdge.originVertex; }
+	    },
+
+	    nextRightEdge: {
+	        get: function() { return this.oppositeEdge.nextLeftEdge.nextLeftEdge.oppositeEdge; }
+	    },
+
+	    prevRightEdge: {
+	        get: function() { return this.oppositeEdge.nextLeftEdge.oppositeEdge; }
+	    },
+
+	    prevLeftEdge: {
+	        get: function() { return this.nextLeftEdge.nextLeftEdge; }
+	    },
+
+	    rotLeftEdge: {
+	        get: function() { return this.nextLeftEdge.nextLeftEdge.oppositeEdge; }
+	    },
+
+	    rotRightEdge: {
+	        get: function() { return this.oppositeEdge.nextLeftEdge; }
+	    },
+
+	    rightFace: {
+	        get: function() { return this.oppositeEdge.leftFace; }
+	    },
+
+	} );
+
+	Object.assign( Edge.prototype, {
 
 	    constructor: Edge,
 
@@ -1699,13 +1725,13 @@
 
 	    },
 
-	    getDatas:function(){
+	    getDatas: function () {
 
 	        return [ this.originVertex.pos.x, this.originVertex.pos.y, this.destinationVertex.pos.x, this.destinationVertex.pos.y, this.isConstrained ? 1:0 ];
 
 	    },
 
-	    addFromConstraintSegment: function( segment ) {
+	    addFromConstraintSegment: function ( segment ) {
 
 	        if ( this.fromConstraintSegments.indexOf(segment) === -1 ) this.fromConstraintSegments.push(segment);
 
@@ -1734,7 +1760,7 @@
 
 	    }
 
-	};
+	} );
 
 	function Face() {
 
@@ -1750,7 +1776,7 @@
 
 	    constructor: Face,
 
-	    setDatas: function( edge, isReal ) {
+	    setDatas: function ( edge, isReal ) {
 
 	        this.isReal = isReal !== undefined ? isReal : true;
 	        this.edge = edge;
@@ -1788,17 +1814,16 @@
 
 	    },
 
-	    addFromConstraintSegment: function( segment ) {
+	    addFromConstraintSegment: function ( segment ) {
 
-	        if ( this.fromConstraintSegments.indexOf(segment) == -1 ) this.fromConstraintSegments.push(segment);
+	        if ( this.fromConstraintSegments.indexOf(segment) === -1 ) this.fromConstraintSegments.push( segment );
 
 	    },
 
-	    removeFromConstraintSegment: function( segment ) {
+	    removeFromConstraintSegment: function ( segment ) {
 
-	        //if(this.fromConstraintSegments == null) return;
 	        var index = this.fromConstraintSegments.indexOf( segment );
-	        if ( index != -1 ) this.fromConstraintSegments.splice(index, 1);
+	        if ( index !== -1 ) this.fromConstraintSegments.splice( index, 1 );
 
 	    },
 
@@ -1829,7 +1854,7 @@
 
 	    constructor: Shape,
 
-	    dispose: function() {
+	    dispose: function () {
 
 	        while(this.segments.length > 0) this.segments.pop().dispose();
 	        this.segments = null;
@@ -1841,7 +1866,6 @@
 	function Segment ( x, y ) {
 
 	    this.id = IDX.get('segment');
-	    //DDLS.SegmentID ++;
 	    this.edges = [];
 	    this.fromShape = null;
 
@@ -1851,28 +1875,28 @@
 
 	    constructor: Segment,
 
-	    addEdge: function( edge ) {
+	    addEdge: function ( edge ) {
 
-	        if ( this.edges.indexOf(edge) == -1 && this.edges.indexOf(edge.oppositeEdge) == -1 ) this.edges.push(edge);
-
-	    },
-
-	    removeEdge: function( edge ) {
-
-	        var index = this.edges.indexOf(edge);
-	        if ( index == -1 ) index = this.edges.indexOf(edge.oppositeEdge);
-	        if ( index != -1 ) this.edges.splice(index, 1);
+	        if ( this.edges.indexOf(edge) === -1 && this.edges.indexOf( edge.oppositeEdge ) === -1 ) this.edges.push( edge );
 
 	    },
 
-	    dispose: function() {
+	    removeEdge: function ( edge ) {
+
+	        var index = this.edges.indexOf( edge );
+	        if ( index === -1 ) index = this.edges.indexOf( edge.oppositeEdge );
+	        if ( index !== -1 ) this.edges.splice( index, 1 );
+
+	    },
+
+	    dispose: function () {
 
 	        this.edges = null;
 	        this.fromShape = null;
 
 	    },
 
-	    toString: function() {
+	    toString: function () {
 
 	        return "seg_id " + this.id;
 
@@ -1883,6 +1907,7 @@
 	function Object2D() {
 
 	    this.id = IDX.get('object2D');
+
 	    this._pivot = new Point();
 	    this._position = new Point();
 	    this._scale = new Point( 1, 1 );
@@ -1892,29 +1917,34 @@
 	    this._coordinates = [];
 	    this.hasChanged = false;
 
-	    Object.defineProperty(this, 'rotation', {
-	        get: function() { return this._rotation; },
-	        set: function(value) { if(this._rotation != value) { this._rotation = value; this.hasChanged = true; } }
-	    });
+	}
 
-	    Object.defineProperty(this, 'matrix', {
-	        get: function() { return this._matrix; },
-	        set: function(value) { this._matrix = value; this.hasChanged = true; }
-	    });
+	Object.defineProperties( Object2D.prototype, {
 
-	    Object.defineProperty(this, 'coordinates', {
-	        get: function() { return this._coordinates; },
-	        set: function(value) { this._coordinates = value; this.hasChanged = true; }
-	    });
+	    rotation: {
+	        get: function () { return this._rotation; },
+	        set: function ( value ) { if( this._rotation !== value ) { this._rotation = value; this.hasChanged = true; } }
+	    },
 
-	    Object.defineProperty(this, 'constraintShape', {
-	        get: function() { return this._constraintShape; },
-	        set: function(value) { this._constraintShape = value; this.hasChanged = true; }
-	    });
+	    matrix: {
+	        get: function () { return this._matrix; },
+	        set: function ( value ) { this._matrix = value; this.hasChanged = true; }
+	    },
 
-	    Object.defineProperty(this, 'edges', {
-	    	
-	        get: function() { 
+	    coordinates: {
+	        get: function () { return this._coordinates; },
+	        set: function ( value ) { this._coordinates = value; this.hasChanged = true; }
+	    },
+
+	    constraintShape: {
+	        get: function () { return this._constraintShape; },
+	        set: function ( value ) { this._constraintShape = value; this.hasChanged = true; }
+	    },
+
+	    edges: {
+	        
+	        get: function () {
+
 	            var res = [];
 	            var seg = this._constraintShape.segments;
 	            var l = seg.length, l2, n=0, n2=0, i=0, j=0;
@@ -1928,13 +1958,15 @@
 	                }
 	            }
 	            return res;
+
 	        }
 
-	    });
-	}
+	    }
 
-	Object2D.prototype = {
+	} );
 
+	Object.assign( Object2D.prototype, {
+	    
 	    constructor: Object2D,
 
 	    position: function ( x, y ) {
@@ -1976,7 +2008,7 @@
 
 	    }
 
-	};
+	} );
 
 	function Graph () {
 
@@ -2035,7 +2067,7 @@
 
 	    },
 
-	    insertEdge: function( fromNode, toNode ) {
+	    insertEdge: function ( fromNode, toNode ) {
 
 	        if( fromNode.successorNodes.get( toNode ) != null ) return null;
 
@@ -2064,7 +2096,7 @@
 
 	    },
 	    
-	    deleteEdge: function( edge ) {
+	    deleteEdge: function ( edge ) {
 
 	        if(this.edge == edge) {
 	            if(edge.next != null) {
@@ -2094,8 +2126,7 @@
 
 	function GraphEdge () {
 
-	    this.id = IDX.get('graphEdge');//_Math.generateUUID();
-	    //DDLS.GraphEdgeID++;
+	    this.id = IDX.get('graphEdge');
 	    this.next = null;
 	    this.prev = null;
 	    this.rotPrevEdge = null;
@@ -2104,10 +2135,13 @@
 	    this.sourceNode = null;
 	    this.destinationNode = null;
 	    this.data = null;
+
 	}
 
 	GraphEdge.prototype = {
-	    dispose: function() {
+
+	    dispose: function () {
+
 	        this.next = null;
 	        this.prev = null;
 	        this.rotPrevEdge = null;
@@ -2116,7 +2150,9 @@
 	        this.sourceNode = null;
 	        this.destinationNode = null;
 	        this.data = null;
+
 	    }
+
 	};
 
 	//export { GraphEdge };
@@ -2125,8 +2161,7 @@
 
 	function GraphNode () {
 
-	    this.id = IDX.get('graphNode');//_Math.generateUUID();
-	    //DDLS.GraphNodeID++;
+	    this.id = IDX.get('graphNode');
 	    this.successorNodes = new Dictionary( 1 );
 	    this.prev = null;
 	    this.next = null;
@@ -2137,13 +2172,15 @@
 
 	GraphNode.prototype = {
 
-	    dispose: function() {
+	    dispose: function () {
+
 	        this.successorNodes.dispose();
 	        this.prev = null;
 	        this.next = null;
 	        this.outgoingEdge = null;
 	        this.successorNodes = null;
 	        this.data = null;
+
 	    }
 
 	};
@@ -2648,10 +2685,10 @@
 	        currVertex = vertexDown;
 
 	        currObjet = currVertex;
-	        currObjet = currVertex;
-	        while(true) {
+	        //currObjet = currVertex;
+	        while( true ) {
 	            done = false;
-	            if ( currObjet.type === 0 ){
+	            if ( currObjet.type === 0 ){ // VERTEX
 	                currVertex = currObjet;
 	                iterVertexToOutEdges.fromVertex = currVertex;
 	                while((currEdge = iterVertexToOutEdges.next()) != null) {
@@ -2684,7 +2721,7 @@
 	                        break;
 	                    }
 	                }
-	                if(done) continue;
+	                if( done ) continue;
 
 	                iterVertexToOutEdges.fromVertex = currVertex;
 	                while((currEdge = iterVertexToOutEdges.next()) != null) {
@@ -2717,7 +2754,7 @@
 	                        break;
 	                    }
 	                }
-	            } else if ( currObjet.type === 1 ){
+	            } else if ( currObjet.type === 1 ){ // EDGE
 	                currEdge = currObjet;
 	                edgeLeft = currEdge.nextLeftEdge;
 	                if ( edgeLeft.destinationVertex.id === vertexUp.id ){
@@ -2833,6 +2870,9 @@
 	                        }
 	                    }
 	                }
+	            } else {
+	                Log( 'not finding'); 
+	                return null;
 	            }
 	        }
 
@@ -3545,47 +3585,49 @@
 
 	    },
 
+	    // for drawing
+
 	    compute_Data: function () {
 
-	        var data_vertex = [];
-	        var data_edges = [];
+	        this.AR_vertex = [];
+	        this.AR_edge = [];
+
+	        //var data_vertex = [];
+	        //var data_edges = [];
 	        var vertex;
 	        var edge;
 	        var holdingFace;
-	        var iterVertices;
-	        iterVertices = new FromMeshToVertices();
+	        var iterVertices = new FromMeshToVertices();
 	        iterVertices.fromMesh = this;
-	        var iterEdges;
-	        iterEdges = new FromVertexToIncomingEdges();
+	        var iterEdges = new FromVertexToIncomingEdges();
 	        var dictVerticesDone = new Dictionary( 1 );
+
 	        while((vertex = iterVertices.next()) != null) {
+
 	            dictVerticesDone.set(vertex,true);
-	            if(!this.vertexIsInsideAABB(vertex,this)) continue;
-	            data_vertex.push(vertex.pos.x, vertex.pos.y);
+	            if( !this.vertexIsInsideAABB( vertex, this ) ) continue;
+	            this.AR_vertex.push(vertex.pos.x, vertex.pos.y);
 	            iterEdges.fromVertex = vertex;
 	            while((edge = iterEdges.next()) != null){ 
 	                if(!dictVerticesDone.get(edge.originVertex)){  
-	                    data_edges = data_edges.concat(edge.getDatas());
+	                    this.AR_edge = this.AR_edge.concat(edge.getDatas());
 	                }
 	            }
 	        }
 
 	        dictVerticesDone.dispose();
 
-	        this.AR_vertex = new ARRAY( data_vertex );
+	        /*this.AR_vertex = new ARRAY( data_vertex );
 	        this.AR_edge = new ARRAY( data_edges );
 
-	        this.data_vertex = null;
-	        this.data_edges = null;
+	        data_vertex = null;
+	        data_edges = null;*/
 
 	    },
 
 	    vertexIsInsideAABB: function ( vertex, mesh ) {
 
-	        return !(vertex.pos.x < 0 || vertex.pos.x > mesh.width || vertex.pos.y < 0 || vertex.pos.y > mesh.height); 
-
-	        //if(vertex.pos.x < 0 || vertex.pos.x > mesh.width || vertex.pos.y < 0 || vertex.pos.y > mesh.height) return false; 
-	        //else return true;
+	        return !( vertex.pos.x < 0 || vertex.pos.x > mesh.width || vertex.pos.y < 0 || vertex.pos.y > mesh.height );
 
 	    }
 
@@ -3706,7 +3748,7 @@
 	        var fillDatas = false;
 	        while(true) {
 	            if(this.sortedOpenedFaces.length == 0) {
-	                Log("AStar no path found");
+	                Log("NO PATH FOUND (AStar)");
 	                this.curFace = null;
 	                break;
 	            }
@@ -4559,7 +4601,8 @@
 	        var start = this.entity.position;
 	        this.astar.findPath( start, target, this.listFaces, this.listEdges );
 	        if(this.listFaces.length == 0) {
-	            Log("PathFinder listFaces.length == 0");
+	            Log("PATH LENGTH = 0 (PathFinder)");
+	            //Log("PathFinder listFaces.length == 0");
 	            return;
 	        }
 	        this.funnel.findPath( start, target, this.listFaces, this.listEdges, resultPath );
@@ -6575,6 +6618,7 @@
 	exports.NULL = NULL;
 	exports.Main = Main;
 	exports.IDX = IDX;
+	exports.Debug = Debug;
 	exports.Log = Log;
 	exports.Dictionary = Dictionary;
 	exports.rand = rand;
@@ -6584,7 +6628,6 @@
 	exports.nearEqual = nearEqual;
 	exports.Integral = Integral;
 	exports.fix = fix;
-	exports.ARRAY = ARRAY;
 	exports.ShapeSimplifier = ShapeSimplifier;
 	exports.fromImageData = fromImageData;
 

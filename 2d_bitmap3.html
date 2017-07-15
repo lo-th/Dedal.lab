@@ -25,6 +25,8 @@ pool.load(['assets/brain.png'], init );
 
 function init ( p ){
 
+    DDLS.Debug.callback = gui.log;
+
     var img = p.brain;
 
     world = new DDLS.World( img.width, img.height );

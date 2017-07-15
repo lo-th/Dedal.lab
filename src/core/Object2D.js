@@ -5,6 +5,7 @@ import { Matrix2D } from '../math/Matrix2D';
 function Object2D() {
 
     this.id = IDX.get('object2D');
+
     this._pivot = new Point();
     this._position = new Point();
     this._scale = new Point( 1, 1 );
@@ -14,29 +15,34 @@ function Object2D() {
     this._coordinates = [];
     this.hasChanged = false;
 
-    Object.defineProperty(this, 'rotation', {
-        get: function() { return this._rotation; },
-        set: function(value) { if(this._rotation != value) { this._rotation = value; this.hasChanged = true; } }
-    });
+};
 
-    Object.defineProperty(this, 'matrix', {
-        get: function() { return this._matrix; },
-        set: function(value) { this._matrix = value; this.hasChanged = true; }
-    });
+Object.defineProperties( Object2D.prototype, {
 
-    Object.defineProperty(this, 'coordinates', {
-        get: function() { return this._coordinates; },
-        set: function(value) { this._coordinates = value; this.hasChanged = true; }
-    });
+    rotation: {
+        get: function () { return this._rotation; },
+        set: function ( value ) { if( this._rotation !== value ) { this._rotation = value; this.hasChanged = true; } }
+    },
 
-    Object.defineProperty(this, 'constraintShape', {
-        get: function() { return this._constraintShape; },
-        set: function(value) { this._constraintShape = value; this.hasChanged = true; }
-    });
+    matrix: {
+        get: function () { return this._matrix; },
+        set: function ( value ) { this._matrix = value; this.hasChanged = true; }
+    },
 
-    Object.defineProperty(this, 'edges', {
-    	
-        get: function() { 
+    coordinates: {
+        get: function () { return this._coordinates; },
+        set: function ( value ) { this._coordinates = value; this.hasChanged = true; }
+    },
+
+    constraintShape: {
+        get: function () { return this._constraintShape; },
+        set: function ( value ) { this._constraintShape = value; this.hasChanged = true; }
+    },
+
+    edges: {
+        
+        get: function () {
+
             var res = [];
             var seg = this._constraintShape.segments;
             var l = seg.length, l2, n=0, n2=0, i=0, j=0;
@@ -50,13 +56,15 @@ function Object2D() {
                 }
             }
             return res;
+
         }
 
-    });
-};
+    }
 
-Object2D.prototype = {
+} );
 
+Object.assign( Object2D.prototype, {
+    
     constructor: Object2D,
 
     position: function ( x, y ) {
@@ -98,6 +106,6 @@ Object2D.prototype = {
 
     }
 
-};
+} );
 
 export { Object2D };
