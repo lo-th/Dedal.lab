@@ -4,45 +4,53 @@ import { RectMesh } from '../factories/RectMesh';
 
 var BitmapMesh = {};
 
-BitmapMesh.buildFromBmpData = function ( bmpData, simpleEpsilon ) {
+BitmapMesh.buildFromBmpData = function ( pixel, precision, color ) {
 
-    simpleEpsilon = simpleEpsilon || 1;
-    //if(simpleEpsilon == null) simpleEpsilon = 1;
-    var i, j;
-    var shapes = Potrace.buildShapes( bmpData );
-    if( simpleEpsilon >= 1 ) {
-        var _g1 = 0;
-        var _g = shapes.length;
-        while(_g1 < _g) {
-            var i1 = _g1++;
-            shapes[i1] = ShapeSimplifier( shapes[i1], simpleEpsilon );
-        }
+    if( color !== undefined ) Potrace.setColor( color );
+    precision = precision || 1;
+
+    var i, j, lng, lng2;
+
+    // OUTLINES STEP-LIKE SHAPES GENERATION
+
+    var shapes = Potrace.buildShapes( pixel );
+
+    if( precision >= 1 ) {
+
+        i = shapes.length;
+        while ( i-- ) shapes[i] = ShapeSimplifier( shapes[i], precision );
+        
     }
+
+    // GRAPHS OF POTENTIAL SEGMENTS GENERATION
+
     var graphs = [];
-    var _g11 = 0;
-    var _g2 = shapes.length;
-    while(_g11 < _g2) {
-        var i2 = _g11++;
-        graphs.push( Potrace.buildGraph( shapes[i2] ) );
-    }
+    lng = shapes.length;
+
+    for ( i = 0; i < lng; i++ ) graphs.push( Potrace.buildGraph( shapes[i] ) );
+    
+
+    // OPTIMIZED POLYGONS GENERATION
+
     var polygons = [];
-    var _g12 = 0;
-    var _g3 = graphs.length;
-    while(_g12 < _g3) {
-        var i3 = _g12++;
-        polygons.push( Potrace.buildPolygon( graphs[i3] ));
-    }
-    var mesh = RectMesh( bmpData.width, bmpData.height );
-    var _g13 = 0;
-    var _g4 = polygons.length;
-    while(_g13 < _g4) {
-        var i4 = _g13++;
-        j = 0;
-        while(j < polygons[i4].length - 2) {
-            mesh.insertConstraintSegment( polygons[i4][j], polygons[i4][j+1], polygons[i4][j+2], polygons[i4][j+3] );
-            j += 2;
-        }
-        mesh.insertConstraintSegment( polygons[i4][j], polygons[i4][j+1], polygons[i4][j+2], polygons[i4][j+3] );
+    lng = graphs.length;
+
+    for ( i = 0; i < lng; i++ ) polygons.push( Potrace.buildPolygon( graphs[i] ));
+    
+
+    // MESH GENERATION
+
+    var mesh = new RectMesh( pixel.width, pixel.height );
+    lng = polygons.length;
+
+    for ( i = 0; i < lng; i++ ) {
+
+        lng2 = polygons[i].length - 2;
+
+        for ( j = 0; j < lng2; j += 2 ) mesh.insertConstraintSegment( polygons[i][j], polygons[i][j+1], polygons[i][j+2], polygons[i][j+3] );
+
+        mesh.insertConstraintSegment( polygons[i][0], polygons[i][1], polygons[i][j], polygons[i][j+1] );
+
     }
 
     return mesh;

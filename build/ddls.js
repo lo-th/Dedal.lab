@@ -5248,14 +5248,13 @@
 
 	function RectMesh ( w, h ) {
 
-	    //  v0 +-----+ v1
-	    //     |    /|
-	    //     |   / |
-	    //     |  /  |
-	    //     | /   |
-	    //     |/    |
-	    //  v3 +-----+ v2
+	    Mesh2D.call( this, w, h );
 
+	    //  v0 x---x v1
+	    //     |  /|
+	    //     | / |
+	    //     |/  |
+	    //  v3 x---x v2
 
 	    var v = [];
 	    var e = [];
@@ -5304,43 +5303,42 @@
 	    f[3].setDatas(e[2], false); // v0-v1-v2
 
 	    // constraint relations datas
-	    v[0].fromConstraintSegments = [s[0],s[3]];
-	    v[1].fromConstraintSegments = [s[0],s[1]];
-	    v[2].fromConstraintSegments = [s[1],s[2]];
-	    v[3].fromConstraintSegments = [s[2],s[3]];
+	    v[0].fromConstraintSegments.push( s[0],s[3] );
+	    v[1].fromConstraintSegments.push( s[0],s[1] );
+	    v[2].fromConstraintSegments.push( s[1],s[2] );
+	    v[3].fromConstraintSegments.push( s[2],s[3] );
 
-	    e[0].fromConstraintSegments.push(s[0]);
-	    e[1].fromConstraintSegments.push(s[0]);
-	    e[2].fromConstraintSegments.push(s[1]);
-	    e[3].fromConstraintSegments.push(s[1]);
-	    e[4].fromConstraintSegments.push(s[2]);
-	    e[5].fromConstraintSegments.push(s[2]);
-	    e[6].fromConstraintSegments.push(s[3]);
-	    e[7].fromConstraintSegments.push(s[3]);
+	    e[0].fromConstraintSegments.push( s[0] );
+	    e[1].fromConstraintSegments.push( s[0] );
+	    e[2].fromConstraintSegments.push( s[1] );
+	    e[3].fromConstraintSegments.push( s[1] );
+	    e[4].fromConstraintSegments.push( s[2] );
+	    e[5].fromConstraintSegments.push( s[2] );
+	    e[6].fromConstraintSegments.push( s[3] );
+	    e[7].fromConstraintSegments.push( s[3] );
 
-	    s[0].edges.push(e[0]); // top
-	    s[1].edges.push(e[2]); // right
-	    s[2].edges.push(e[4]); // bottom
-	    s[3].edges.push(e[6]); // left
+	    s[0].edges.push( e[0] ); // top
+	    s[1].edges.push( e[2] ); // right
+	    s[2].edges.push( e[4] ); // bottom
+	    s[3].edges.push( e[6] ); // left
 	    s[0].fromShape = boundShape;
 	    s[1].fromShape = boundShape;
 	    s[2].fromShape = boundShape;
 	    s[3].fromShape = boundShape;
 	    boundShape.segments.push( s[0], s[1], s[2], s[3] );
 
-	    var mesh = new Mesh2D( w, h );
-	    mesh._vertices = v;
-	    mesh._edges = e;
-	    mesh._faces = f;
-	    //mesh._constraintShapes.push( boundShape );
+	    this._vertices = v;
+	    this._edges = e;
+	    this._faces = f;
+	    this._constraintShapes.push( boundShape );
 
-	    mesh.clipping = false;
-	    mesh.insertConstraintShape( [ 0,0,w,0,  w,0,w,h,  w,h,0,h,  0,h,0,0 ] );
-	    mesh.clipping = true;
-
-	    return mesh;
+	    this.clipping = false;
+	    this.insertConstraintShape( [ 0,0,w,0,  w,0,w,h,  w,h,0,h,  0,h,0,0 ] );
+	    this.clipping = true;
 
 	}
+
+	RectMesh.prototype = Object.create( Mesh2D.prototype );
 
 	var BitmapObject = {};
 
@@ -5398,6 +5396,61 @@
 
 	};
 
+	var BitmapMesh = {};
+
+	BitmapMesh.buildFromBmpData = function ( pixel, precision, color ) {
+
+	    if( color !== undefined ) Potrace.setColor( color );
+	    precision = precision || 1;
+
+	    var i, j, lng, lng2;
+
+	    // OUTLINES STEP-LIKE SHAPES GENERATION
+
+	    var shapes = Potrace.buildShapes( pixel );
+
+	    if( precision >= 1 ) {
+
+	        i = shapes.length;
+	        while ( i-- ) shapes[i] = ShapeSimplifier( shapes[i], precision );
+	        
+	    }
+
+	    // GRAPHS OF POTENTIAL SEGMENTS GENERATION
+
+	    var graphs = [];
+	    lng = shapes.length;
+
+	    for ( i = 0; i < lng; i++ ) graphs.push( Potrace.buildGraph( shapes[i] ) );
+	    
+
+	    // OPTIMIZED POLYGONS GENERATION
+
+	    var polygons = [];
+	    lng = graphs.length;
+
+	    for ( i = 0; i < lng; i++ ) polygons.push( Potrace.buildPolygon( graphs[i] ));
+	    
+
+	    // MESH GENERATION
+
+	    var mesh = new RectMesh( pixel.width, pixel.height );
+	    lng = polygons.length;
+
+	    for ( i = 0; i < lng; i++ ) {
+
+	        lng2 = polygons[i].length - 2;
+
+	        for ( j = 0; j < lng2; j += 2 ) mesh.insertConstraintSegment( polygons[i][j], polygons[i][j+1], polygons[i][j+2], polygons[i][j+3] );
+
+	        mesh.insertConstraintSegment( polygons[i][0], polygons[i][1], polygons[i][j], polygons[i][j+1] );
+
+	    }
+
+	    return mesh;
+
+	};
+
 	function World ( w, h ) {
 
 	    IDX.reset();
@@ -5410,7 +5463,7 @@
 	    this.w = w || 512;
 	    this.h = h || 512;
 
-	    this.mesh = RectMesh( this.w, this.h );
+	    this.mesh = new RectMesh( this.w, this.h );
 
 	    this.pathFinder = new PathFinder();
 	    this.pathFinder.mesh = this.mesh;
@@ -5496,7 +5549,7 @@
 	        this.mesh.dispose();
 	        if(w) this.w = w;
 	        if(h) this.h = h;
-	        this.mesh = RectMesh( this.w, this.h );
+	        this.mesh = new RectMesh( this.w, this.h );
 	        this.pathFinder.mesh = this.mesh;
 	    
 	    },
@@ -5505,7 +5558,7 @@
 
 	        this.mesh.clear( true );
 	        if( mesh !== undefined ) this.mesh = mesh;
-	        else this.mesh = RectMesh( this.w, this.h );
+	        else this.mesh = new RectMesh( this.w, this.h );
 	        this.pathFinder.mesh = this.mesh;
 	        //this.mesh._objects = [];
 	        var i = this.objects.length;
@@ -5561,9 +5614,13 @@
 
 	        o = o || {};
 
-	        var obj = BitmapObject.buildFromBmpData( o.pixel, o.precision || 1.8, o.color );
-	        this.reset( o.w, o.h );
-	        this.mesh.insertObject( obj );
+	        this.mesh.dispose();
+	        this.mesh = BitmapMesh.buildFromBmpData( o.pixel, o.precision || 1.8, o.color );
+	        this.pathFinder.mesh = this.mesh;
+
+	        //var obj = BitmapObject.buildFromBmpData( o.pixel, o.precision || 1.8, o.color );
+	        //this.reset( o.w, o.h );
+	        //this.mesh.insertObject( obj );
 	        //this.add( obj );
 
 	        var view = Main.get();
@@ -5690,53 +5747,6 @@
 	    return mesh;
 
 	}
-
-	var BitmapMesh = {};
-
-	BitmapMesh.buildFromBmpData = function ( bmpData, simpleEpsilon ) {
-
-	    simpleEpsilon = simpleEpsilon || 1;
-	    //if(simpleEpsilon == null) simpleEpsilon = 1;
-	    var i, j;
-	    var shapes = Potrace.buildShapes( bmpData );
-	    if( simpleEpsilon >= 1 ) {
-	        var _g1 = 0;
-	        var _g = shapes.length;
-	        while(_g1 < _g) {
-	            var i1 = _g1++;
-	            shapes[i1] = ShapeSimplifier( shapes[i1], simpleEpsilon );
-	        }
-	    }
-	    var graphs = [];
-	    var _g11 = 0;
-	    var _g2 = shapes.length;
-	    while(_g11 < _g2) {
-	        var i2 = _g11++;
-	        graphs.push( Potrace.buildGraph( shapes[i2] ) );
-	    }
-	    var polygons = [];
-	    var _g12 = 0;
-	    var _g3 = graphs.length;
-	    while(_g12 < _g3) {
-	        var i3 = _g12++;
-	        polygons.push( Potrace.buildPolygon( graphs[i3] ));
-	    }
-	    var mesh = RectMesh( bmpData.width, bmpData.height );
-	    var _g13 = 0;
-	    var _g4 = polygons.length;
-	    while(_g13 < _g4) {
-	        var i4 = _g13++;
-	        j = 0;
-	        while(j < polygons[i4].length - 2) {
-	            mesh.insertConstraintSegment( polygons[i4][j], polygons[i4][j+1], polygons[i4][j+2], polygons[i4][j+3] );
-	            j += 2;
-	        }
-	        mesh.insertConstraintSegment( polygons[i4][j], polygons[i4][j+1], polygons[i4][j+2], polygons[i4][j+3] );
-	    }
-
-	    return mesh;
-
-	};
 
 	function Cell ( col, row ) {
 

@@ -1,6 +1,7 @@
 import { Main, IDX } from '../constants';
 import { RectMesh } from '../factories/RectMesh';
 import { BitmapObject } from '../factories/BitmapObject';
+import { BitmapMesh } from '../factories/BitmapMesh';
 import { PathFinder } from '../ai/PathFinder';
 import { Object2D } from '../core/Object2D';
 import { Entity } from '../ai/Entity';
@@ -18,7 +19,7 @@ function World ( w, h ) {
     this.w = w || 512;
     this.h = h || 512;
 
-    this.mesh = RectMesh( this.w, this.h );
+    this.mesh = new RectMesh( this.w, this.h );
 
     this.pathFinder = new PathFinder();
     this.pathFinder.mesh = this.mesh;
@@ -104,7 +105,7 @@ World.prototype = {
         this.mesh.dispose();
         if(w) this.w = w;
         if(h) this.h = h;
-        this.mesh = RectMesh( this.w, this.h );
+        this.mesh = new RectMesh( this.w, this.h );
         this.pathFinder.mesh = this.mesh;
     
     },
@@ -113,7 +114,7 @@ World.prototype = {
 
         this.mesh.clear( true );
         if( mesh !== undefined ) this.mesh = mesh;
-        else this.mesh = RectMesh( this.w, this.h );
+        else this.mesh = new RectMesh( this.w, this.h );
         this.pathFinder.mesh = this.mesh;
         //this.mesh._objects = [];
         var i = this.objects.length;
@@ -169,9 +170,13 @@ World.prototype = {
 
         o = o || {};
 
-        var obj = BitmapObject.buildFromBmpData( o.pixel, o.precision || 1.8, o.color );
-        this.reset( o.w, o.h );
-        this.mesh.insertObject( obj );
+        this.mesh.dispose();
+        this.mesh = BitmapMesh.buildFromBmpData( o.pixel, o.precision || 1.8, o.color );
+        this.pathFinder.mesh = this.mesh;
+
+        //var obj = BitmapObject.buildFromBmpData( o.pixel, o.precision || 1.8, o.color );
+        //this.reset( o.w, o.h );
+        //this.mesh.insertObject( obj );
         //this.add( obj );
 
         var view = Main.get();

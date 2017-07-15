@@ -77,7 +77,9 @@ DrawCanvas.prototype = {
         var currentPoint = { x:x, y:y };
         var dist = distanceBetween(this.lastPoint, currentPoint);
         var angle = angleBetween(this.lastPoint, currentPoint);
+        
         for (var i = 0; i < dist; i+=5) {
+
             x = this.lastPoint.x + (Math.sin(angle) * i);
             y = this.lastPoint.y + (Math.cos(angle) * i);
             var radgrad = this.ctx.createRadialGradient(x,y,10,x,y,20);
@@ -88,7 +90,9 @@ DrawCanvas.prototype = {
 
             this.ctx.fillStyle = radgrad;
             this.ctx.fillRect(x-20, y-20, 40, 40);
+
         }
+
         this.lastPoint = currentPoint;
         this.texture.needsUpdate = true;
         this.needUpdate = true;
@@ -102,10 +106,11 @@ DrawCanvas.prototype = {
     },
     update:function(){
 
-        if(this.needUpdate){ 
+        if( this.needUpdate ){
             
             world.addBitmapZone( { canvas: this.drawcanvas, precision:1.8, color:{a:0} } );
             this.needUpdate = false;
+
         }
         
         /*var pixels = DDLS.fromImageData(null, this.ctx.getImageData(0,0,1024,1024));

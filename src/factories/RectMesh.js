@@ -1,3 +1,4 @@
+
 import { Face } from '../core/Face';
 import { Vertex } from '../core/Vertex';
 import { Segment } from '../core/Segment';
@@ -7,14 +8,13 @@ import { Mesh2D } from '../core/Mesh2D';
 
 function RectMesh ( w, h ) {
 
-    //  v0 +-----+ v1
-    //     |    /|
-    //     |   / |
-    //     |  /  |
-    //     | /   |
-    //     |/    |
-    //  v3 +-----+ v2
+    Mesh2D.call( this, w, h );
 
+    //  v0 x---x v1
+    //     |  /|
+    //     | / |
+    //     |/  |
+    //  v3 x---x v2
 
     var v = [];
     var e = [];
@@ -63,42 +63,41 @@ function RectMesh ( w, h ) {
     f[3].setDatas(e[2], false); // v0-v1-v2
 
     // constraint relations datas
-    v[0].fromConstraintSegments = [s[0],s[3]];
-    v[1].fromConstraintSegments = [s[0],s[1]];
-    v[2].fromConstraintSegments = [s[1],s[2]];
-    v[3].fromConstraintSegments = [s[2],s[3]];
+    v[0].fromConstraintSegments.push( s[0],s[3] );
+    v[1].fromConstraintSegments.push( s[0],s[1] );
+    v[2].fromConstraintSegments.push( s[1],s[2] );
+    v[3].fromConstraintSegments.push( s[2],s[3] );
 
-    e[0].fromConstraintSegments.push(s[0]);
-    e[1].fromConstraintSegments.push(s[0]);
-    e[2].fromConstraintSegments.push(s[1]);
-    e[3].fromConstraintSegments.push(s[1]);
-    e[4].fromConstraintSegments.push(s[2]);
-    e[5].fromConstraintSegments.push(s[2]);
-    e[6].fromConstraintSegments.push(s[3]);
-    e[7].fromConstraintSegments.push(s[3]);
+    e[0].fromConstraintSegments.push( s[0] );
+    e[1].fromConstraintSegments.push( s[0] );
+    e[2].fromConstraintSegments.push( s[1] );
+    e[3].fromConstraintSegments.push( s[1] );
+    e[4].fromConstraintSegments.push( s[2] );
+    e[5].fromConstraintSegments.push( s[2] );
+    e[6].fromConstraintSegments.push( s[3] );
+    e[7].fromConstraintSegments.push( s[3] );
 
-    s[0].edges.push(e[0]); // top
-    s[1].edges.push(e[2]); // right
-    s[2].edges.push(e[4]); // bottom
-    s[3].edges.push(e[6]); // left
+    s[0].edges.push( e[0] ); // top
+    s[1].edges.push( e[2] ); // right
+    s[2].edges.push( e[4] ); // bottom
+    s[3].edges.push( e[6] ); // left
     s[0].fromShape = boundShape;
     s[1].fromShape = boundShape;
     s[2].fromShape = boundShape;
     s[3].fromShape = boundShape;
     boundShape.segments.push( s[0], s[1], s[2], s[3] );
 
-    var mesh = new Mesh2D( w, h );
-    mesh._vertices = v;
-    mesh._edges = e;
-    mesh._faces = f;
-    //mesh._constraintShapes.push( boundShape );
+    this._vertices = v;
+    this._edges = e;
+    this._faces = f;
+    this._constraintShapes.push( boundShape );
 
-    mesh.clipping = false;
-    mesh.insertConstraintShape( [ 0,0,w,0,  w,0,w,h,  w,h,0,h,  0,h,0,0 ] );
-    mesh.clipping = true;
-
-    return mesh;
+    this.clipping = false;
+    this.insertConstraintShape( [ 0,0,w,0,  w,0,w,h,  w,h,0,h,  0,h,0,0 ] );
+    this.clipping = true;
 
 };
+
+RectMesh.prototype = Object.create( Mesh2D.prototype );
 
 export { RectMesh };
