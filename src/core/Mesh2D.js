@@ -41,6 +41,31 @@ Mesh2D.prototype = {
 
     constructor: Mesh2D,
 
+    deDuplicEdge: function () {
+
+        var edges = this._edges;
+        var lng = edges.length; 
+
+        var i, j, a, b, m, n;
+
+        for( j = lng; j; ) {
+            b = edges[--j];
+            a = edges[--j];
+
+            for( i = j; i; ) {
+                n = edges[--i];
+                m = edges[--i];
+
+                if((a === m && b === n) || (a === n && b === m)) {
+                    edges.splice(j, 2);
+                    edges.splice(i, 2);
+                    break;
+                }
+            }
+        }
+
+    },
+
     clear: function ( notObjects ) {
 
         while(this._vertices.length > 0) this._vertices.pop().dispose();
@@ -1110,6 +1135,7 @@ Mesh2D.prototype = {
                     if(isDelaunay) break;
                 }
             }
+            
             if(!isDelaunay) {
                 // for perfect regular n-sides polygons, checking delaunay circumcircle condition is not possible
                 Log("NO DELAUNAY FOUND");
@@ -1158,6 +1184,9 @@ Mesh2D.prototype = {
             this.triangulate( boundM, isReal );
 
         }
+
+        // test
+        //this.deDuplicEdge();
 
     },
 

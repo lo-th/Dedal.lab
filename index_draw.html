@@ -67,6 +67,15 @@ var DrawCanvas = function(){
 }
 
 DrawCanvas.prototype = {
+    cut: function () {
+
+        this.ctx.clearRect( 0, 0, 10, 1024 );
+        this.ctx.clearRect( 1014, 0, 1024, 1024 );
+
+        this.ctx.clearRect( 0, 0, 1024, 10 );
+        this.ctx.clearRect( 0, 1014, 1024, 1024 );
+
+    },
     down:function(x,y){
         this.isDrawing = true;
         this.lastPoint = { x:x, y:y };
@@ -102,6 +111,7 @@ DrawCanvas.prototype = {
     up:function(e){
         if (!this.isDrawing) return;
         this.isDrawing = false;
+        this.cut();
         this.update();
     },
     update:function(){

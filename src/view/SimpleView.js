@@ -18,16 +18,16 @@ function SimpleView( world ) {
 
 
     this.entitiesWidth = 1;
-    this.entitiesColor = {r:0, g:255, b:0, a:0.75};
+    this.entitiesColor = {r:0, g:0, b:255, a:0.75};
     this.entitiesColor2 = {r:255, g:255, b:255, a:0.75};
-    this.entitiesField = {r:0, g:255, b:0, a:0.1};
+    this.entitiesField = {r:0, g:0, b:255, a:0.1};
     this.entitiesField2 = {r:255, g:255, b:255, a:0.1};
     this.pathsWidth = 2;
     this.pathsColor = {r:255, g:255, b:0, a:0.75};
     this.verticesRadius = 1;
     this.verticesColor = {r:255, g:120, b:0, a:0.5};
     this.constraintsWidth = 2;
-    this.constraintsColor = {r:255, g:0, b:0, a:1};
+    this.constraintsColor = {r:0, g:255, b:0, a:1};
     this.edgesWidth = 1;
     this.edgesColor = {r:190, g:190, b:190, a:0.25};
     this.edgesColor2 = {r:0, g:190, b:0, a:0.25};

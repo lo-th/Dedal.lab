@@ -1,4 +1,4 @@
-import { Dictionary, EPSILON } from '../constants';
+import { Dictionary, EPSILON_NORMAL } from '../constants';
 import { Squared } from '../core/Tools';
 import { Point } from '../math/Point';
 import { Geom2D } from '../math/Geom2D';
@@ -224,7 +224,7 @@ FieldOfView.prototype = {
                         wall.splice( index1+1, index2-index1-1);
                         
                         // if the window is totally covered, we stop and return false
-                        if ( wall.length == 2 && -EPSILON < wall[0] && wall[0] < EPSILON && 1-EPSILON < wall[1] && wall[1] < 1+EPSILON ) return false;
+                        if ( wall.length == 2 && -EPSILON_NORMAL < wall[0] && wall[0] < EPSILON_NORMAL && 1-EPSILON_NORMAL < wall[1] && wall[1] < 1+EPSILON_NORMAL ) return false;
                         
                     }
                     

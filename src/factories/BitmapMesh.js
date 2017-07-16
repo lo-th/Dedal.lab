@@ -22,21 +22,16 @@ BitmapMesh.buildFromBmpData = function ( pixel, precision, color ) {
         
     }
 
-    // GRAPHS OF POTENTIAL SEGMENTS GENERATION
+    // OPTIMIZED POLYGONS GENERATION FROM GRAPH  OF POTENTIAL SEGMENTS GENERATION
 
-    var graphs = [];
     lng = shapes.length;
-
-    for ( i = 0; i < lng; i++ ) graphs.push( Potrace.buildGraph( shapes[i] ) );
+    var polygons = new Array( lng );
     
+    for ( i = 0; i < lng; i++ ){ 
 
-    // OPTIMIZED POLYGONS GENERATION
+        polygons[i] = Potrace.buildPolygon( Potrace.buildGraph( shapes[i] ) );
 
-    var polygons = [];
-    lng = graphs.length;
-
-    for ( i = 0; i < lng; i++ ) polygons.push( Potrace.buildPolygon( graphs[i] ));
-    
+    }
 
     // MESH GENERATION
 

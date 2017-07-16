@@ -102,7 +102,7 @@
 	var TTIER = 0.3333333333333333;
 	var torad = 0.0174532925199432957;
 	var todeg = 57.295779513082320876;
-	var EPSILON = 0.01;
+	var EPSILON_NORMAL = 0.01;
 	var EPSILON_SQUARED = 0.0001;
 	var INFINITY = Infinity;
 	var TwoPI = Math.PI * 2;
@@ -1142,7 +1142,7 @@
 	    isCircleIntersectingAnyConstraint: function ( p, radius, mesh ) {
 
 	        if(p.x <= 0 || p.x >= mesh.width || p.y <= 0 || p.y >= mesh.height) return true;
-	        var loc = Geom2D.locatePosition(p,mesh);
+	        var loc = Geom2D.locatePosition( p, mesh );
 	        var face;
 	        switch(loc.type) {
 	            case 0: face = loc.edge.leftFace; break;
@@ -1307,13 +1307,13 @@
 	        if(n == 0) {
 	            if( Geom2D.intersections2segments(s1, s2, t2, t3, pResult1, null)) n++;
 	        } else if( Geom2D.intersections2segments(s1, s2, t2, t3, pResult2, null)) {
-	            if(-0.01 > pResult1.x - pResult2.x || pResult1.x - pResult2.x > EPSILON || -EPSILON > pResult1.y - pResult2.y || pResult1.y - pResult2.y > EPSILON) n++;
+	            if(-0.01 > pResult1.x - pResult2.x || pResult1.x - pResult2.x > EPSILON_NORMAL || -EPSILON_NORMAL > pResult1.y - pResult2.y || pResult1.y - pResult2.y > EPSILON_NORMAL) n++;
 	        }
 	        if(n == 0) {
 	            if( Geom2D.intersections2segments(s1, s2, t3, t1, pResult1, null)) n++;
 	        } else if(n == 1) {
 	            if( Geom2D.intersections2segments(s1, s2, t3, t1, pResult2, null)) {
-	                if(-EPSILON > pResult1.x - pResult2.x || pResult1.x - pResult2.x > EPSILON || -EPSILON > pResult1.y - pResult2.y || pResult1.y - pResult2.y > EPSILON) n++;
+	                if(-EPSILON_NORMAL > pResult1.x - pResult2.x || pResult1.x - pResult2.x > EPSILON_NORMAL || -EPSILON_NORMAL > pResult1.y - pResult2.y || pResult1.y - pResult2.y > EPSILON_NORMAL) n++;
 	            }
 	        }
 	        if(n == 1) {
@@ -2449,6 +2449,31 @@
 
 	    constructor: Mesh2D,
 
+	    deDuplicEdge: function () {
+
+	        var edges = this._edges;
+	        var lng = edges.length; 
+
+	        var i, j, a, b, m, n;
+
+	        for( j = lng; j; ) {
+	            b = edges[--j];
+	            a = edges[--j];
+
+	            for( i = j; i; ) {
+	                n = edges[--i];
+	                m = edges[--i];
+
+	                if((a === m && b === n) || (a === n && b === m)) {
+	                    edges.splice(j, 2);
+	                    edges.splice(i, 2);
+	                    break;
+	                }
+	            }
+	        }
+
+	    },
+
 	    clear: function ( notObjects ) {
 
 	        while(this._vertices.length > 0) this._vertices.pop().dispose();
@@ -3518,6 +3543,7 @@
 	                    if(isDelaunay) break;
 	                }
 	            }
+	            
 	            if(!isDelaunay) {
 	                // for perfect regular n-sides polygons, checking delaunay circumcircle condition is not possible
 	                Log("NO DELAUNAY FOUND");
@@ -3566,6 +3592,9 @@
 	            this.triangulate( boundM, isReal );
 
 	        }
+
+	        // test
+	        //this.deDuplicEdge();
 
 	    },
 
@@ -5139,7 +5168,7 @@
 	                        wall.splice( index1+1, index2-index1-1);
 	                        
 	                        // if the window is totally covered, we stop and return false
-	                        if ( wall.length == 2 && -EPSILON < wall[0] && wall[0] < EPSILON && 1-EPSILON < wall[1] && wall[1] < 1+EPSILON ) return false;
+	                        if ( wall.length == 2 && -EPSILON_NORMAL < wall[0] && wall[0] < EPSILON_NORMAL && 1-EPSILON_NORMAL < wall[1] && wall[1] < 1+EPSILON_NORMAL ) return false;
 	                        
 	                    }
 	                    
@@ -5388,53 +5417,48 @@
 	BitmapObject.buildFromBmpData = function( pixel, precision, color ) {
 
 	    if( color !== undefined ) Potrace.setColor( color );
-	    //if( revers !== undefined ) Potrace.setRevers( revers );
-
 	    precision = precision || 1;
-	    var i, j;
-	    //DDLS.Debug.assertTrue(bmpData.width > 0 && bmpData.height > 0,"Invalid `bmpData` size (" + bmpData.width + ", " + bmpData.height + ")",{ fileName : "BitmapObject.js", lineNumber : 24, className : "DDLS.BitmapObject", methodName : "buildFromBmpData"});
+
+	    var i, j, lng, lng2;
+	    
+	    // OUTLINES STEP-LIKE SHAPES GENERATION
+
 	    var shapes = Potrace.buildShapes( pixel );
+
 	    if( precision >= 1 ) {
-	        var _g1 = 0;
-	        var _g = shapes.length;
-	        while(_g1 < _g) {
-	            var i1 = _g1++;
-	            shapes[i1] = ShapeSimplifier( shapes[i1], precision );
-	        }
+
+	        i = shapes.length;
+	        while ( i-- ) shapes[i] = ShapeSimplifier( shapes[i], precision );
+	        
 	    }
-	    var graphs = [];
-	    var _g11 = 0;
-	    var _g2 = shapes.length;
-	    while(_g11 < _g2) {
-	        var i2 = _g11++;
-	        graphs.push( Potrace.buildGraph(shapes[i2]) );
+
+	    // OPTIMIZED POLYGONS GENERATION FROM GRAPH  OF POTENTIAL SEGMENTS GENERATION
+
+	    lng = shapes.length;
+	    var polygons = new Array( lng );
+	    
+	    for ( i = 0; i < lng; i++ ){ 
+
+	        polygons[i] = Potrace.buildPolygon( Potrace.buildGraph( shapes[i] ) );
+
 	    }
-	    var polygons = [];
-	    var _g12 = 0;
-	    var _g3 = graphs.length;
-	    while(_g12 < _g3) {
-	        var i3 = _g12++;
-	        polygons.push( Potrace.buildPolygon( graphs[i3] ));
-	    }
+
+	    // OBJECT GENERATION
+
 	    var obj = new Object2D();
-	    var _g13 = 0;
-	    var _g4 = polygons.length;
-	    while(_g13 < _g4) {
-	        var i4 = _g13++;
-	        j = 0;
-	        while(j < polygons[i4].length - 2) {
-	            obj.coordinates.push(polygons[i4][j]);
-	            obj.coordinates.push(polygons[i4][j + 1]);
-	            obj.coordinates.push(polygons[i4][j + 2]);
-	            obj.coordinates.push(polygons[i4][j + 3]);
-	            j += 2;
-	        }
-	        obj.coordinates.push(polygons[i4][0]);
-	        obj.coordinates.push(polygons[i4][1]);
-	        obj.coordinates.push(polygons[i4][j]);
-	        obj.coordinates.push(polygons[i4][j + 1]);
+
+	    lng = polygons.length;
+
+	    for ( i = 0; i < lng; i++ ) {
+
+	        lng2 = polygons[i].length - 2;
+
+	        for ( j = 0; j < lng2; j += 2 ) obj.coordinates.push( polygons[i][j], polygons[i][j+1], polygons[i][j+2], polygons[i][j+3] );
+
+	        obj.coordinates.push( polygons[i][0], polygons[i][1], polygons[i][j], polygons[i][j+1] );
+
 	    }
-	    //console.log('build');
+
 	    return obj;
 
 	};
@@ -5459,21 +5483,16 @@
 	        
 	    }
 
-	    // GRAPHS OF POTENTIAL SEGMENTS GENERATION
+	    // OPTIMIZED POLYGONS GENERATION FROM GRAPH  OF POTENTIAL SEGMENTS GENERATION
 
-	    var graphs = [];
 	    lng = shapes.length;
-
-	    for ( i = 0; i < lng; i++ ) graphs.push( Potrace.buildGraph( shapes[i] ) );
+	    var polygons = new Array( lng );
 	    
+	    for ( i = 0; i < lng; i++ ){ 
 
-	    // OPTIMIZED POLYGONS GENERATION
+	        polygons[i] = Potrace.buildPolygon( Potrace.buildGraph( shapes[i] ) );
 
-	    var polygons = [];
-	    lng = graphs.length;
-
-	    for ( i = 0; i < lng; i++ ) polygons.push( Potrace.buildPolygon( graphs[i] ));
-	    
+	    }
 
 	    // MESH GENERATION
 
@@ -5657,14 +5676,19 @@
 
 	        o = o || {};
 
+	        
 	        this.mesh.dispose();
-	        this.mesh = BitmapMesh.buildFromBmpData( o.pixel, o.precision || 1.8, o.color );
+	        this.mesh = BitmapMesh.buildFromBmpData( o.pixel, o.precision, o.color );
 	        this.pathFinder.mesh = this.mesh;
+	        
 
-	        //var obj = BitmapObject.buildFromBmpData( o.pixel, o.precision || 1.8, o.color );
-	        //this.reset( o.w, o.h );
-	        //this.mesh.insertObject( obj );
+	        /*
+	        var obj = BitmapObject.buildFromBmpData( o.pixel, o.precision, o.color );
+	        obj._constraintShape = null;
+	        this.reset( o.w, o.h );
+	        this.mesh.insertObject( obj );
 	        //this.add( obj );
+	        */
 
 	        var view = Main.get();
 	        if( view ) view.drawMesh( this.mesh );
@@ -6130,16 +6154,16 @@
 
 
 	    this.entitiesWidth = 1;
-	    this.entitiesColor = {r:0, g:255, b:0, a:0.75};
+	    this.entitiesColor = {r:0, g:0, b:255, a:0.75};
 	    this.entitiesColor2 = {r:255, g:255, b:255, a:0.75};
-	    this.entitiesField = {r:0, g:255, b:0, a:0.1};
+	    this.entitiesField = {r:0, g:0, b:255, a:0.1};
 	    this.entitiesField2 = {r:255, g:255, b:255, a:0.1};
 	    this.pathsWidth = 2;
 	    this.pathsColor = {r:255, g:255, b:0, a:0.75};
 	    this.verticesRadius = 1;
 	    this.verticesColor = {r:255, g:120, b:0, a:0.5};
 	    this.constraintsWidth = 2;
-	    this.constraintsColor = {r:255, g:0, b:0, a:1};
+	    this.constraintsColor = {r:0, g:255, b:0, a:1};
 	    this.edgesWidth = 1;
 	    this.edgesColor = {r:190, g:190, b:190, a:0.25};
 	    this.edgesColor2 = {r:0, g:190, b:0, a:0.25};
@@ -6608,7 +6632,7 @@
 	exports.TTIER = TTIER;
 	exports.torad = torad;
 	exports.todeg = todeg;
-	exports.EPSILON = EPSILON;
+	exports.EPSILON_NORMAL = EPSILON_NORMAL;
 	exports.EPSILON_SQUARED = EPSILON_SQUARED;
 	exports.INFINITY = INFINITY;
 	exports.TwoPI = TwoPI;

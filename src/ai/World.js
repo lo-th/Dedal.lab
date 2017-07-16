@@ -170,14 +170,19 @@ World.prototype = {
 
         o = o || {};
 
+        
         this.mesh.dispose();
-        this.mesh = BitmapMesh.buildFromBmpData( o.pixel, o.precision || 1.8, o.color );
+        this.mesh = BitmapMesh.buildFromBmpData( o.pixel, o.precision, o.color );
         this.pathFinder.mesh = this.mesh;
+        
 
-        //var obj = BitmapObject.buildFromBmpData( o.pixel, o.precision || 1.8, o.color );
-        //this.reset( o.w, o.h );
-        //this.mesh.insertObject( obj );
+        /*
+        var obj = BitmapObject.buildFromBmpData( o.pixel, o.precision, o.color );
+        obj._constraintShape = null;
+        this.reset( o.w, o.h );
+        this.mesh.insertObject( obj );
         //this.add( obj );
+        */
 
         var view = Main.get();
         if( view ) view.drawMesh( this.mesh );

@@ -2,7 +2,7 @@ import { Integral, Squared, SquaredSqrt } from '../core/Tools';
 import { Point } from '../math/Point';
 import { RandGenerator } from '../math/RandGenerator';
 
-import { VERTEX, EDGE, FACE, NULL, Dictionary, Log, Debug, INFINITY, EPSILON_SQUARED, EPSILON, TTIER } from '../constants';
+import { VERTEX, EDGE, FACE, NULL, Dictionary, Log, Debug, INFINITY, EPSILON_SQUARED, EPSILON_NORMAL, TTIER } from '../constants';
 import { FromFaceToInnerEdges, FromMeshToVertices, FromVertexToHoldingFaces, FromVertexToIncomingEdges } from '../core/Iterators';
 
 var Geom2D = {
@@ -110,7 +110,7 @@ var Geom2D = {
     isCircleIntersectingAnyConstraint: function ( p, radius, mesh ) {
 
         if(p.x <= 0 || p.x >= mesh.width || p.y <= 0 || p.y >= mesh.height) return true;
-        var loc = Geom2D.locatePosition(p,mesh);
+        var loc = Geom2D.locatePosition( p, mesh );
         var face;
         switch(loc.type) {
             case 0: face = loc.edge.leftFace; break;
@@ -275,13 +275,13 @@ var Geom2D = {
         if(n == 0) {
             if( Geom2D.intersections2segments(s1, s2, t2, t3, pResult1, null)) n++;
         } else if( Geom2D.intersections2segments(s1, s2, t2, t3, pResult2, null)) {
-            if(-0.01 > pResult1.x - pResult2.x || pResult1.x - pResult2.x > EPSILON || -EPSILON > pResult1.y - pResult2.y || pResult1.y - pResult2.y > EPSILON) n++;
+            if(-0.01 > pResult1.x - pResult2.x || pResult1.x - pResult2.x > EPSILON_NORMAL || -EPSILON_NORMAL > pResult1.y - pResult2.y || pResult1.y - pResult2.y > EPSILON_NORMAL) n++;
         }
         if(n == 0) {
             if( Geom2D.intersections2segments(s1, s2, t3, t1, pResult1, null)) n++;
         } else if(n == 1) {
             if( Geom2D.intersections2segments(s1, s2, t3, t1, pResult2, null)) {
-                if(-EPSILON > pResult1.x - pResult2.x || pResult1.x - pResult2.x > EPSILON || -EPSILON > pResult1.y - pResult2.y || pResult1.y - pResult2.y > EPSILON) n++;
+                if(-EPSILON_NORMAL > pResult1.x - pResult2.x || pResult1.x - pResult2.x > EPSILON_NORMAL || -EPSILON_NORMAL > pResult1.y - pResult2.y || pResult1.y - pResult2.y > EPSILON_NORMAL) n++;
             }
         }
         if(n == 1) {
