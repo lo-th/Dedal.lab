@@ -262,7 +262,7 @@ export class LinearPathSampler {
         
         this.entity.distance = this.entity.position.distanceTo( this.pos )
         //console.log(this.entity.distance)
-        if( this.entity.distance > 0.01 ) this.entity.angle = this.entity.position.angleTo( this.pos )
+        if( !this.entity.needTurn ) this.entity.angle = this.entity.position.angleTo( this.pos )
         this.entity.direction.angular( this.entity.angle ).mul(this.entity.distance);
         this.entity.position.copy( this.pos );
         //this.entity.angle = this.entity.position.angle()

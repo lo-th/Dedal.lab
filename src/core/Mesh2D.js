@@ -18,7 +18,7 @@ export class Mesh2D {
 
         this.id = IDX.get('mesh2D');
         this.__objectsUpdateInProgress = false;
-        this.__centerVertex = null;
+        
         this.width = width;
         this.height = height;
         this.clipping = true;
@@ -28,8 +28,11 @@ export class Mesh2D {
         this._objects = [];
         this._vertices = [];
         this._constraintShapes = [];
+        //this.__constraintShapes = []; // ??
+        this.constraintShape = null;
 
         this.__edgesToCheck = [];
+        this.__centerVertex = null;
 
         this.AR_vertex = null;
         this.AR_edge = null;
@@ -37,6 +40,10 @@ export class Mesh2D {
         this.isRedraw = true;
 
     }
+
+    /*get __constraintShapes(){
+        return _constraintShapes
+    }*/
 
     deDuplicEdge () {
 
@@ -74,12 +81,13 @@ export class Mesh2D {
         while(this._constraintShapes.length > 0) this._constraintShapes.pop().dispose();
         this._constraintShapes = [];
         if(!notObjects){
-            while(this._objects.length > 0) this._objects.pop().dispose();
+            
+            while( this._objects.length > 0 ) this._objects.pop().dispose();
+            this._objects = [];
         }
-        this._objects = [];
         
         this.__edgesToCheck = [];
-        this.__centerVertex = [];
+        this.__centerVertex = null;
 
         this.AR_vertex = null;
         this.AR_edge = null;
@@ -97,8 +105,8 @@ export class Mesh2D {
         while(this._constraintShapes.length > 0) this._constraintShapes.pop().dispose();
         this._constraintShapes = null;
         while(this._objects.length > 0) this._objects.pop().dispose();
+
         this._objects = null;
-        
         this.__edgesToCheck = null;
         this.__centerVertex = null;
 
@@ -120,9 +128,9 @@ export class Mesh2D {
 
     insertObject ( o ) {
 
-        if( o.constraintShape != null ) this.deleteObject( o );
+        if( o.constraintShape !== null ) this.deleteObject( o );
 
-        let shape = new Shape();
+        let shape = new Shape()
         let segment;
         let coordinates = o.coordinates;
         
@@ -145,17 +153,21 @@ export class Mesh2D {
         }
 
         this._constraintShapes.push( shape );
-        o.constraintShape = shape;
+        o.constraintShape = shape
 
         if( !this.__objectsUpdateInProgress ) this._objects.push( o );
+
+        //console.log(this._objects.length)
 
     }
 
     deleteObject ( o ) {
 
-        if( o.constraintShape == null ) return;
+        if( o.constraintShape === null ) return;
+        
         this.deleteConstraintShape( o.constraintShape );
         o.constraintShape = null;
+        //o._constraintShape = null
         if(!this.__objectsUpdateInProgress) {
             let index = this._objects.indexOf( o );
             this._objects.splice( index, 1 );
@@ -163,23 +175,46 @@ export class Mesh2D {
 
     }
 
+    updateAll () {
+
+        //this.__objectsUpdateInProgress = true
+
+        this.clear( true )
+
+        let i = this._objects.length, n = 0, ob
+        while(i--){
+            ob = this._objects[n];
+            ob.build()
+            //ob._constraintShape = null
+            this.insertObject(ob)
+            n++
+        }
+        //this.__objectsUpdateInProgress = false
+
+    }
+
     updateObjects () {
 
-        this.__objectsUpdateInProgress = true;
-        let l = this._objects.length, i = 0, o;
-        while( i < l ) {
+        this.__objectsUpdateInProgress = true
+        let i = this._objects.length, n = 0, ob
 
-            o = this._objects[i];
+        //this._objects[0].hasChanged = true
 
-            if( o.hasChanged ) {
-                this.deleteObject( o );
-                this.insertObject( o );
-                o.hasChanged = false;
-                this.isRedraw = true;
+        while( i-- ) {
+
+            ob = this._objects[n];
+
+            if( ob.hasChanged ) {
+                this.deleteObject( ob )
+                this.insertObject( ob )
+                ob.hasChanged = false
+                //this.isRedraw = true
             }
-            i++;
+            n++
         }
-        this.__objectsUpdateInProgress = false;
+        this.__objectsUpdateInProgress = false
+
+        //console.log('updated')
 
     }
 
@@ -210,15 +245,16 @@ export class Mesh2D {
 
     deleteConstraintShape ( shape ) {
 
-        let i = 0, l = shape.segments.length;
-        while( i < l ) {
-            this.deleteConstraintSegment(shape.segments[i]);
-            i++;
+        let i = shape.segments.length, n=0;
+        while( i-- ) {
+            this.deleteConstraintSegment(shape.segments[n]);
+            n++;
         }
+        shape.dispose();
         
         //console.log('yoch', this._constraintShapes.indexOf(shape))
         this._constraintShapes.splice(this._constraintShapes.indexOf(shape),1);
-        shape.dispose();
+        
 
     }
 

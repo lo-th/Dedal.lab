@@ -1,5 +1,5 @@
 import { Potrace } from '../core/Potrace.js';
-import { ShapeSimplifier } from './ShapeSimplifier';
+import { ShapeSimplifier } from './ShapeSimplifier.js';
 import { RectMesh } from './RectMesh.js';
 
 export class BitmapMesh {

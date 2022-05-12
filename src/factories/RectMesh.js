@@ -12,6 +12,9 @@ export class RectMesh extends Mesh2D {
 
         super( w, h )
 
+        this.w = w
+        this.h = h
+
         //  v0 x---x v1
         //     |  /|
         //     | / |
@@ -89,13 +92,33 @@ export class RectMesh extends Mesh2D {
         s[3].fromShape = boundShape;
         boundShape.segments.push( s[0], s[1], s[2], s[3] );
 
+        this.boundShape = boundShape
+
         this._vertices = v;
         this._edges = e;
         this._faces = f;
-        this._constraintShapes.push( boundShape );
 
+        this.build()
+
+        /*
+        this._constraintShapes.push( his.boundShape );
         this.clipping = false;
         this.insertConstraintShape( [ 0,0,w,0,  w,0,w,h,  w,h,0,h,  0,h,0,0 ] );
+        this.clipping = true;
+        */
+
+    }
+
+    build(){
+
+        this._constraintShapes.push( this.boundShape );
+        this.clipping = false;
+        this.insertConstraintShape( [ 
+            0,0,this.w,0,  
+            this.w,0,this.w,this.h,  
+            this.w,this.h,0,this.h,  
+            0,this.h,0,0 ] 
+        );
         this.clipping = true;
 
     }

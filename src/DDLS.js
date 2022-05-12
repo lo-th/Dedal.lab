@@ -1,4 +1,4 @@
-import './polyfills.js';
+/*import './polyfills.js';
 
 export * from './constants.js';
 export { Point } from './math/Point.js';
@@ -34,4 +34,14 @@ export { GridMaze } from './maze/GridMaze.js';
 export { Dungeon } from './maze/Dungeon.js';
 
 export { SimpleView } from './view/SimpleView.js';
+export { ThreeView } from './view/ThreeView.js';*/
+
+
+export { Debug, TwoPI, REVISION } from './constants.js';
+export { rand, randInt } from './core/Tools.js';
+export { World } from './ai/World.js'
+export { GridMaze } from './maze/GridMaze.js';
+export { Dungeon } from './maze/Dungeon.js';
+export { SimpleView } from './view/SimpleView.js';
 export { ThreeView } from './view/ThreeView.js';
+export { Point } from './math/Point.js';

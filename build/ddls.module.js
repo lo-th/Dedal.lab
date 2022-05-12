@@ -3,90 +3,6 @@
  * Copyright 2010-2022 Ddls.js Authors lo-th
  * SPDX-License-Identifier: MIT
  */
-// Polyfills
-
-if ( Number.EPSILON === undefined ) {
-
-	Number.EPSILON = Math.pow( 2, - 52 );
-
-}
-
-//
-
-if ( Math.sign === undefined ) {
-
-	// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/sign
-
-	Math.sign = function ( x ) {
-
-		return ( x < 0 ) ? - 1 : ( x > 0 ) ? 1 : + x;
-
-	};
-
-}
-
-if ( Function.prototype.name === undefined ) {
-
-	// Missing in IE9-11.
-	// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/name
-
-	Object.defineProperty( Function.prototype, 'name', {
-
-		get: function () {
-
-			return this.toString().match( /^\s*function\s*([^\(\s]*)/ )[ 1 ];
-
-		}
-
-	} );
-
-}
-
-if ( Object.assign === undefined ) {
-
-	// Missing in IE.
-	// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
-
-	( function () {
-
-		Object.assign = function ( target ) {
-
-			if ( target === undefined || target === null ) {
-
-				throw new TypeError( 'Cannot convert undefined or null to object' );
-
-			}
-
-			var output = Object( target );
-
-			for ( var index = 1; index < arguments.length; index ++ ) {
-
-				var source = arguments[ index ];
-
-				if ( source !== undefined && source !== null ) {
-
-					for ( var nextKey in source ) {
-
-						if ( Object.prototype.hasOwnProperty.call( source, nextKey ) ) {
-
-							output[ nextKey ] = source[ nextKey ];
-
-						}
-
-					}
-
-				}
-
-			}
-
-			return output;
-
-		};
-
-	} )();
-
-}
-
 /*
  * A list of constants built-in for
  * the dedal engine.
@@ -298,6 +214,83 @@ Dictionary.prototype = {
 
 export { Dictionary };*/
 
+// MATH function
+const rand = ( low, high ) => ( low + Math.random() * ( high - low ) );
+const randInt = ( low, high ) => ( low + Math.floor( Math.random() * ( high - low + 1 ) ) );
+const unwrap = ( r ) => ( r - (Math.floor((r + Math.PI)/(2*Math.PI)))*2*Math.PI );
+const SquaredSqrt = ( a, b ) => ( Math.sqrt( a * a + b * b ) );
+const nearEqual = ( a, b, e ) => ( Math.abs( a - b ) < e );
+const fix = ( x, n ) => ( x.toFixed(n || 3) * 1 );
+const Squared = ( a, b ) => ( a * a + b * b );
+const Integral = ( x ) => ( Math.floor(x) );
+
+//export const ARRAY = (typeof Float32Array !== 'undefined') ? Float32Array : Array;
+
+// IMAGE DATA
+
+const fromImageData = ( image, imageData, w, h ) => {
+
+    let canvas, ctx;
+
+    if( image ){
+
+        w = image.width;
+        h = image.height;
+
+        canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+
+        ctx = canvas.getContext( "2d" );
+        ctx.drawImage( image, 0, 0, w, h );
+        imageData = ctx.getImageData( 0, 0, w, h );
+        
+    }
+
+    const pixels = {
+        bytes: imageData.data,
+        width: w,
+        height: h
+    };
+
+    if( image ){
+        ctx.clearRect(0,0,w,h);
+        canvas = null;
+        ctx = null;
+    }
+
+    return pixels
+
+};
+
+class Face {
+
+    constructor () {
+
+        this.type = FACE;
+        this.id = IDX.get('face');
+
+        this.isReal = false;
+        this.edge = null;
+        
+    }
+
+    setDatas ( edge, isReal ) {
+
+        this.isReal = isReal !== undefined ? isReal : true;
+        this.edge = edge;
+
+    }
+
+    dispose () {
+
+        this.edge = null;
+        this.isReal = false;
+
+    }
+
+}
+
 class Point {
 
     constructor( x = 0, y = 0 ) {
@@ -448,6 +441,205 @@ class Point {
 
 }
 
+class Vertex {
+
+    constructor () {
+
+        this.type = VERTEX;
+        this.id = IDX.get('vertex');
+        this.pos = new Point();
+        this.fromConstraintSegments = [];
+        this.edge = null;
+        this.isReal = false;
+
+    }
+
+    setDatas ( edge, isReal ) {
+
+        this.isReal = isReal !== undefined ? isReal : true;
+        this.edge = edge;
+
+    }
+
+    addFromConstraintSegment ( segment ) {
+
+        if ( this.fromConstraintSegments.indexOf(segment) === -1 ) this.fromConstraintSegments.push( segment );
+
+    }
+
+    removeFromConstraintSegment ( segment ) {
+
+        const index = this.fromConstraintSegments.indexOf( segment );
+        if ( index !== -1 ) this.fromConstraintSegments.splice( index, 1 );
+
+    }
+
+    dispose () {
+
+        this.pos = null;
+        this.edge = null;
+        this.fromConstraintSegments = null;
+
+    }
+
+    toString () {
+
+        return "ver_id " + this.id;
+
+    }
+
+}
+
+class Segment {
+
+    constructor ( x, y ) {
+
+        this.id = IDX.get('segment');
+        this.edges = [];
+        this.fromShape = null;
+
+    }
+
+    addEdge ( edge ) {
+
+        if ( this.edges.indexOf(edge) === -1 && this.edges.indexOf( edge.oppositeEdge ) === -1 ) this.edges.push( edge );
+
+    }
+
+    removeEdge ( edge ) {
+
+        const index = this.edges.indexOf( edge );
+        if ( index === -1 ) index = this.edges.indexOf( edge.oppositeEdge );
+        if ( index !== -1 ) this.edges.splice( index, 1 );
+
+    }
+
+    dispose () {
+
+        this.edges = null;
+        this.fromShape = null;
+
+    }
+
+    toString () {
+
+        return "seg_id " + this.id;
+
+    }
+
+}
+
+class Edge {
+
+    constructor () {
+
+        this.type = EDGE;
+        this.id = IDX.get('edge');
+
+        this.fromConstraintSegments = [];
+        this.isConstrained = false;
+        this.isReal = false;
+        this.originVertex = null;
+        this.oppositeEdge = null;
+        this.nextLeftEdge = null;
+        this.leftFace = null;
+
+    }
+
+    get destinationVertex () {
+        return this.oppositeEdge.originVertex
+    }
+
+    get nextRightEdge () {
+        return this.oppositeEdge.nextLeftEdge.nextLeftEdge.oppositeEdge
+    }
+
+    get prevRightEdge () {
+        return this.oppositeEdge.nextLeftEdge.oppositeEdge
+    }
+
+    get prevLeftEdge () {
+        return this.nextLeftEdge.nextLeftEdge
+    }
+
+    get rotLeftEdge () {
+        return this.nextLeftEdge.nextLeftEdge.oppositeEdge
+    }
+
+    get rotRightEdge () {
+        return this.oppositeEdge.nextLeftEdge
+    }
+
+    get rightFace () {
+        return this.oppositeEdge.leftFace
+    }
+
+    setDatas( originVertex, oppositeEdge, nextLeftEdge, leftFace, isReal, isConstrained ) {
+
+        this.isConstrained = isReal !== undefined ? isConstrained : false;
+        this.isReal = isReal !== undefined ? isReal : true;
+        this.originVertex = originVertex;
+        this.oppositeEdge = oppositeEdge;
+        this.nextLeftEdge = nextLeftEdge;
+        this.leftFace = leftFace;
+
+    }
+
+    getDatas () {
+
+        return [ this.originVertex.pos.x, this.originVertex.pos.y, this.destinationVertex.pos.x, this.destinationVertex.pos.y, this.isConstrained ? 1:0 ];
+
+    }
+
+    addFromConstraintSegment ( segment ) {
+
+        if ( this.fromConstraintSegments.indexOf(segment) === -1 ) this.fromConstraintSegments.push(segment);
+
+    }
+
+    removeFromConstraintSegment( segment ) {
+
+        const index = this.fromConstraintSegments.indexOf( segment );
+        if ( index !== -1 ) this.fromConstraintSegments.splice(index, 1);
+
+    }
+
+    dispose () {
+
+        this.originVertex = null;
+        this.oppositeEdge = null;
+        this.nextLeftEdge = null;
+        this.leftFace = null;
+        this.fromConstraintSegments = null;
+
+    }
+
+    toString () {
+
+        return "edge " + this.originVertex.id + " - " + this.destinationVertex.id;
+
+    }
+
+}
+
+class Shape {
+
+    constructor () {
+
+        this.id = IDX.get('shape');
+        this.segments = [];
+        
+    }
+
+    dispose () {
+
+        while(this.segments.length > 0) this.segments.pop().dispose();
+        this.segments = null;
+
+    }
+
+}
+
 class Matrix2D {
 
     constructor( a = 1, b = 0, c = 0, d = 1, e = 0, f = 0 ) {
@@ -554,55 +746,6 @@ class Matrix2D {
     }
 
 }
-
-// MATH function
-const rand = ( low, high ) => ( low + Math.random() * ( high - low ) );
-const randInt = ( low, high ) => ( low + Math.floor( Math.random() * ( high - low + 1 ) ) );
-const unwrap = ( r ) => ( r - (Math.floor((r + Math.PI)/(2*Math.PI)))*2*Math.PI );
-const SquaredSqrt = ( a, b ) => ( Math.sqrt( a * a + b * b ) );
-const nearEqual = ( a, b, e ) => ( Math.abs( a - b ) < e );
-const fix = ( x, n ) => ( x.toFixed(n || 3) * 1 );
-const Squared = ( a, b ) => ( a * a + b * b );
-const Integral = ( x ) => ( Math.floor(x) );
-
-//export const ARRAY = (typeof Float32Array !== 'undefined') ? Float32Array : Array;
-
-// IMAGE DATA
-
-const fromImageData = ( image, imageData, w, h ) => {
-
-    let canvas, ctx;
-
-    if( image ){
-
-        w = image.width;
-        h = image.height;
-
-        canvas = document.createElement("canvas");
-        canvas.width = w;
-        canvas.height = h;
-
-        ctx = canvas.getContext( "2d" );
-        ctx.drawImage( image, 0, 0, w, h );
-        imageData = ctx.getImageData( 0, 0, w, h );
-        
-    }
-
-    const pixels = {
-        bytes: imageData.data,
-        width: w,
-        height: h
-    };
-
-    if( image ){
-        ctx.clearRect(0,0,w,h);
-        canvas = null;
-        ctx = null;
-    }
-
-    return pixels
-
-};
 
 class RandGenerator {
 
@@ -1620,870 +1763,13 @@ const Geom2D = {
 
 };
 
-class Edge {
-
-    constructor () {
-
-        this.type = EDGE;
-        this.id = IDX.get('edge');
-
-        this.fromConstraintSegments = [];
-        this.isConstrained = false;
-        this.isReal = false;
-        this.originVertex = null;
-        this.oppositeEdge = null;
-        this.nextLeftEdge = null;
-        this.leftFace = null;
-
-    }
-
-    get destinationVertex () {
-        return this.oppositeEdge.originVertex
-    }
-
-    get nextRightEdge () {
-        return this.oppositeEdge.nextLeftEdge.nextLeftEdge.oppositeEdge
-    }
-
-    get prevRightEdge () {
-        return this.oppositeEdge.nextLeftEdge.oppositeEdge
-    }
-
-    get prevLeftEdge () {
-        return this.nextLeftEdge.nextLeftEdge
-    }
-
-    get rotLeftEdge () {
-        return this.nextLeftEdge.nextLeftEdge.oppositeEdge
-    }
-
-    get rotRightEdge () {
-        return this.oppositeEdge.nextLeftEdge
-    }
-
-    get rightFace () {
-        return this.oppositeEdge.leftFace
-    }
-
-    setDatas( originVertex, oppositeEdge, nextLeftEdge, leftFace, isReal, isConstrained ) {
-
-        this.isConstrained = isReal !== undefined ? isConstrained : false;
-        this.isReal = isReal !== undefined ? isReal : true;
-        this.originVertex = originVertex;
-        this.oppositeEdge = oppositeEdge;
-        this.nextLeftEdge = nextLeftEdge;
-        this.leftFace = leftFace;
-
-    }
-
-    getDatas () {
-
-        return [ this.originVertex.pos.x, this.originVertex.pos.y, this.destinationVertex.pos.x, this.destinationVertex.pos.y, this.isConstrained ? 1:0 ];
-
-    }
-
-    addFromConstraintSegment ( segment ) {
-
-        if ( this.fromConstraintSegments.indexOf(segment) === -1 ) this.fromConstraintSegments.push(segment);
-
-    }
-
-    removeFromConstraintSegment( segment ) {
-
-        const index = this.fromConstraintSegments.indexOf( segment );
-        if ( index !== -1 ) this.fromConstraintSegments.splice(index, 1);
-
-    }
-
-    dispose () {
-
-        this.originVertex = null;
-        this.oppositeEdge = null;
-        this.nextLeftEdge = null;
-        this.leftFace = null;
-        this.fromConstraintSegments = null;
-
-    }
-
-    toString () {
-
-        return "edge " + this.originVertex.id + " - " + this.destinationVertex.id;
-
-    }
-
-}
-
-class Face {
-
-    constructor () {
-
-        this.type = FACE;
-        this.id = IDX.get('face');
-
-        this.isReal = false;
-        this.edge = null;
-        
-    }
-
-    setDatas ( edge, isReal ) {
-
-        this.isReal = isReal !== undefined ? isReal : true;
-        this.edge = edge;
-
-    }
-
-    dispose () {
-
-        this.edge = null;
-        this.isReal = false;
-
-    }
-
-}
-
-class Vertex {
-
-    constructor () {
-
-        this.type = VERTEX;
-        this.id = IDX.get('vertex');
-        this.pos = new Point();
-        this.fromConstraintSegments = [];
-        this.edge = null;
-        this.isReal = false;
-
-    }
-
-    setDatas ( edge, isReal ) {
-
-        this.isReal = isReal !== undefined ? isReal : true;
-        this.edge = edge;
-
-    }
-
-    addFromConstraintSegment ( segment ) {
-
-        if ( this.fromConstraintSegments.indexOf(segment) === -1 ) this.fromConstraintSegments.push( segment );
-
-    }
-
-    removeFromConstraintSegment ( segment ) {
-
-        const index = this.fromConstraintSegments.indexOf( segment );
-        if ( index !== -1 ) this.fromConstraintSegments.splice( index, 1 );
-
-    }
-
-    dispose () {
-
-        this.pos = null;
-        this.edge = null;
-        this.fromConstraintSegments = null;
-
-    }
-
-    toString () {
-
-        return "ver_id " + this.id;
-
-    }
-
-}
-
-class Shape {
-
-    constructor () {
-
-        this.id = IDX.get('shape');
-        this.segments = [];
-        
-    }
-
-    dispose () {
-
-        while(this.segments.length > 0) this.segments.pop().dispose();
-        this.segments = null;
-
-    }
-
-}
-
-class Segment {
-
-    constructor ( x, y ) {
-
-        this.id = IDX.get('segment');
-        this.edges = [];
-        this.fromShape = null;
-
-    }
-
-    addEdge ( edge ) {
-
-        if ( this.edges.indexOf(edge) === -1 && this.edges.indexOf( edge.oppositeEdge ) === -1 ) this.edges.push( edge );
-
-    }
-
-    removeEdge ( edge ) {
-
-        const index = this.edges.indexOf( edge );
-        if ( index === -1 ) index = this.edges.indexOf( edge.oppositeEdge );
-        if ( index !== -1 ) this.edges.splice( index, 1 );
-
-    }
-
-    dispose () {
-
-        this.edges = null;
-        this.fromShape = null;
-
-    }
-
-    toString () {
-
-        return "seg_id " + this.id;
-
-    }
-
-}
-
-class Object2D {
-
-    constructor () {
-
-        this.id = IDX.get('object2D');
-
-        this._pivot = new Point();
-        this._position = new Point();
-        this._scale = new Point( 1, 1 );
-        this._matrix = new Matrix2D();
-        this._rotation = 0;
-        this._constraintShape = null;
-        this._coordinates = [];
-        this.hasChanged = false;
-
-    }
-
-    get rotation (){
-        return this._rotation;
-    }
-
-    set rotation ( value ){
-        if( this._rotation !== value ) { this._rotation = value; this.hasChanged = true; }
-    }
-
-    get matrix (){
-        return this._matrix;
-    }
-
-    set matrix ( value ){
-        if( this._rotation !== value ) { this._rotation = value; this.hasChanged = true; }
-    }
-
-    get coordinates (){
-        return this._coordinates;
-    }
-
-    set coordinates ( value ){
-        this._coordinates = value; this.hasChanged = true;
-    }
-
-    get constraintShape (){
-        return this._constraintShape;
-    }
-
-    set constraintShape ( value ){
-        this._constraintShape = value; this.hasChanged = true;
-    }
-
-    get edges (){
-        let res = [];
-        let seg = this._constraintShape.segments;
-        let l = seg.length, l2, n=0, n2=0, i=0, j=0;
-        while(n < l) {
-            i = n++;
-            n2 = 0;
-            l2 = seg[i].edges.length;
-            while(n2 < l2) {
-                j = n2++;
-                res.push(seg[i].edges[j]);
-            }
-        }
-        return res;
-    }
-
-
-    position ( x, y ) {
-
-        this._position.set( x, y );
-        this.hasChanged = true;
-
-    }
-
-    scale ( w, h ) {
-
-        this._scale.set(w,h);
-        this.hasChanged = true;
-
-    }
-
-    pivot ( x, y ) {
-
-        this._pivot.set(x,y);
-        this.hasChanged = true;
-
-    }
-
-    dispose () {
-
-        this._matrix = null;
-        this._coordinates = null;
-        this._constraintShape = null;
-
-    }
-
-    updateValuesFromMatrix () {
-
-    }
-
-    updateMatrixFromValues () {
-
-        this._matrix.identity().translate(this._pivot.negate()).scale(this._scale).rotate(this._rotation).translate(this._position);
-
-    }
-
-}
-
-class Graph {
-
-    constructor () {
-
-        this.id = IDX.get('graph');
-
-        this.edge = null;
-        this.node = null;
-
-    }
-
-    dispose () {
-
-        while( this.node !== null ) this.deleteNode( this.node );
-
-    }
-
-    insertNode () {
-
-        let node = new GraphNode();
-        if(this.node != null) {
-            node.next = this.node;
-            this.node.prev = node;
-        }
-        this.node = node;
-        return node;
-
-    }
-
-    deleteNode ( node ) {
-
-        while(node.outgoingEdge != null) {
-            if(node.outgoingEdge.oppositeEdge != null) this.deleteEdge(node.outgoingEdge.oppositeEdge);
-            this.deleteEdge(node.outgoingEdge);
-        }
-        let otherNode = this.node;
-        let incomingEdge;
-        while(otherNode != null) {
-            incomingEdge = otherNode.successorNodes.get(node);
-            if(incomingEdge != null) this.deleteEdge(incomingEdge);
-            otherNode = otherNode.next;
-        }
-        if(this.node == node) {
-            if(node.next != null) {
-                node.next.prev = null;
-                this.node = node.next;
-            } else this.node = null;
-        } else if(node.next != null) {
-            node.prev.next = node.next;
-            node.next.prev = node.prev;
-        } else node.prev.next = null;
-        node.dispose();
-
-    }
-
-    insertEdge ( fromNode, toNode ) {
-
-        if( fromNode.successorNodes.get( toNode ) != null ) return null;
-
-        let edge = new GraphEdge();
-
-        if(this.edge != null) {
-            this.edge.prev = edge;
-            edge.next = this.edge;
-        }
-        this.edge = edge;
-        edge.sourceNode = fromNode;
-        edge.destinationNode = toNode;
-       
-        fromNode.successorNodes.set(toNode,edge);
-        if(fromNode.outgoingEdge != null) {
-            fromNode.outgoingEdge.rotPrevEdge = edge;
-            edge.rotNextEdge = fromNode.outgoingEdge;
-            fromNode.outgoingEdge = edge;
-        } else fromNode.outgoingEdge = edge;
-
-
-        let oppositeEdge = toNode.successorNodes.get(fromNode);
-        if(oppositeEdge !== null) {
-            edge.oppositeEdge = oppositeEdge;
-            oppositeEdge.oppositeEdge = edge;
-        }
-        return edge;
-
-    }
-    
-    deleteEdge ( edge ) {
-
-        if(this.edge == edge) {
-            if(edge.next != null) {
-                edge.next.prev = null;
-                this.edge = edge.next;
-            } else this.edge = null;
-        } else if(edge.next != null) {
-            edge.prev.next = edge.next;
-            edge.next.prev = edge.prev;
-        } else edge.prev.next = null;
-        if(edge.sourceNode.outgoingEdge == edge) {
-            if(edge.rotNextEdge != null) {
-                edge.rotNextEdge.rotPrevEdge = null;
-                edge.sourceNode.outgoingEdge = edge.rotNextEdge;
-            } else edge.sourceNode.outgoingEdge = null;
-        } else if(edge.rotNextEdge != null) {
-            edge.rotPrevEdge.rotNextEdge = edge.rotNextEdge;
-            edge.rotNextEdge.rotPrevEdge = edge.rotPrevEdge;
-        } else edge.rotPrevEdge.rotNextEdge = null;
-
-        edge.dispose();
-
-    }
-
-    /*insertNode () {
-
-        let node = new GraphNode()
-        if( this.node !== null ) {
-            node.next = this.node
-            this.node.prev = node
-        }
-        this.node = node
-        return node
-
-    }
-
-    deleteNode ( node ) {
-
-        while( node.outgoingEdge != null ) {
-            if(node.outgoingEdge.oppositeEdge != null) this.deleteEdge(node.outgoingEdge.oppositeEdge);
-            this.deleteEdge(node.outgoingEdge);
-        }
-        let otherNode = this.node;
-        let incomingEdge;
-        while( otherNode !== null ) {
-            incomingEdge = otherNode.successorNodes.get(node)
-            if(incomingEdge !== null) this.deleteEdge( incomingEdge )
-            otherNode = otherNode.next
-        }
-
-        if( this.node === node ) {
-            if( node.next !== null ) {
-                node.next.prev = null
-                this.node = node.next
-            } else {
-                this.node = null
-            }
-        } else {
-            if( node.next !== null ) {
-                node.prev.next = node.next
-                node.next.prev = node.prev
-            } else {
-                node.prev.next = null
-            }
-        }
-        node.dispose();
-
-    }
-
-    insertEdge ( fromNode, toNode ) {
-
-        if( fromNode.successorNodes.get( toNode ) != null ) return null;
-
-        let edge = new GraphEdge();
-
-        if( this.edge !== null ) {
-            this.edge.prev = edge
-            edge.next = this.edge
-        }
-
-        this.edge = edge;
-        edge.sourceNode = fromNode
-        edge.destinationNode = toNode
-        fromNode.successorNodes.set( toNode, edge )
-
-        if( fromNode.outgoingEdge !== null ) {
-            fromNode.outgoingEdge.rotPrevEdge = edge
-            edge.rotNextEdge = fromNode.outgoingEdge
-            fromNode.outgoingEdge = edge
-        } else {
-            fromNode.outgoingEdge = edge
-        }
-        
-        let oppositeEdge = toNode.successorNodes.get( fromNode )
-        if( oppositeEdge !== null ) {
-            edge.oppositeEdge = oppositeEdge
-            oppositeEdge.oppositeEdge = edge
-        }
-
-        return edge
-
-    }
-    
-    deleteEdge ( edge ) {
-
-        if( this.edge === edge ) {
-            if( edge.next !== null ) {
-                edge.next.prev = null;
-                this.edge = edge.next;
-            } else {
-                this.edge = null;
-            }
-        } else {
-            if( edge.next !== null ) {
-                edge.prev.next = edge.next
-                edge.next.prev = edge.prev
-            } else {
-                edge.prev.next = null
-            }
-        }
-
-        if( edge.sourceNode.outgoingEdge === edge ) {
-            if( edge.rotNextEdge !== null ) {
-                edge.rotNextEdge.rotPrevEdge = null
-                edge.sourceNode.outgoingEdge = edge.rotNextEdge
-            } else {
-                edge.sourceNode.outgoingEdge = null
-            }
-        } else {
-            if( edge.rotNextEdge !== null ) {
-                edge.rotPrevEdge.rotNextEdge = edge.rotNextEdge
-                edge.rotNextEdge.rotPrevEdge = edge.rotPrevEdge
-            } else {
-                edge.rotPrevEdge.rotNextEdge = null
-            }
-        }
-
-        edge.dispose()
-
-    }*/
-
-}
-
-// EDGE
-
-class GraphEdge {
-
-    constructor () {
-
-        this.id = IDX.get('graphEdge');
-        this.next = null;
-        this.prev = null;
-        this.rotPrevEdge = null;
-        this.rotNextEdge = null;
-        this.oppositeEdge = null;
-        this.sourceNode = null;
-        this.destinationNode = null;
-        this.data = null;
-
-    }
-
-    dispose () {
-
-        this.next = null;
-        this.prev = null;
-        this.rotPrevEdge = null;
-        this.rotNextEdge = null;
-        this.oppositeEdge = null;
-        this.sourceNode = null;
-        this.destinationNode = null;
-        this.data = null;
-
-    }
-
-}
-
-// NODE
-
-class GraphNode {
-
-    constructor () {
-
-        this.id = IDX.get('graphNode');
-        this.successorNodes = new Dictionary( 1 );
-        this.prev = null;
-        this.next = null;
-        this.outgoingEdge = null;
-        this.data = null;
-
-    }
-
-    dispose () {
-
-        this.successorNodes.dispose();
-        this.prev = null;
-        this.next = null;
-        this.outgoingEdge = null;
-        this.successorNodes = null;
-        this.data = null;
-
-    }
-
-}
-
-function EdgeData() {}function NodeData() {}
-const Potrace = {
-
-    color: { r:255, g:255, b:255 },
-    nearly : 50,
-    maxDistance: 1,
-
-    setColor: function ( color ) { Potrace.color = color; },
-    setNearly: function ( n ) { Potrace.nearly = n; },
-
-    buildShapes: function ( bmpData ) {
-
-        let shapes = [];
-        let dictPixelsDone = new Dictionary( 2 );
-
-        let r = bmpData.height-1;
-        let c = bmpData.width-1;
-
-        for (let row = 1; row < r; row++){
-            for (let col = 0 ; col < c; col++){
-
-                if ( Potrace.getWhite(bmpData, col, row) && !Potrace.getWhite( bmpData, col+1, row ) ){
-
-                    if ( !dictPixelsDone.get( (col+1) + "_" + row) ) shapes.push( Potrace.buildShape( bmpData, row, col + 1 , dictPixelsDone ));
-                }
-            }
-        }
-
-        dictPixelsDone.dispose();
-        return shapes;
-
-    },
-
-    getWhite: function ( bmpData, col, row ){
-
-        let valide = false;
-
-        let bytes = bmpData.bytes;
-        let w = bmpData.width;
-        let mask = Potrace.color;
-        let nearly = Potrace.nearly;
-        let id = ( col + ( row * w ) ) << 2; // * 4;
-
-        if( mask.r !== undefined ){ if( nearEqual( bytes[id] , mask.r, nearly ) ) valide = true; }
-        if( mask.g !== undefined ){ if( nearEqual( bytes[id+1] , mask.g, nearly ) ) valide = true; }
-        if( mask.b !== undefined ){ if( nearEqual( bytes[id+2] , mask.b, nearly ) ) valide = true; }
-        if( mask.a !== undefined ){ if( nearEqual( bytes[id+3] , mask.a, nearly ) ) valide = true; }
-
-        return valide;
-
-    },
-
-    buildShape: function ( bmpData, fromPixelRow, fromPixelCol, dictPixelsDone ) {
-        
-        let newX = fromPixelCol;
-        let newY = fromPixelRow;
-        let path = [newX,newY];
-        dictPixelsDone.set(newX + "_" + newY, true);
-
-        bmpData.width;
-        bmpData.height;
-
-        let curDir = new Point(0,1);
-        let newDir = new Point();
-        let newPixelRow;
-        let newPixelCol;
-        let count = -1;
-        
-        while(true) {
-
-            // take the pixel at right
-            newPixelRow = fromPixelRow + curDir.x + curDir.y;// | 0;
-            newPixelCol = fromPixelCol + curDir.x - curDir.y;// | 0;
-      
-            // if the pixel is not white
-            if( !Potrace.getWhite( bmpData, newPixelCol, newPixelRow ) ){
-            //if( DDLS.getPixel( bmpData, newPixelCol, newPixelRow ) < 0xFFFFFF ){
-
-                // turn the direction right
-                newDir.x = -curDir.y;
-                newDir.y = curDir.x;
-
-            } else {// if the pixel is white
-
-                // take the pixel straight
-                newPixelRow = fromPixelRow + curDir.y;// | 0;
-                newPixelCol = fromPixelCol + curDir.x;// | 0;
-
-                // if the pixel is not white
-                if( !Potrace.getWhite( bmpData, newPixelCol, newPixelRow ) ){
-                    // the direction stays the same
-                    newDir.x = curDir.x;
-                    newDir.y = curDir.y;
-
-                } else { // if the pixel is white
-                    // pixel stays the same
-                    newPixelRow = fromPixelRow;
-                    newPixelCol = fromPixelCol;
-                    // turn the direction left
-                    newDir.x = curDir.y;
-                    newDir.y = -curDir.x;
-                }
-
-            }
-
-            newX = newX + curDir.x;
-            newY = newY + curDir.y;
-
-            if( newX === path[0] && newY === path[1] ){ 
-                break; 
-            } else {
-                path.push( newX );
-                path.push( newY );
-                dictPixelsDone.set( newX + "_" + newY, true );
-                fromPixelRow = newPixelRow;
-                fromPixelCol = newPixelCol;
-                curDir.x = newDir.x;
-                curDir.y = newDir.y;
-            }
-            count--;
-            if(count === 0) break;
-        }
-        return path;
-    },
-
-    buildGraph: function ( shape ) {
-
-        let i = 0;
-        let graph = new Graph();
-        let node;
-
-        while( i < shape.length ) {
-
-            node = graph.insertNode();
-            node.data = new NodeData();
-            node.data.index = i;
-            node.data.point = new Point(shape[i],shape[i + 1]);
-            i += 2;
-
-        }
-
-        let node1;
-        let node2;
-        let subNode;
-        let distSqrd;
-        let sumDistSqrd;
-        let count;
-        let isValid = false;
-        let edge;
-        let edgeData;
-        node1 = graph.node;
-
-        while( node1 != null ) {
-
-            if(node1.next != null) node2 = node1.next; else node2 = graph.node;
-            while( node2 != node1 ) {
-                isValid = true;
-                //subNode = node1.next ? node1.next : graph.node;
-                if(node1.next != null) subNode = node1.next; else subNode = graph.node;
-                count = 2;
-                sumDistSqrd = 0;
-                while( subNode != node2 ) {
-                    distSqrd = Geom2D.distanceSquaredPointToSegment(subNode.data.point,node1.data.point,node2.data.point);
-                    if(distSqrd < 0) distSqrd = 0;
-                    if(distSqrd >= Potrace.maxDistance) {
-                        isValid = false;
-                        break;
-                    }
-                    count++;
-                    sumDistSqrd += distSqrd;
-                    if(subNode.next != null) subNode = subNode.next; else subNode = graph.node;
-                }
-                if( !isValid ) break;
-                edge = graph.insertEdge(node1,node2);
-                edgeData = new EdgeData();
-                edgeData.sumDistancesSquared = sumDistSqrd;
-                edgeData.length = node1.data.point.distanceTo(node2.data.point);
-                edgeData.nodesCount = count;
-                edge.data = edgeData;
-                if(node2.next != null) node2 = node2.next; else node2 = graph.node;
-            }
-            node1 = node1.next;
-        }
-        //console.log('graph done');
-        return graph;
-
-    },
-
-    buildPolygon: function ( graph ) {
-
-        let polygon = [], p1, p2, p3;
-        let minNodeIndex = 2147483647;
-        let edge;
-        let score;
-        let higherScore;
-        let lowerScoreEdge = null;
-        let currNode = graph.node;
-
-        while( currNode.data.index < minNodeIndex ) {
-
-            minNodeIndex = currNode.data.index;
-            polygon.push( currNode.data.point.x );
-            polygon.push( currNode.data.point.y );
-            higherScore = 0;
-            edge = currNode.outgoingEdge;
-            while( edge != null ) {
-                score = edge.data.nodesCount - edge.data.length * Math.sqrt( edge.data.sumDistancesSquared / edge.data.nodesCount );
-                if( score > higherScore ) {
-                    higherScore = score;
-                    lowerScoreEdge = edge;
-                }
-                edge = edge.rotNextEdge;
-            }
-            currNode = lowerScoreEdge.destinationNode;
-
-        }
-
-        p1 = new Point( polygon[polygon.length - 2], polygon[polygon.length - 1] );
-        p2 = new Point( polygon[0], polygon[1] );
-        p3 = new Point( polygon[2], polygon[3] );
-
-        if( Geom2D.getDirection( p1, p2, p3 ) === 0 ) {
-            polygon.shift();
-            polygon.shift();
-        }
-
-        return polygon;
-
-    }
-
-};
-
 class Mesh2D {
 
     constructor ( width, height ) {
 
         this.id = IDX.get('mesh2D');
         this.__objectsUpdateInProgress = false;
-        this.__centerVertex = null;
+        
         this.width = width;
         this.height = height;
         this.clipping = true;
@@ -2493,8 +1779,11 @@ class Mesh2D {
         this._objects = [];
         this._vertices = [];
         this._constraintShapes = [];
+        //this.__constraintShapes = []; // ??
+        this.constraintShape = null;
 
         this.__edgesToCheck = [];
+        this.__centerVertex = null;
 
         this.AR_vertex = null;
         this.AR_edge = null;
@@ -2502,6 +1791,10 @@ class Mesh2D {
         this.isRedraw = true;
 
     }
+
+    /*get __constraintShapes(){
+        return _constraintShapes
+    }*/
 
     deDuplicEdge () {
 
@@ -2539,12 +1832,13 @@ class Mesh2D {
         while(this._constraintShapes.length > 0) this._constraintShapes.pop().dispose();
         this._constraintShapes = [];
         if(!notObjects){
-            while(this._objects.length > 0) this._objects.pop().dispose();
+            
+            while( this._objects.length > 0 ) this._objects.pop().dispose();
+            this._objects = [];
         }
-        this._objects = [];
         
         this.__edgesToCheck = [];
-        this.__centerVertex = [];
+        this.__centerVertex = null;
 
         this.AR_vertex = null;
         this.AR_edge = null;
@@ -2562,8 +1856,8 @@ class Mesh2D {
         while(this._constraintShapes.length > 0) this._constraintShapes.pop().dispose();
         this._constraintShapes = null;
         while(this._objects.length > 0) this._objects.pop().dispose();
+
         this._objects = null;
-        
         this.__edgesToCheck = null;
         this.__centerVertex = null;
 
@@ -2585,7 +1879,7 @@ class Mesh2D {
 
     insertObject ( o ) {
 
-        if( o.constraintShape != null ) this.deleteObject( o );
+        if( o.constraintShape !== null ) this.deleteObject( o );
 
         let shape = new Shape();
         let segment;
@@ -2614,13 +1908,17 @@ class Mesh2D {
 
         if( !this.__objectsUpdateInProgress ) this._objects.push( o );
 
+        //console.log(this._objects.length)
+
     }
 
     deleteObject ( o ) {
 
-        if( o.constraintShape == null ) return;
+        if( o.constraintShape === null ) return;
+        
         this.deleteConstraintShape( o.constraintShape );
         o.constraintShape = null;
+        //o._constraintShape = null
         if(!this.__objectsUpdateInProgress) {
             let index = this._objects.indexOf( o );
             this._objects.splice( index, 1 );
@@ -2628,23 +1926,46 @@ class Mesh2D {
 
     }
 
+    updateAll () {
+
+        //this.__objectsUpdateInProgress = true
+
+        this.clear( true );
+
+        let i = this._objects.length, n = 0, ob;
+        while(i--){
+            ob = this._objects[n];
+            ob.build();
+            //ob._constraintShape = null
+            this.insertObject(ob);
+            n++;
+        }
+        //this.__objectsUpdateInProgress = false
+
+    }
+
     updateObjects () {
 
         this.__objectsUpdateInProgress = true;
-        let l = this._objects.length, i = 0, o;
-        while( i < l ) {
+        let i = this._objects.length, n = 0, ob;
 
-            o = this._objects[i];
+        //this._objects[0].hasChanged = true
 
-            if( o.hasChanged ) {
-                this.deleteObject( o );
-                this.insertObject( o );
-                o.hasChanged = false;
-                this.isRedraw = true;
+        while( i-- ) {
+
+            ob = this._objects[n];
+
+            if( ob.hasChanged ) {
+                this.deleteObject( ob );
+                this.insertObject( ob );
+                ob.hasChanged = false;
+                //this.isRedraw = true
             }
-            i++;
+            n++;
         }
         this.__objectsUpdateInProgress = false;
+
+        //console.log('updated')
 
     }
 
@@ -2675,15 +1996,16 @@ class Mesh2D {
 
     deleteConstraintShape ( shape ) {
 
-        let i = 0, l = shape.segments.length;
-        while( i < l ) {
-            this.deleteConstraintSegment(shape.segments[i]);
-            i++;
+        let i = shape.segments.length, n=0;
+        while( i-- ) {
+            this.deleteConstraintSegment(shape.segments[n]);
+            n++;
         }
+        shape.dispose();
         
         //console.log('yoch', this._constraintShapes.indexOf(shape))
         this._constraintShapes.splice(this._constraintShapes.indexOf(shape),1);
-        shape.dispose();
+        
 
     }
 
@@ -3706,6 +3028,734 @@ class Mesh2D {
 
 }
 
+class RectMesh extends Mesh2D {
+
+    constructor( w = 10, h = 10 ) {
+
+        super( w, h );
+
+        this.w = w;
+        this.h = h;
+
+        //  v0 x---x v1
+        //     |  /|
+        //     | / |
+        //     |/  |
+        //  v3 x---x v2
+
+        const v = [];
+        const e = [];
+        const f = [];
+        const s = [];
+        let i = 4;
+
+        while(i--){
+
+            f.push( new Face() );
+            v.push( new Vertex() );
+            s.push( new Segment() );
+            e.push( new Edge(), new Edge(), new Edge() );
+
+        }
+
+        const boundShape = new Shape();   
+        const offset = 10;
+
+        v[0].pos.set(0 - offset, 0 - offset);
+        v[1].pos.set(w + offset, 0 - offset);
+        v[2].pos.set(w + offset, h + offset);
+        v[3].pos.set(0 - offset, h + offset);
+
+        v[0].setDatas(e[0]);
+        v[1].setDatas(e[2]);
+        v[2].setDatas(e[4]);
+        v[3].setDatas(e[6]);
+
+        e[0].setDatas(v[0],e[1],e[2],f[3], true, true);   // v0--v1
+        e[1].setDatas(v[1],e[0],e[7],f[0], true, true);   // v1--v0
+        e[2].setDatas(v[1],e[3],e[11],f[3],true, true);   // v1--v2
+        e[3].setDatas(v[2],e[2],e[8],f[1], true, true);   // v2--v1
+        e[4].setDatas(v[2],e[5],e[6],f[2], true, true);   // v2--v3
+        e[5].setDatas(v[3],e[4],e[3],f[1], true, true);   // v3--v2
+        e[6].setDatas(v[3],e[7],e[10],f[2],true, true);   // v3--v0
+        e[7].setDatas(v[0],e[6],e[9],f[0], true, true);   // v0--v3
+        e[8].setDatas(v[1],e[9],e[5],f[1], true, false);  // v1--v3 diagonal edge
+        e[9].setDatas(v[3],e[8],e[1],f[0], true, false);  // v3--v1 diagonal edge
+        e[10].setDatas(v[0],e[11],e[4],f[2], false, false); // v0--v2 imaginary edge
+        e[11].setDatas(v[2],e[10],e[0],f[3], false, false); // v2--v0 imaginary edge
+
+        f[0].setDatas(e[9], true); // v0-v3-v1
+        f[1].setDatas(e[8], true); // v1-v3-v2
+        f[2].setDatas(e[4], false); // v0-v2-v3
+        f[3].setDatas(e[2], false); // v0-v1-v2
+
+        // constraint relations datas
+        v[0].fromConstraintSegments.push( s[0],s[3] );
+        v[1].fromConstraintSegments.push( s[0],s[1] );
+        v[2].fromConstraintSegments.push( s[1],s[2] );
+        v[3].fromConstraintSegments.push( s[2],s[3] );
+
+        e[0].fromConstraintSegments.push( s[0] );
+        e[1].fromConstraintSegments.push( s[0] );
+        e[2].fromConstraintSegments.push( s[1] );
+        e[3].fromConstraintSegments.push( s[1] );
+        e[4].fromConstraintSegments.push( s[2] );
+        e[5].fromConstraintSegments.push( s[2] );
+        e[6].fromConstraintSegments.push( s[3] );
+        e[7].fromConstraintSegments.push( s[3] );
+
+        s[0].edges.push( e[0] ); // top
+        s[1].edges.push( e[2] ); // right
+        s[2].edges.push( e[4] ); // bottom
+        s[3].edges.push( e[6] ); // left
+        s[0].fromShape = boundShape;
+        s[1].fromShape = boundShape;
+        s[2].fromShape = boundShape;
+        s[3].fromShape = boundShape;
+        boundShape.segments.push( s[0], s[1], s[2], s[3] );
+
+        this.boundShape = boundShape;
+
+        this._vertices = v;
+        this._edges = e;
+        this._faces = f;
+
+        this.build();
+
+        /*
+        this._constraintShapes.push( his.boundShape );
+        this.clipping = false;
+        this.insertConstraintShape( [ 0,0,w,0,  w,0,w,h,  w,h,0,h,  0,h,0,0 ] );
+        this.clipping = true;
+        */
+
+    }
+
+    build(){
+
+        this._constraintShapes.push( this.boundShape );
+        this.clipping = false;
+        this.insertConstraintShape( [ 
+            0,0,this.w,0,  
+            this.w,0,this.w,this.h,  
+            this.w,this.h,0,this.h,  
+            0,this.h,0,0 ] 
+        );
+        this.clipping = true;
+
+    }
+
+}
+
+class Graph {
+
+    constructor () {
+
+        this.id = IDX.get('graph');
+
+        this.edge = null;
+        this.node = null;
+
+    }
+
+    dispose () {
+
+        while( this.node !== null ) this.deleteNode( this.node );
+
+    }
+
+    insertNode () {
+
+        let node = new GraphNode();
+        if(this.node != null) {
+            node.next = this.node;
+            this.node.prev = node;
+        }
+        this.node = node;
+        return node;
+
+    }
+
+    deleteNode ( node ) {
+
+        while(node.outgoingEdge != null) {
+            if(node.outgoingEdge.oppositeEdge != null) this.deleteEdge(node.outgoingEdge.oppositeEdge);
+            this.deleteEdge(node.outgoingEdge);
+        }
+        let otherNode = this.node;
+        let incomingEdge;
+        while(otherNode != null) {
+            incomingEdge = otherNode.successorNodes.get(node);
+            if(incomingEdge != null) this.deleteEdge(incomingEdge);
+            otherNode = otherNode.next;
+        }
+        if(this.node == node) {
+            if(node.next != null) {
+                node.next.prev = null;
+                this.node = node.next;
+            } else this.node = null;
+        } else if(node.next != null) {
+            node.prev.next = node.next;
+            node.next.prev = node.prev;
+        } else node.prev.next = null;
+        node.dispose();
+
+    }
+
+    insertEdge ( fromNode, toNode ) {
+
+        if( fromNode.successorNodes.get( toNode ) != null ) return null;
+
+        let edge = new GraphEdge();
+
+        if(this.edge != null) {
+            this.edge.prev = edge;
+            edge.next = this.edge;
+        }
+        this.edge = edge;
+        edge.sourceNode = fromNode;
+        edge.destinationNode = toNode;
+       
+        fromNode.successorNodes.set(toNode,edge);
+        if(fromNode.outgoingEdge != null) {
+            fromNode.outgoingEdge.rotPrevEdge = edge;
+            edge.rotNextEdge = fromNode.outgoingEdge;
+            fromNode.outgoingEdge = edge;
+        } else fromNode.outgoingEdge = edge;
+
+
+        let oppositeEdge = toNode.successorNodes.get(fromNode);
+        if(oppositeEdge !== null) {
+            edge.oppositeEdge = oppositeEdge;
+            oppositeEdge.oppositeEdge = edge;
+        }
+        return edge;
+
+    }
+    
+    deleteEdge ( edge ) {
+
+        if(this.edge == edge) {
+            if(edge.next != null) {
+                edge.next.prev = null;
+                this.edge = edge.next;
+            } else this.edge = null;
+        } else if(edge.next != null) {
+            edge.prev.next = edge.next;
+            edge.next.prev = edge.prev;
+        } else edge.prev.next = null;
+        if(edge.sourceNode.outgoingEdge == edge) {
+            if(edge.rotNextEdge != null) {
+                edge.rotNextEdge.rotPrevEdge = null;
+                edge.sourceNode.outgoingEdge = edge.rotNextEdge;
+            } else edge.sourceNode.outgoingEdge = null;
+        } else if(edge.rotNextEdge != null) {
+            edge.rotPrevEdge.rotNextEdge = edge.rotNextEdge;
+            edge.rotNextEdge.rotPrevEdge = edge.rotPrevEdge;
+        } else edge.rotPrevEdge.rotNextEdge = null;
+
+        edge.dispose();
+
+    }
+
+    /*insertNode () {
+
+        let node = new GraphNode()
+        if( this.node !== null ) {
+            node.next = this.node
+            this.node.prev = node
+        }
+        this.node = node
+        return node
+
+    }
+
+    deleteNode ( node ) {
+
+        while( node.outgoingEdge != null ) {
+            if(node.outgoingEdge.oppositeEdge != null) this.deleteEdge(node.outgoingEdge.oppositeEdge);
+            this.deleteEdge(node.outgoingEdge);
+        }
+        let otherNode = this.node;
+        let incomingEdge;
+        while( otherNode !== null ) {
+            incomingEdge = otherNode.successorNodes.get(node)
+            if(incomingEdge !== null) this.deleteEdge( incomingEdge )
+            otherNode = otherNode.next
+        }
+
+        if( this.node === node ) {
+            if( node.next !== null ) {
+                node.next.prev = null
+                this.node = node.next
+            } else {
+                this.node = null
+            }
+        } else {
+            if( node.next !== null ) {
+                node.prev.next = node.next
+                node.next.prev = node.prev
+            } else {
+                node.prev.next = null
+            }
+        }
+        node.dispose();
+
+    }
+
+    insertEdge ( fromNode, toNode ) {
+
+        if( fromNode.successorNodes.get( toNode ) != null ) return null;
+
+        let edge = new GraphEdge();
+
+        if( this.edge !== null ) {
+            this.edge.prev = edge
+            edge.next = this.edge
+        }
+
+        this.edge = edge;
+        edge.sourceNode = fromNode
+        edge.destinationNode = toNode
+        fromNode.successorNodes.set( toNode, edge )
+
+        if( fromNode.outgoingEdge !== null ) {
+            fromNode.outgoingEdge.rotPrevEdge = edge
+            edge.rotNextEdge = fromNode.outgoingEdge
+            fromNode.outgoingEdge = edge
+        } else {
+            fromNode.outgoingEdge = edge
+        }
+        
+        let oppositeEdge = toNode.successorNodes.get( fromNode )
+        if( oppositeEdge !== null ) {
+            edge.oppositeEdge = oppositeEdge
+            oppositeEdge.oppositeEdge = edge
+        }
+
+        return edge
+
+    }
+    
+    deleteEdge ( edge ) {
+
+        if( this.edge === edge ) {
+            if( edge.next !== null ) {
+                edge.next.prev = null;
+                this.edge = edge.next;
+            } else {
+                this.edge = null;
+            }
+        } else {
+            if( edge.next !== null ) {
+                edge.prev.next = edge.next
+                edge.next.prev = edge.prev
+            } else {
+                edge.prev.next = null
+            }
+        }
+
+        if( edge.sourceNode.outgoingEdge === edge ) {
+            if( edge.rotNextEdge !== null ) {
+                edge.rotNextEdge.rotPrevEdge = null
+                edge.sourceNode.outgoingEdge = edge.rotNextEdge
+            } else {
+                edge.sourceNode.outgoingEdge = null
+            }
+        } else {
+            if( edge.rotNextEdge !== null ) {
+                edge.rotPrevEdge.rotNextEdge = edge.rotNextEdge
+                edge.rotNextEdge.rotPrevEdge = edge.rotPrevEdge
+            } else {
+                edge.rotPrevEdge.rotNextEdge = null
+            }
+        }
+
+        edge.dispose()
+
+    }*/
+
+}
+
+// EDGE
+
+class GraphEdge {
+
+    constructor () {
+
+        this.id = IDX.get('graphEdge');
+        this.next = null;
+        this.prev = null;
+        this.rotPrevEdge = null;
+        this.rotNextEdge = null;
+        this.oppositeEdge = null;
+        this.sourceNode = null;
+        this.destinationNode = null;
+        this.data = null;
+
+    }
+
+    dispose () {
+
+        this.next = null;
+        this.prev = null;
+        this.rotPrevEdge = null;
+        this.rotNextEdge = null;
+        this.oppositeEdge = null;
+        this.sourceNode = null;
+        this.destinationNode = null;
+        this.data = null;
+
+    }
+
+}
+
+// NODE
+
+class GraphNode {
+
+    constructor () {
+
+        this.id = IDX.get('graphNode');
+        this.successorNodes = new Dictionary( 1 );
+        this.prev = null;
+        this.next = null;
+        this.outgoingEdge = null;
+        this.data = null;
+
+    }
+
+    dispose () {
+
+        this.successorNodes.dispose();
+        this.prev = null;
+        this.next = null;
+        this.outgoingEdge = null;
+        this.successorNodes = null;
+        this.data = null;
+
+    }
+
+}
+
+function EdgeData() {}function NodeData() {}
+const Potrace = {
+
+    color: { r:255, g:255, b:255 },
+    nearly : 50,
+    maxDistance: 1,
+
+    setColor: function ( color ) { Potrace.color = color; },
+    setNearly: function ( n ) { Potrace.nearly = n; },
+
+    buildShapes: function ( bmpData ) {
+
+        let shapes = [];
+        let dictPixelsDone = new Dictionary( 2 );
+
+        let r = bmpData.height-1;
+        let c = bmpData.width-1;
+
+        for (let row = 1; row < r; row++){
+            for (let col = 0 ; col < c; col++){
+
+                if ( Potrace.getWhite(bmpData, col, row) && !Potrace.getWhite( bmpData, col+1, row ) ){
+
+                    if ( !dictPixelsDone.get( (col+1) + "_" + row) ) shapes.push( Potrace.buildShape( bmpData, row, col + 1 , dictPixelsDone ));
+                }
+            }
+        }
+
+        dictPixelsDone.dispose();
+        return shapes;
+
+    },
+
+    getWhite: function ( bmpData, col, row ){
+
+        let valide = false;
+
+        let bytes = bmpData.bytes;
+        let w = bmpData.width;
+        let mask = Potrace.color;
+        let nearly = Potrace.nearly;
+        let id = ( col + ( row * w ) ) << 2; // * 4;
+
+        if( mask.r !== undefined ){ if( nearEqual( bytes[id] , mask.r, nearly ) ) valide = true; }
+        if( mask.g !== undefined ){ if( nearEqual( bytes[id+1] , mask.g, nearly ) ) valide = true; }
+        if( mask.b !== undefined ){ if( nearEqual( bytes[id+2] , mask.b, nearly ) ) valide = true; }
+        if( mask.a !== undefined ){ if( nearEqual( bytes[id+3] , mask.a, nearly ) ) valide = true; }
+
+        return valide;
+
+    },
+
+    buildShape: function ( bmpData, fromPixelRow, fromPixelCol, dictPixelsDone ) {
+        
+        let newX = fromPixelCol;
+        let newY = fromPixelRow;
+        let path = [newX,newY];
+        dictPixelsDone.set(newX + "_" + newY, true);
+
+        bmpData.width;
+        bmpData.height;
+
+        let curDir = new Point(0,1);
+        let newDir = new Point();
+        let newPixelRow;
+        let newPixelCol;
+        let count = -1;
+        
+        while(true) {
+
+            // take the pixel at right
+            newPixelRow = fromPixelRow + curDir.x + curDir.y;// | 0;
+            newPixelCol = fromPixelCol + curDir.x - curDir.y;// | 0;
+      
+            // if the pixel is not white
+            if( !Potrace.getWhite( bmpData, newPixelCol, newPixelRow ) ){
+            //if( DDLS.getPixel( bmpData, newPixelCol, newPixelRow ) < 0xFFFFFF ){
+
+                // turn the direction right
+                newDir.x = -curDir.y;
+                newDir.y = curDir.x;
+
+            } else {// if the pixel is white
+
+                // take the pixel straight
+                newPixelRow = fromPixelRow + curDir.y;// | 0;
+                newPixelCol = fromPixelCol + curDir.x;// | 0;
+
+                // if the pixel is not white
+                if( !Potrace.getWhite( bmpData, newPixelCol, newPixelRow ) ){
+                    // the direction stays the same
+                    newDir.x = curDir.x;
+                    newDir.y = curDir.y;
+
+                } else { // if the pixel is white
+                    // pixel stays the same
+                    newPixelRow = fromPixelRow;
+                    newPixelCol = fromPixelCol;
+                    // turn the direction left
+                    newDir.x = curDir.y;
+                    newDir.y = -curDir.x;
+                }
+
+            }
+
+            newX = newX + curDir.x;
+            newY = newY + curDir.y;
+
+            if( newX === path[0] && newY === path[1] ){ 
+                break; 
+            } else {
+                path.push( newX );
+                path.push( newY );
+                dictPixelsDone.set( newX + "_" + newY, true );
+                fromPixelRow = newPixelRow;
+                fromPixelCol = newPixelCol;
+                curDir.x = newDir.x;
+                curDir.y = newDir.y;
+            }
+            count--;
+            if(count === 0) break;
+        }
+        return path;
+    },
+
+    buildGraph: function ( shape ) {
+
+        let i = 0;
+        let graph = new Graph();
+        let node;
+
+        while( i < shape.length ) {
+
+            node = graph.insertNode();
+            node.data = new NodeData();
+            node.data.index = i;
+            node.data.point = new Point(shape[i],shape[i + 1]);
+            i += 2;
+
+        }
+
+        let node1;
+        let node2;
+        let subNode;
+        let distSqrd;
+        let sumDistSqrd;
+        let count;
+        let isValid = false;
+        let edge;
+        let edgeData;
+        node1 = graph.node;
+
+        while( node1 != null ) {
+
+            if(node1.next != null) node2 = node1.next; else node2 = graph.node;
+            while( node2 != node1 ) {
+                isValid = true;
+                //subNode = node1.next ? node1.next : graph.node;
+                if(node1.next != null) subNode = node1.next; else subNode = graph.node;
+                count = 2;
+                sumDistSqrd = 0;
+                while( subNode != node2 ) {
+                    distSqrd = Geom2D.distanceSquaredPointToSegment(subNode.data.point,node1.data.point,node2.data.point);
+                    if(distSqrd < 0) distSqrd = 0;
+                    if(distSqrd >= Potrace.maxDistance) {
+                        isValid = false;
+                        break;
+                    }
+                    count++;
+                    sumDistSqrd += distSqrd;
+                    if(subNode.next != null) subNode = subNode.next; else subNode = graph.node;
+                }
+                if( !isValid ) break;
+                edge = graph.insertEdge(node1,node2);
+                edgeData = new EdgeData();
+                edgeData.sumDistancesSquared = sumDistSqrd;
+                edgeData.length = node1.data.point.distanceTo(node2.data.point);
+                edgeData.nodesCount = count;
+                edge.data = edgeData;
+                if(node2.next != null) node2 = node2.next; else node2 = graph.node;
+            }
+            node1 = node1.next;
+        }
+        //console.log('graph done');
+        return graph;
+
+    },
+
+    buildPolygon: function ( graph ) {
+
+        let polygon = [], p1, p2, p3;
+        let minNodeIndex = 2147483647;
+        let edge;
+        let score;
+        let higherScore;
+        let lowerScoreEdge = null;
+        let currNode = graph.node;
+
+        while( currNode.data.index < minNodeIndex ) {
+
+            minNodeIndex = currNode.data.index;
+            polygon.push( currNode.data.point.x );
+            polygon.push( currNode.data.point.y );
+            higherScore = 0;
+            edge = currNode.outgoingEdge;
+            while( edge != null ) {
+                score = edge.data.nodesCount - edge.data.length * Math.sqrt( edge.data.sumDistancesSquared / edge.data.nodesCount );
+                if( score > higherScore ) {
+                    higherScore = score;
+                    lowerScoreEdge = edge;
+                }
+                edge = edge.rotNextEdge;
+            }
+            currNode = lowerScoreEdge.destinationNode;
+
+        }
+
+        p1 = new Point( polygon[polygon.length - 2], polygon[polygon.length - 1] );
+        p2 = new Point( polygon[0], polygon[1] );
+        p3 = new Point( polygon[2], polygon[3] );
+
+        if( Geom2D.getDirection( p1, p2, p3 ) === 0 ) {
+            polygon.shift();
+            polygon.shift();
+        }
+
+        return polygon;
+
+    }
+
+};
+
+const ShapeSimplifier = ( coords, epsilon = 1 ) => {
+
+    epsilon = epsilon || 1;
+    let len = coords.length;
+    //DDLS.Debug.assertFalse((len & 1) != 0,"Wrong size",{ fileName : "ShapeSimplifier.hx", lineNumber : 18, className : "DDLS.ShapeSimplifier", methodName : "simplify"});
+    if(len <= 4) return [].concat(coords);
+    let firstPointX = coords[0];
+    let firstPointY = coords[1];
+    let lastPointX = coords[len - 2];
+    let lastPointY = coords[len - 1];
+    let index = -1;
+    let dist = 0.;
+    let _g1 = 1;
+    let _g = len >> 1;
+    while(_g1 < _g) {
+        let i = _g1++;
+        let currDist = Geom2D.distanceSquaredPointToSegment( new Point(coords[i << 1],coords[(i << 1) + 1]), new Point(firstPointX,firstPointY), new Point(lastPointX,lastPointY) );
+        //let currDist = DDLS.Geom2D.distanceSquaredPointToSegment(coords[i << 1],coords[(i << 1) + 1],firstPointX,firstPointY,lastPointX,lastPointY);
+        if(currDist > dist) {
+            dist = currDist;
+            index = i;
+        }
+    }
+    if(dist > epsilon * epsilon) {
+        let l1 = coords.slice(0,(index << 1) + 2);
+        let l2 = coords.slice(index << 1);
+        let r1 = ShapeSimplifier(l1,epsilon);
+        let r2 = ShapeSimplifier(l2,epsilon);
+        let rs = r1.slice(0,r1.length - 2).concat(r2);
+        return rs;
+    } else return [firstPointX,firstPointY,lastPointX,lastPointY];
+
+};
+
+class BitmapMesh {
+
+    static buildFromBmpData ( pixel, precision = 1, color ) {
+
+        if( color !== undefined ) Potrace.setColor( color );
+        precision = precision || 1;
+
+        let optimised = precision >= 1;
+
+        // OUTLINES STEP-LIKE SHAPES GENERATION
+
+        const shapes = Potrace.buildShapes( pixel );
+        
+
+        // OPTIMIZED POLYGONS GENERATION FROM GRAPH OF POTENTIAL SEGMENTS GENERATION
+        // MESH GENERATION
+
+        let i = shapes.length, j, poly, n = 0, n2 = 0; 
+
+        const mesh = new RectMesh( pixel.width, pixel.height );
+
+        while( i-- ){
+
+            if( optimised ) shapes[n] = ShapeSimplifier( shapes[n], precision );
+
+            poly = Potrace.buildPolygon( Potrace.buildGraph( shapes[n] ) );
+            
+            j = (poly.length - 2) * 0.5;
+            n2 = 0;
+            while(j--){
+                mesh.insertConstraintSegment( poly[n2], poly[n2+1], poly[n2+2], poly[n2+3] );
+                n2 += 2;
+            }
+
+            mesh.insertConstraintSegment( poly[0], poly[1], poly[n2], poly[n2+1] );
+
+            /*
+            lng = poly.length - 2;
+            for ( j = 0; j < lng; j += 2 ) mesh.insertConstraintSegment( poly[j], poly[j+1], poly[j+2], poly[j+3] )
+            mesh.insertConstraintSegment( poly[0], poly[1], poly[j], poly[j+1] )
+            */
+
+            n++;
+
+        }
+
+        return mesh
+
+    }
+
+}
+
 class AStar {
 
     constructor () {
@@ -4708,89 +4758,360 @@ class PathFinder {
     }
 }
 
-class PathIterator {
+class Object2D {
 
     constructor () {
 
-        this.entity = null;
-        this.hasPrev = false;
-        this.hasNext = false;
-        this.countMax = 0;
-        this.count = 0;
-        this._currentX = 0;
-        this._currentY = 0;
-        this._path = [];
+        this.id = IDX.get('object2D');
+
+        this._pivot = new Point();
+        this._position = new Point();
+        this._scale = new Point( 1, 1 );
+        this._matrix = new Matrix2D();
+        this._rotation = 0;
+        this._constraintShape = null;
+        this._coordinates = [];
+        this.hasChanged = false;
 
     }
 
-    get x () {
-        return this._currentX
+    get rotation (){
+        return this._rotation;
     }
 
-    get y () {
-        return this._currentY
+    set rotation ( value ){
+        if( this._rotation !== value ) { this._rotation = value; this.hasChanged = true; }
     }
 
-    get path () {
-        return this._path
+    get matrix (){
+        return this._matrix;
     }
 
-    set path ( value ) {
-        this._path = value;
-        this.countMax = this._path.length * 0.5;
-        this.reset();
+    set matrix ( value ){
+        if( this._rotation !== value ) { this._rotation = value; this.hasChanged = true; }
     }
 
-    reset () {
+    get coordinates (){
+        return this._coordinates;
+    }
 
-        this.count = 0;
-        this._currentX = this._path[this.count];
-        this._currentY = this._path[this.count+1];
-        this.updateEntity();
+    set coordinates ( value ){
+        this._coordinates = value; this.hasChanged = true;
+    }
+
+    get constraintShape (){
+        return this._constraintShape;
+    }
+
+    set constraintShape ( value ){
+        this._constraintShape = value; this.hasChanged = true;
+    }
+
+    get edges (){
+        let res = [];
+        let seg = this._constraintShape.segments;
+        let l = seg.length, l2, n=0, n2=0, i=0, j=0;
+        while(n < l) {
+            i = n++;
+            n2 = 0;
+            l2 = seg[i].edges.length;
+            while(n2 < l2) {
+                j = n2++;
+                res.push(seg[i].edges[j]);
+            }
+        }
+        return res;
+    }
+
+
+    position ( x, y ) {
+
+        this._position.set( x, y );
+        this.hasChanged = true;
+
+    }
+
+    scale ( w, h ) {
+
+        this._scale.set(w,h);
+        this.hasChanged = true;
+
+    }
+
+    pivot ( x, y ) {
+
+        this._pivot.set(x,y);
+        this.hasChanged = true;
+
+    }
+
+    dispose () {
+
+        this._matrix = null;
+        this._coordinates = null;
+        this._constraintShape = null;
+
+    }
+
+    updateValuesFromMatrix () {
+
+    }
+
+    updateMatrixFromValues () {
+
+        this._matrix.identity().translate(this._pivot.negate()).scale(this._scale).rotate(this._rotation).translate(this._position);
+
+    }
+
+}
+
+class FieldOfView {
+
+    constructor ( entity, world ) {
+
+        this.entity = entity || null;
+        this.world = world || null;
+        //this._debug = false;
+    }
+
+    isInField ( targetEntity ) {
+
+        if (!this.world) return;//throw new Error("Mesh missing");
+        if (!this.entity) return;//throw new Error("From entity missing");
+
+        this.mesh = this.world.getMesh();
+
+        let pos = this.entity.position;
+        let direction = this.entity.direction;
+        let target = targetEntity.position;
+        
+        let radius = this.entity.radiusFOV;
+        let angle = this.entity.angleFOV;
+        
+        //let targetX = targetEntity.x;
+        //let targetY = targetEntity.y;
+        let targetRadius = targetEntity.radius;
+        
+        let distSquared = Squared( pos.x - target.x, pos.y - target.y );//(posX-targetX)*(posX-targetX) + (posY-targetY)*(posY-targetY);
+        
+        // if target is completely outside field radius
+        if ( distSquared >= (radius + targetRadius)*(radius + targetRadius) ){
+            //trace("target is completely outside field radius");
+            return false;
+        }
+        
+        /*if (distSquared < targetRadius * targetRadius ){
+            //trace("degenerate case if the field center is inside the target");
+            return true;
+        }*/
+        
+        //let leftTargetX, leftTargetY, rightTargetX, rightTargetY, leftTargetInField, rightTargetInField;
+
+        let leftTarget = new Point();
+        let rightTarget = new Point();
+        let leftTargetInField, rightTargetInField;
+        
+        // we consider the 2 cicrles intersections
+        let  result = [];
+        if ( Geom2D.intersections2Circles(pos, radius, target, targetRadius, result) ){
+            leftTarget.set(result[0], result[1]);
+            rightTarget.set(result[2], result[3]);
+        }
+
+        let mid = pos.clone().add(target).mul(0.5);
+        
+        if( result.length == 0 || Squared(mid.x-target.x, mid.y-target.y) < Squared(mid.x-leftTarget.x, mid.y-leftTarget.y) ){
+            // we consider the 2 tangents from field center to target
+            result.splice(0, result.length);
+            Geom2D.tangentsPointToCircle(pos, target, targetRadius, result);
+            leftTarget.set(result[0], result[1]);
+            rightTarget.set(result[2], result[3]);
+        }
+        
+        /*if (this._debug){
+            this._debug.graphics.lineStyle(1, 0x0000FF);
+            this._debug.graphics.drawCircle(leftTargetX, leftTargetY, 2);
+            this._debug.graphics.lineStyle(1, 0xFF0000);
+            this._debug.graphics.drawCircle(rightTargetX, rightTargetY, 2);
+        }*/
+        
+        let dotProdMin = Math.cos( this.entity.angleFOV*0.5 );
+
+        // we compare the dots for the left point
+        let left = leftTarget.clone().sub(pos);
+        let lengthLeft = Math.sqrt( left.x*left.x + left.y*left.y );
+        let dotLeft = (left.x/lengthLeft)*direction.x + (left.y/lengthLeft)*direction.y;
+        // if the left point is in field
+        if (dotLeft > dotProdMin) leftTargetInField = true;
+        else leftTargetInField = false;
+        
+        
+        // we compare the dots for the right point
+        let right = rightTarget.clone().sub(pos);
+        let lengthRight = Math.sqrt( right.x*right.x + right.y*right.y );
+        let dotRight = (right.x/lengthRight)*direction.x + (right.y/lengthRight)*direction.y;
+        // if the right point is in field
+        if (dotRight > dotProdMin) rightTargetInField = true;
+        else rightTargetInField = false;
+        
+        
+        // if the left and right points are outside field
+        if (!leftTargetInField && !rightTargetInField){
+            let pdir = pos.clone().add(direction);
+            // we must check if the Left/right points are on 2 different sides
+            if ( Geom2D.getDirection(pos, pdir, leftTarget) === 1 && Geom2D.getDirection(pos, pdir, rightTarget) === -1 );else {
+                // we abort : target is not in field
+                return false;
+            }
+        }
+        
+        // we init the window
+        if ( !leftTargetInField || !rightTargetInField ){
+            let p = new Point();
+            let dirAngle;
+            dirAngle = Math.atan2( direction.y, direction.x );
+            if ( !leftTargetInField ){
+                let leftField = new Point( Math.cos(dirAngle - angle*0.5), Math.sin(dirAngle - angle*0.5)).add(pos);
+                Geom2D.intersections2segments(pos, leftField , leftTarget, rightTarget, p, null, true);
+                leftTarget = p.clone();
+            }
+            if ( !rightTargetInField ){
+                let rightField = new Point( Math.cos(dirAngle + angle*0.5), Math.sin(dirAngle + angle*0.5)).add(pos);
+                Geom2D.intersections2segments(pos, rightField , leftTarget, rightTarget, p, null, true);
+                rightTarget = p.clone();
+            }
+        }
+        
+     
+        // now we have a triangle called the window defined by: posX, posY, rightTargetX, rightTargetY, leftTargetX, leftTargetY
+        
+        // we set a dictionnary of faces done
+        let facesDone = new Dictionary( 0 );
+        // we set a dictionnary of edges done
+        let edgesDone = new Dictionary( 0 );
+        // we set the window wall
+        let wall = [];
+        // we localize the field center
+        let startObj = Geom2D.locatePosition( pos, this.mesh );
+        let startFace;
+
+        if ( startObj.type == 2 ) startFace = startObj;
+        else if ( startObj.type == 1  ) startFace = startObj.leftFace;
+        else if ( startObj.type == 0  ) startFace = startObj.edge.leftFace;
+        
+        
+        // we put the face where the field center is lying in open list
+        let openFacesList = [];
+        let openFaces = new Dictionary( 0 );
+        openFacesList.push(startFace);
+        openFaces[startFace] = true;
+        
+        let currentFace, currentEdge, s1, s2;
+        let p1 = new Point();
+        let p2 = new Point();
+        let param1, param2, i, index1, index2;
+        let params = [];
+        let edges = [];
+        // we iterate as long as we have new open facess
+        while ( openFacesList.length > 0 ){
+            // we pop the 1st open face: current face
+            currentFace = openFacesList.shift();
+            openFaces.set(currentFace, null);
+            facesDone.set(currentFace, true);
             
-        this.hasPrev = false;
-        if (this._path.length > 2) this.hasNext = true;
-        else this.hasNext = false;
-
-    }
-
-    prev () {
-
-        if (! this.hasPrev) return false;
-        this.hasNext = true;
+            // for each non-done edges from the current face
+            currentEdge = currentFace.edge;
+            if ( !edgesDone.get(currentEdge) && !edgesDone.get(currentEdge.oppositeEdge) ){
+                edges.push(currentEdge);
+                edgesDone.set(currentEdge, true);
+            }
+            currentEdge = currentEdge.nextLeftEdge;
+            if ( !edgesDone.get(currentEdge) && !edgesDone.get(currentEdge.oppositeEdge) ){
+                edges.push(currentEdge);
+                edgesDone.set(currentEdge, true);
+            }
+            currentEdge = currentEdge.nextLeftEdge;
+            if ( !edgesDone.get(currentEdge) && !edgesDone.get(currentEdge.oppositeEdge) ){
+                edges.push(currentEdge);
+                edgesDone.set(currentEdge, true);
+            }
             
-        this.count--;
-        this._currentX = this._path[this.count*2];
-        this._currentY = this._path[this.count*2+1];
-            
-        this.updateEntity();
-            
-        if (this.count == 0) this.hasPrev = false;
+            while ( edges.length > 0 ){
+
+                currentEdge = edges.pop();
+                
+                // if the edge overlap (interects or lies inside) the window
+                s1 = currentEdge.originVertex.pos;
+                s2 = currentEdge.destinationVertex.pos;
+                //if ( Geom2D.clipSegmentByTriangle(s1.x, s1.y, s2.x, s2.y, pos.x, pos.y, rightTarget.x, rightTarget.y, leftTarget.x, leftTarget.y, p1, p2) ){
+                if ( Geom2D.clipSegmentByTriangle(s1, s2, pos, rightTarget, leftTarget, p1, p2) ){
+                    // if the edge if constrained
+                    if ( currentEdge.isConstrained ){
+                        // we project the constrained edge on the wall
+                        params.splice(0, params.length);
+                        Geom2D.intersections2segments(pos, p1, leftTarget, rightTarget, null, params, true);
+                        Geom2D.intersections2segments(pos, p2, leftTarget, rightTarget, null, params, true);
+                        param1 = params[1];
+                        param2 = params[3];
+                        if ( param2 < param1 ){
+                            param1 = param2;
+                            param2 = params[1];
+                        }
+                       
+                        // we sum it to the window wall
+                        for (i=wall.length-1 ; i>=0 ; i--){
+                            if ( param2 >= wall[i] ) break;
+                        }
+                        index2 = i+1;
+                        if (index2 % 2 == 0)
+                            wall.splice(index2, 0, param2);
+                        
+                        for (i=0 ; i<wall.length ; i++){
+                            if ( param1 <= wall[i] ) break;
+                        }
+                        index1 = i;
+                        if (index1 % 2 == 0){
+                            wall.splice(index1, 0, param1);
+                            index2++;
+                        }
+                        else {
+                            index1--;
+                        }
+                        
+                        wall.splice( index1+1, index2-index1-1);
+                        
+                        // if the window is totally covered, we stop and return false
+                        if ( wall.length == 2 && -EPSILON_NORMAL < wall[0] && wall[0] < EPSILON_NORMAL && 1-EPSILON_NORMAL < wall[1] && wall[1] < 1+EPSILON_NORMAL ) return false;
+                        
+                    }
+                    
+                    // if the adjacent face is neither in open list nor in faces done dictionnary
+                    currentFace = currentEdge.rightFace;
+                    if (!openFaces.get(currentFace) && !facesDone.get(currentFace)){
+                        // we add it in open list
+                        openFacesList.push( currentFace );
+                        openFaces.set( currentFace, true );
+                    }
+                }
+            }
+        }
+        
+        /*if (this._debug){
+            this._debug.graphics.lineStyle(3, 0x00FFFF);
+
+            for (i=0 ; i<wall.length ; i+=2){
+                this._debug.graphics.moveTo(leftTargetX + wall[i]*(rightTargetX-leftTargetX), leftTargetY + wall[i]*(rightTargetY-leftTargetY));
+                this._debug.graphics.lineTo(leftTargetX + wall[i+1]*(rightTargetX-leftTargetX), leftTargetY + wall[i+1]*(rightTargetY-leftTargetY));
+            }
+        }*/
+        // if the window is totally covered, we stop and return false
+        //if ( wall.length === 2 && -_Math.EPSILON < wall[0] && wall[0] < _Math.EPSILON && 1-_Math.EPSILON < wall[1] && wall[1] < 1+_Math.EPSILON ) return false;
+        
+        //trace(wall);
+
+        //console.log(wall)
+        
         return true;
-
-    }
-
-    next () {
-
-        if ( !this.hasNext ) return false;
-        this.hasPrev = true;
-            
-        this.count++;
-        this._currentX = this._path[this.count*2];
-        this._currentY = this._path[this.count*2+1];
-            
-        this.updateEntity();
-            
-        if ((this.count+1)*2 == this._path.length) this.hasNext = false;    
-        return true;
-
-    }
-
-    updateEntity () {
-
-        if ( !this.entity ) return;
-        this.entity.x = this._currentX;
-        this.entity.y = this._currentY;
 
     }
 
@@ -5057,7 +5378,7 @@ class LinearPathSampler {
         
         this.entity.distance = this.entity.position.distanceTo( this.pos );
         //console.log(this.entity.distance)
-        if( this.entity.distance > 0.01 ) this.entity.angle = this.entity.position.angleTo( this.pos );
+        if( !this.entity.needTurn ) this.entity.angle = this.entity.position.angleTo( this.pos );
         this.entity.direction.angular( this.entity.angle ).mul(this.entity.distance);
         this.entity.position.copy( this.pos );
         //this.entity.angle = this.entity.position.angle()
@@ -5071,258 +5392,6 @@ class LinearPathSampler {
 }
 
 //export { LinearPathSampler };
-
-class FieldOfView {
-
-    constructor ( entity, world ) {
-
-        this.entity = entity || null;
-        this.world = world || null;
-        //this._debug = false;
-    }
-
-    isInField ( targetEntity ) {
-
-        if (!this.world) return;//throw new Error("Mesh missing");
-        if (!this.entity) return;//throw new Error("From entity missing");
-
-        this.mesh = this.world.getMesh();
-
-        let pos = this.entity.position;
-        let direction = this.entity.direction;
-        let target = targetEntity.position;
-        
-        let radius = this.entity.radiusFOV;
-        let angle = this.entity.angleFOV;
-        
-        //let targetX = targetEntity.x;
-        //let targetY = targetEntity.y;
-        let targetRadius = targetEntity.radius;
-        
-        let distSquared = Squared( pos.x - target.x, pos.y - target.y );//(posX-targetX)*(posX-targetX) + (posY-targetY)*(posY-targetY);
-        
-        // if target is completely outside field radius
-        if ( distSquared >= (radius + targetRadius)*(radius + targetRadius) ){
-            //trace("target is completely outside field radius");
-            return false;
-        }
-        
-        /*if (distSquared < targetRadius * targetRadius ){
-            //trace("degenerate case if the field center is inside the target");
-            return true;
-        }*/
-        
-        //let leftTargetX, leftTargetY, rightTargetX, rightTargetY, leftTargetInField, rightTargetInField;
-
-        let leftTarget = new Point();
-        let rightTarget = new Point();
-        let leftTargetInField, rightTargetInField;
-        
-        // we consider the 2 cicrles intersections
-        let  result = [];
-        if ( Geom2D.intersections2Circles(pos, radius, target, targetRadius, result) ){
-            leftTarget.set(result[0], result[1]);
-            rightTarget.set(result[2], result[3]);
-        }
-
-        let mid = pos.clone().add(target).mul(0.5);
-        
-        if( result.length == 0 || Squared(mid.x-target.x, mid.y-target.y) < Squared(mid.x-leftTarget.x, mid.y-leftTarget.y) ){
-            // we consider the 2 tangents from field center to target
-            result.splice(0, result.length);
-            Geom2D.tangentsPointToCircle(pos, target, targetRadius, result);
-            leftTarget.set(result[0], result[1]);
-            rightTarget.set(result[2], result[3]);
-        }
-        
-        /*if (this._debug){
-            this._debug.graphics.lineStyle(1, 0x0000FF);
-            this._debug.graphics.drawCircle(leftTargetX, leftTargetY, 2);
-            this._debug.graphics.lineStyle(1, 0xFF0000);
-            this._debug.graphics.drawCircle(rightTargetX, rightTargetY, 2);
-        }*/
-        
-        let dotProdMin = Math.cos( this.entity.angleFOV*0.5 );
-
-        // we compare the dots for the left point
-        let left = leftTarget.clone().sub(pos);
-        let lengthLeft = Math.sqrt( left.x*left.x + left.y*left.y );
-        let dotLeft = (left.x/lengthLeft)*direction.x + (left.y/lengthLeft)*direction.y;
-        // if the left point is in field
-        if (dotLeft > dotProdMin) leftTargetInField = true;
-        else leftTargetInField = false;
-        
-        
-        // we compare the dots for the right point
-        let right = rightTarget.clone().sub(pos);
-        let lengthRight = Math.sqrt( right.x*right.x + right.y*right.y );
-        let dotRight = (right.x/lengthRight)*direction.x + (right.y/lengthRight)*direction.y;
-        // if the right point is in field
-        if (dotRight > dotProdMin) rightTargetInField = true;
-        else rightTargetInField = false;
-        
-        
-        // if the left and right points are outside field
-        if (!leftTargetInField && !rightTargetInField){
-            let pdir = pos.clone().add(direction);
-            // we must check if the Left/right points are on 2 different sides
-            if ( Geom2D.getDirection(pos, pdir, leftTarget) === 1 && Geom2D.getDirection(pos, pdir, rightTarget) === -1 );else {
-                // we abort : target is not in field
-                return false;
-            }
-        }
-        
-        // we init the window
-        if ( !leftTargetInField || !rightTargetInField ){
-            let p = new Point();
-            let dirAngle;
-            dirAngle = Math.atan2( direction.y, direction.x );
-            if ( !leftTargetInField ){
-                let leftField = new Point( Math.cos(dirAngle - angle*0.5), Math.sin(dirAngle - angle*0.5)).add(pos);
-                Geom2D.intersections2segments(pos, leftField , leftTarget, rightTarget, p, null, true);
-                leftTarget = p.clone();
-            }
-            if ( !rightTargetInField ){
-                let rightField = new Point( Math.cos(dirAngle + angle*0.5), Math.sin(dirAngle + angle*0.5)).add(pos);
-                Geom2D.intersections2segments(pos, rightField , leftTarget, rightTarget, p, null, true);
-                rightTarget = p.clone();
-            }
-        }
-        
-     
-        // now we have a triangle called the window defined by: posX, posY, rightTargetX, rightTargetY, leftTargetX, leftTargetY
-        
-        // we set a dictionnary of faces done
-        let facesDone = new Dictionary( 0 );
-        // we set a dictionnary of edges done
-        let edgesDone = new Dictionary( 0 );
-        // we set the window wall
-        let wall = [];
-        // we localize the field center
-        let startObj = Geom2D.locatePosition( pos, this.mesh );
-        let startFace;
-
-        if ( startObj.type == 2 ) startFace = startObj;
-        else if ( startObj.type == 1  ) startFace = startObj.leftFace;
-        else if ( startObj.type == 0  ) startFace = startObj.edge.leftFace;
-        
-        
-        // we put the face where the field center is lying in open list
-        let openFacesList = [];
-        let openFaces = new Dictionary( 0 );
-        openFacesList.push(startFace);
-        openFaces[startFace] = true;
-        
-        let currentFace, currentEdge, s1, s2;
-        let p1 = new Point();
-        let p2 = new Point();
-        let param1, param2, i, index1, index2;
-        let params = [];
-        let edges = [];
-        // we iterate as long as we have new open facess
-        while ( openFacesList.length > 0 ){
-            // we pop the 1st open face: current face
-            currentFace = openFacesList.shift();
-            openFaces.set(currentFace, null);
-            facesDone.set(currentFace, true);
-            
-            // for each non-done edges from the current face
-            currentEdge = currentFace.edge;
-            if ( !edgesDone.get(currentEdge) && !edgesDone.get(currentEdge.oppositeEdge) ){
-                edges.push(currentEdge);
-                edgesDone.set(currentEdge, true);
-            }
-            currentEdge = currentEdge.nextLeftEdge;
-            if ( !edgesDone.get(currentEdge) && !edgesDone.get(currentEdge.oppositeEdge) ){
-                edges.push(currentEdge);
-                edgesDone.set(currentEdge, true);
-            }
-            currentEdge = currentEdge.nextLeftEdge;
-            if ( !edgesDone.get(currentEdge) && !edgesDone.get(currentEdge.oppositeEdge) ){
-                edges.push(currentEdge);
-                edgesDone.set(currentEdge, true);
-            }
-            
-            while ( edges.length > 0 ){
-
-                currentEdge = edges.pop();
-                
-                // if the edge overlap (interects or lies inside) the window
-                s1 = currentEdge.originVertex.pos;
-                s2 = currentEdge.destinationVertex.pos;
-                //if ( Geom2D.clipSegmentByTriangle(s1.x, s1.y, s2.x, s2.y, pos.x, pos.y, rightTarget.x, rightTarget.y, leftTarget.x, leftTarget.y, p1, p2) ){
-                if ( Geom2D.clipSegmentByTriangle(s1, s2, pos, rightTarget, leftTarget, p1, p2) ){
-                    // if the edge if constrained
-                    if ( currentEdge.isConstrained ){
-                        // we project the constrained edge on the wall
-                        params.splice(0, params.length);
-                        Geom2D.intersections2segments(pos, p1, leftTarget, rightTarget, null, params, true);
-                        Geom2D.intersections2segments(pos, p2, leftTarget, rightTarget, null, params, true);
-                        param1 = params[1];
-                        param2 = params[3];
-                        if ( param2 < param1 ){
-                            param1 = param2;
-                            param2 = params[1];
-                        }
-                       
-                        // we sum it to the window wall
-                        for (i=wall.length-1 ; i>=0 ; i--){
-                            if ( param2 >= wall[i] ) break;
-                        }
-                        index2 = i+1;
-                        if (index2 % 2 == 0)
-                            wall.splice(index2, 0, param2);
-                        
-                        for (i=0 ; i<wall.length ; i++){
-                            if ( param1 <= wall[i] ) break;
-                        }
-                        index1 = i;
-                        if (index1 % 2 == 0){
-                            wall.splice(index1, 0, param1);
-                            index2++;
-                        }
-                        else {
-                            index1--;
-                        }
-                        
-                        wall.splice( index1+1, index2-index1-1);
-                        
-                        // if the window is totally covered, we stop and return false
-                        if ( wall.length == 2 && -EPSILON_NORMAL < wall[0] && wall[0] < EPSILON_NORMAL && 1-EPSILON_NORMAL < wall[1] && wall[1] < 1+EPSILON_NORMAL ) return false;
-                        
-                    }
-                    
-                    // if the adjacent face is neither in open list nor in faces done dictionnary
-                    currentFace = currentEdge.rightFace;
-                    if (!openFaces.get(currentFace) && !facesDone.get(currentFace)){
-                        // we add it in open list
-                        openFacesList.push( currentFace );
-                        openFaces.set( currentFace, true );
-                    }
-                }
-            }
-        }
-        
-        /*if (this._debug){
-            this._debug.graphics.lineStyle(3, 0x00FFFF);
-
-            for (i=0 ; i<wall.length ; i+=2){
-                this._debug.graphics.moveTo(leftTargetX + wall[i]*(rightTargetX-leftTargetX), leftTargetY + wall[i]*(rightTargetY-leftTargetY));
-                this._debug.graphics.lineTo(leftTargetX + wall[i+1]*(rightTargetX-leftTargetX), leftTargetY + wall[i+1]*(rightTargetY-leftTargetY));
-            }
-        }*/
-        // if the window is totally covered, we stop and return false
-        //if ( wall.length === 2 && -_Math.EPSILON < wall[0] && wall[0] < _Math.EPSILON && 1-_Math.EPSILON < wall[1] && wall[1] < 1+_Math.EPSILON ) return false;
-        
-        //trace(wall);
-
-        //console.log(wall)
-        
-        return true;
-
-    }
-
-}
 
 class Entity {
 
@@ -5425,6 +5494,8 @@ class Entity {
 
             const startAngle = a !== undefined ? unwrap( a ) : this.angle;
 
+            if( this.turnSpeed !== 0 ) this.needTurn = true;
+
             this.pathSampler.reset();
             this.tmppath = [...this.path];
             this.pathSampler.path = this.tmppath;
@@ -5445,7 +5516,7 @@ class Entity {
                 this.needTurn = true;
                 this.step = 0;
 
-                if(this.angledelta === Infinity || this.angledelta === -Infinity || isNaN(this.angledelta)){ 
+                if( this.angledelta === Infinity || this.angledelta === -Infinity || isNaN(this.angledelta) ){ 
                     this.angledelta = 0; 
                     this.turnStep = 0;
                     this.needTurn = false;
@@ -5513,188 +5584,6 @@ class Entity {
     }
 }
 
-class RectMesh extends Mesh2D {
-
-    constructor( w = 10, h = 10 ) {
-
-        super( w, h );
-
-        //  v0 x---x v1
-        //     |  /|
-        //     | / |
-        //     |/  |
-        //  v3 x---x v2
-
-        const v = [];
-        const e = [];
-        const f = [];
-        const s = [];
-        let i = 4;
-
-        while(i--){
-
-            f.push( new Face() );
-            v.push( new Vertex() );
-            s.push( new Segment() );
-            e.push( new Edge(), new Edge(), new Edge() );
-
-        }
-
-        const boundShape = new Shape();   
-        const offset = 10;
-
-        v[0].pos.set(0 - offset, 0 - offset);
-        v[1].pos.set(w + offset, 0 - offset);
-        v[2].pos.set(w + offset, h + offset);
-        v[3].pos.set(0 - offset, h + offset);
-
-        v[0].setDatas(e[0]);
-        v[1].setDatas(e[2]);
-        v[2].setDatas(e[4]);
-        v[3].setDatas(e[6]);
-
-        e[0].setDatas(v[0],e[1],e[2],f[3], true, true);   // v0--v1
-        e[1].setDatas(v[1],e[0],e[7],f[0], true, true);   // v1--v0
-        e[2].setDatas(v[1],e[3],e[11],f[3],true, true);   // v1--v2
-        e[3].setDatas(v[2],e[2],e[8],f[1], true, true);   // v2--v1
-        e[4].setDatas(v[2],e[5],e[6],f[2], true, true);   // v2--v3
-        e[5].setDatas(v[3],e[4],e[3],f[1], true, true);   // v3--v2
-        e[6].setDatas(v[3],e[7],e[10],f[2],true, true);   // v3--v0
-        e[7].setDatas(v[0],e[6],e[9],f[0], true, true);   // v0--v3
-        e[8].setDatas(v[1],e[9],e[5],f[1], true, false);  // v1--v3 diagonal edge
-        e[9].setDatas(v[3],e[8],e[1],f[0], true, false);  // v3--v1 diagonal edge
-        e[10].setDatas(v[0],e[11],e[4],f[2], false, false); // v0--v2 imaginary edge
-        e[11].setDatas(v[2],e[10],e[0],f[3], false, false); // v2--v0 imaginary edge
-
-        f[0].setDatas(e[9], true); // v0-v3-v1
-        f[1].setDatas(e[8], true); // v1-v3-v2
-        f[2].setDatas(e[4], false); // v0-v2-v3
-        f[3].setDatas(e[2], false); // v0-v1-v2
-
-        // constraint relations datas
-        v[0].fromConstraintSegments.push( s[0],s[3] );
-        v[1].fromConstraintSegments.push( s[0],s[1] );
-        v[2].fromConstraintSegments.push( s[1],s[2] );
-        v[3].fromConstraintSegments.push( s[2],s[3] );
-
-        e[0].fromConstraintSegments.push( s[0] );
-        e[1].fromConstraintSegments.push( s[0] );
-        e[2].fromConstraintSegments.push( s[1] );
-        e[3].fromConstraintSegments.push( s[1] );
-        e[4].fromConstraintSegments.push( s[2] );
-        e[5].fromConstraintSegments.push( s[2] );
-        e[6].fromConstraintSegments.push( s[3] );
-        e[7].fromConstraintSegments.push( s[3] );
-
-        s[0].edges.push( e[0] ); // top
-        s[1].edges.push( e[2] ); // right
-        s[2].edges.push( e[4] ); // bottom
-        s[3].edges.push( e[6] ); // left
-        s[0].fromShape = boundShape;
-        s[1].fromShape = boundShape;
-        s[2].fromShape = boundShape;
-        s[3].fromShape = boundShape;
-        boundShape.segments.push( s[0], s[1], s[2], s[3] );
-
-        this._vertices = v;
-        this._edges = e;
-        this._faces = f;
-        this._constraintShapes.push( boundShape );
-
-        this.clipping = false;
-        this.insertConstraintShape( [ 0,0,w,0,  w,0,w,h,  w,h,0,h,  0,h,0,0 ] );
-        this.clipping = true;
-
-    }
-
-}
-
-const ShapeSimplifier = ( coords, epsilon = 1 ) => {
-
-    epsilon = epsilon || 1;
-    let len = coords.length;
-    //DDLS.Debug.assertFalse((len & 1) != 0,"Wrong size",{ fileName : "ShapeSimplifier.hx", lineNumber : 18, className : "DDLS.ShapeSimplifier", methodName : "simplify"});
-    if(len <= 4) return [].concat(coords);
-    let firstPointX = coords[0];
-    let firstPointY = coords[1];
-    let lastPointX = coords[len - 2];
-    let lastPointY = coords[len - 1];
-    let index = -1;
-    let dist = 0.;
-    let _g1 = 1;
-    let _g = len >> 1;
-    while(_g1 < _g) {
-        let i = _g1++;
-        let currDist = Geom2D.distanceSquaredPointToSegment( new Point(coords[i << 1],coords[(i << 1) + 1]), new Point(firstPointX,firstPointY), new Point(lastPointX,lastPointY) );
-        //let currDist = DDLS.Geom2D.distanceSquaredPointToSegment(coords[i << 1],coords[(i << 1) + 1],firstPointX,firstPointY,lastPointX,lastPointY);
-        if(currDist > dist) {
-            dist = currDist;
-            index = i;
-        }
-    }
-    if(dist > epsilon * epsilon) {
-        let l1 = coords.slice(0,(index << 1) + 2);
-        let l2 = coords.slice(index << 1);
-        let r1 = ShapeSimplifier(l1,epsilon);
-        let r2 = ShapeSimplifier(l2,epsilon);
-        let rs = r1.slice(0,r1.length - 2).concat(r2);
-        return rs;
-    } else return [firstPointX,firstPointY,lastPointX,lastPointY];
-
-};
-
-class BitmapMesh {
-
-    static buildFromBmpData ( pixel, precision = 1, color ) {
-
-        if( color !== undefined ) Potrace.setColor( color );
-        precision = precision || 1;
-
-        let optimised = precision >= 1;
-
-        // OUTLINES STEP-LIKE SHAPES GENERATION
-
-        const shapes = Potrace.buildShapes( pixel );
-        
-
-        // OPTIMIZED POLYGONS GENERATION FROM GRAPH OF POTENTIAL SEGMENTS GENERATION
-        // MESH GENERATION
-
-        let i = shapes.length, j, poly, n = 0, n2 = 0; 
-
-        const mesh = new RectMesh( pixel.width, pixel.height );
-
-        while( i-- ){
-
-            if( optimised ) shapes[n] = ShapeSimplifier( shapes[n], precision );
-
-            poly = Potrace.buildPolygon( Potrace.buildGraph( shapes[n] ) );
-            
-            j = (poly.length - 2) * 0.5;
-            n2 = 0;
-            while(j--){
-                mesh.insertConstraintSegment( poly[n2], poly[n2+1], poly[n2+2], poly[n2+3] );
-                n2 += 2;
-            }
-
-            mesh.insertConstraintSegment( poly[0], poly[1], poly[n2], poly[n2+1] );
-
-            /*
-            lng = poly.length - 2;
-            for ( j = 0; j < lng; j += 2 ) mesh.insertConstraintSegment( poly[j], poly[j+1], poly[j+2], poly[j+3] )
-            mesh.insertConstraintSegment( poly[0], poly[1], poly[j], poly[j+1] )
-            */
-
-            n++;
-
-        }
-
-        return mesh
-
-    }
-
-}
-
 //https://github.com/hxDaedalus/hxDaedalus/tree/master/src/hxDaedalus
 
 class World {
@@ -5754,6 +5643,12 @@ class World {
        this.mesh.updateObjects();
 
     }
+
+    updateAll() {
+
+       this.mesh.updateAll();
+
+    }
     
     add( o ) {
 
@@ -5770,19 +5665,20 @@ class World {
         
     }
 
-    addObject( s ) {
+    addObject( o = {} ) {
 
-        s = s || {};
-        let o = new Object2D();
-        o.coordinates = s.coord || [-1,-1,1,-1,  1,-1,1,1,  1,1,-1,1,  -1,1,-1,-1];
-        o.position(s.x || 1,s.y || 1);
-        o.scale(s.w || 1, s.h || 1);
-        o.pivot( s.px || 0, s.py || 0);
-        o.rotation = s.r || 0;
+        let ob = new Object2D();
+        ob.coordinates = o.coord || [-1,-1,1,-1,  1,-1,1,1,  1,1,-1,1,  -1,1,-1,-1];
+        ob.position( o.x || 1, o.y || 1 );
+        ob.scale( o.w || 1, o.h || 1 );
+        ob.pivot( o.px || 0, o.py || 0 );
 
-        this.mesh.insertObject(o);
-        this.objects.push(o);
-        return o
+        //ob.pivot( o.x || 1, o.y || 1 )
+        ob.rotation = (o.r*torad) || 0;
+
+        this.mesh.insertObject(ob);
+        this.objects.push(ob);
+        return ob
 
     }
 
@@ -5803,10 +5699,11 @@ class World {
         else this.mesh = new RectMesh( this.w, this.h );
         this.pathFinder.mesh = this.mesh;
         //this.mesh._objects = [];
-        let i = this.objects.length;
+        let i = this.objects.length, n = 0;
         while(i--){
-            this.objects[i]._constraintShape = null;
-            this.mesh.insertObject(this.objects[i]);
+            this.objects[n]._constraintShape = null;
+            this.mesh.insertObject( this.objects[n] );
+            n++;
         }
 
     }
@@ -5866,170 +5763,6 @@ class World {
 
     }
     
-}
-
-class CircleMesh {
-
-    constructor( x = 100, y = 100, r = 100, n = 8 ) {
-    
-        let v = [];
-        let e = [];
-        let f = [];
-        let s = [];
-        let coord = [];
-
-        let i = n;
-
-        while(i--){
-            f.push(new Face());
-            v.push(new Vertex());
-            s.push(new Segment());
-            e.push(new Edge(), new Edge(), new Edge());
-        }
-
-        let boundShape = new Shape();    
-        let offset = 10;
-        
-        let ndiv = 1/n;
-        i = 0;
-        while( i < n ) {
-
-            v[i].pos.set( x + ((r+offset) * Math.cos( TwoPI * i * ndiv)), y + ((r+offset) * Math.sin( TwoPI * i * ndiv)) );
-            v[i].setDatas(e[i*2]);
-            i++;
-
-        }
-
-        // TODO edge ? face ?
-
-        /*
-        v[0].pos.set(0 - offset,0 - offset);
-        v[1].pos.set(w + offset,0 - offset);
-        v[2].pos.set(w + offset,h + offset);
-        v[3].pos.set(0 - offset,h + offset);
-        v[0].setDatas(e[0]);
-        v[1].setDatas(e[2]);
-        v[2].setDatas(e[4]);
-        v[3].setDatas(e[6]);
-        e[0].setDatas(v[0],e[1],e[2],f[3],true,true);
-        e[1].setDatas(v[1],e[0],e[7],f[0],true,true);
-        e[2].setDatas(v[1],e[3],e[11],f[3],true,true);
-        e[3].setDatas(v[2],e[2],e[8],f[1],true,true);
-        e[4].setDatas(v[2],e[5],e[6],f[2],true,true);
-        e[5].setDatas(v[3],e[4],e[3],f[1],true,true);
-        e[6].setDatas(v[3],e[7],e[10],f[2],true,true);
-        e[7].setDatas(v[0],e[6],e[9],f[0],true,true);
-        e[8].setDatas(v[1],e[9],e[5],f[1],true,false);
-        e[9].setDatas(v[3],e[8],e[1],f[0],true,false);
-        e[10].setDatas(v[0],e[11],e[4],f[2],false,false);
-        e[11].setDatas(v[2],e[10],e[0],f[3],false,false);
-        f[0].setDatas(e[9]);
-        f[1].setDatas(e[8]);
-        f[2].setDatas(e[4],false);
-        f[3].setDatas(e[2],false);
-        v[0].fromConstraintSegments = [s[0],s[3]];
-        v[1].fromConstraintSegments = [s[0],s[1]];
-        v[2].fromConstraintSegments = [s[1],s[2]];
-        v[3].fromConstraintSegments = [s[2],s[3]];
-        e[0].fromConstraintSegments.push(s[0]);
-        e[1].fromConstraintSegments.push(s[0]);
-        e[2].fromConstraintSegments.push(s[1]);
-        e[3].fromConstraintSegments.push(s[1]);
-        e[4].fromConstraintSegments.push(s[2]);
-        e[5].fromConstraintSegments.push(s[2]);
-        e[6].fromConstraintSegments.push(s[3]);
-        e[7].fromConstraintSegments.push(s[3]);
-        s[0].edges.push(e[0]);
-        s[1].edges.push(e[2]);
-        s[2].edges.push(e[4]);
-        s[3].edges.push(e[6]);
-        s[0].fromShape = boundShape;
-        s[1].fromShape = boundShape;
-        s[2].fromShape = boundShape;
-        s[3].fromShape = boundShape;
-        boundShape.segments.push(s[0], s[1], s[2], s[3]);// = s;*/
-        /*this.tmpObj = new DDLS.Object();
-        this.tmpObj.matrix.translate(x || 0,y || 0);
-        let coordinates = [];
-        this.tmpObj.coordinates = coordinates;
-        */
-        
-        i = 0;
-        while( i < n ) {
-
-            coord.push(x+(r * Math.cos( TwoPI * i * ndiv)));
-            coord.push(y+(r * Math.sin( TwoPI * i * ndiv)));
-            coord.push(x+(r * Math.cos( TwoPI * (i + 1) * ndiv)));
-            coord.push(y+(r * Math.sin( TwoPI * (i + 1) * ndiv)));
-            i++;
-
-        }
-
-
-        let mesh = new Mesh2D( r*2, r*2 );
-        mesh._vertices = v;
-        mesh._edges = e;
-        mesh._faces = f;
-        mesh._constraintShapes.push( boundShape );
-
-        mesh.clipping = false;
-        mesh.insertConstraintShape( coord );
-        mesh.clipping = true;
-
-        return mesh;
-
-    }
-}
-
-class BitmapObject {
-
-    static buildFromBmpData ( pixel, precision = 1, color ) {
-
-        if( color !== undefined ) Potrace.setColor( color );
-        precision = precision || 1;
-
-        let optimised = precision >= 1;
-        
-        // OUTLINES STEP-LIKE SHAPES GENERATION
-
-        const shapes = Potrace.buildShapes( pixel );
-
-        // OPTIMIZED POLYGONS GENERATION FROM GRAPH OF POTENTIAL SEGMENTS GENERATION
-        // OBJECT GENERATION
-        
-        let i = shapes.length, j, poly, n = 0, n2 =0; 
-
-        const obj = new Object2D();
-
-        while( i-- ){
-
-            if( optimised ) shapes[n] = ShapeSimplifier( shapes[n], precision );
-
-            poly = Potrace.buildPolygon( Potrace.buildGraph( shapes[n] ) );
-            
-            j = (poly.length - 2) * 0.5;
-            n2 = 0;
-            while(j--){
-                obj.coordinates.push( poly[n2], poly[n2+1], poly[n2+2], poly[n2+3] );
-                n2 += 2;
-            }
-
-            obj.coordinates.push( poly[0], poly[1], poly[n2], poly[n2+1] );
-
-            /*
-            lng = poly.length - 2;
-            for ( j = 0; j < lng; j += 2 ) obj.coordinates.push( poly[j], poly[j+1], poly[j+2], poly[j+3] )
-            obj.coordinates.push( poly[0], poly[1], poly[j], poly[j+1] )
-            */
-
-            n++;
-
-        }
-
-        return obj
-
-    }
-
 }
 
 function Cell ( col, row ) {
@@ -6161,6 +5894,57 @@ class GridMaze {
         this.object.coordinates = coords;
 
     }
+}
+
+class BitmapObject {
+
+    static buildFromBmpData ( pixel, precision = 1, color ) {
+
+        if( color !== undefined ) Potrace.setColor( color );
+        precision = precision || 1;
+
+        let optimised = precision >= 1;
+        
+        // OUTLINES STEP-LIKE SHAPES GENERATION
+
+        const shapes = Potrace.buildShapes( pixel );
+
+        // OPTIMIZED POLYGONS GENERATION FROM GRAPH OF POTENTIAL SEGMENTS GENERATION
+        // OBJECT GENERATION
+        
+        let i = shapes.length, j, poly, n = 0, n2 =0; 
+
+        const obj = new Object2D();
+
+        while( i-- ){
+
+            if( optimised ) shapes[n] = ShapeSimplifier( shapes[n], precision );
+
+            poly = Potrace.buildPolygon( Potrace.buildGraph( shapes[n] ) );
+            
+            j = (poly.length - 2) * 0.5;
+            n2 = 0;
+            while(j--){
+                obj.coordinates.push( poly[n2], poly[n2+1], poly[n2+2], poly[n2+3] );
+                n2 += 2;
+            }
+
+            obj.coordinates.push( poly[0], poly[1], poly[n2], poly[n2+1] );
+
+            /*
+            lng = poly.length - 2;
+            for ( j = 0; j < lng; j += 2 ) obj.coordinates.push( poly[j], poly[j+1], poly[j+2], poly[j+3] )
+            obj.coordinates.push( poly[0], poly[1], poly[j], poly[j+1] )
+            */
+
+            n++;
+
+        }
+
+        return obj
+
+    }
+
 }
 
 class Dungeon {
@@ -6829,4 +6613,4 @@ Mesh2D.prototype.draw = function(){
 
 }*/
 
-export { AStar, BitmapMesh, BitmapObject, CircleMesh, Debug, Dictionary, Dungeon, EDGE, EPSILON_NORMAL, EPSILON_SQUARED, Edge, Entity, FACE, Face, FieldOfView, Funnel, Geom2D, Graph, GridMaze, IDX, INFINITY, Integral, LinearPathSampler, Log, Main, Matrix2D, Mesh2D, NULL, Object2D, PathFinder, PathIterator, Point, Potrace, REVISION, RectMesh, Segment, Shape, SimpleView, Squared, SquaredSqrt, TTIER, ThreeView, TwoPI, VERTEX, Vertex, World, fix, fromImageData, nearEqual, rand, randInt, todeg, torad, unwrap };
+export { Debug, Dungeon, GridMaze, Point, REVISION, SimpleView, ThreeView, TwoPI, World, rand, randInt };

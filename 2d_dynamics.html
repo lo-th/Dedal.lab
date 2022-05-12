@@ -10,78 +10,97 @@
 <link rel="shortcut icon" href="favicon.ico">
 <link rel="stylesheet" href="css/style.css">
 
-<script src="./build/ddls.js"></script>
 <script src="./js/gui.js"></script>
 
 </head>
 <body>
-<script>
-
-var world, view, stats;
-
-init();
-render();
-
-function init() {
-
-    DDLS.Debug.callback = gui.log;
-
-    world = new DDLS.World( 465, 465 );
-    view = new DDLS.SimpleView( world );
-
-    //var segment = world.mesh.insertConstraintSegment(70,300,530,320);
-
-    var i = 5;
-    while(i--){
-        world.addObject({x:DDLS.rand(50,415), y:DDLS.rand(50,415), w:DDLS.rand(4,60), h:DDLS.rand(4,60)})
-    }
-
-    view.drawMesh( world.mesh );
-
-    world.addHeroe({x:20, y:20, r:4, speed:10, see:true });
-
-    world.addHeroe({x:300, y:300, r:4, speed:10, see:true });
+<script type="module">
     
-    view.domElement.onmousedown = onMouseDown;
+    import { DDLS } from './src/DDLS_dev.js'
 
-    gui.init();
+    let world, view, stats;
+    const size = 512
+    const max = 50
+    const num = 10
 
-};
+    init();
+    render();
 
-function onMouseDown (e) {
-    view.drawMesh(world.mesh,true);
-    var rect = e.target.getBoundingClientRect();
-    world.heroes[0].setTarget(e.clientX - rect.left, e.clientY - rect.top);
-};
+    function init() {
 
-function render() {
-    requestAnimationFrame( render );
+        DDLS.Debug.callback = gui.log;
 
-    var i = world.objects.length, h;
-    while(i--){
-        world.objects[i].rotation += 0.001; 
-    }
 
-    world.updateMesh();
 
-    view.drawMesh( world.mesh, true );
+        world = new DDLS.World( size, size );
+        view = new DDLS.SimpleView( world );
 
-    world.update();
+        //var segment = world.mesh.insertConstraintSegment(70,300,530,320);
 
-    view.clear();
+        /*
+        let i = num;
+        while(i--){
+            world.addObject({x:DDLS.rand(50,size-100), y:DDLS.rand(50,size-100), w:DDLS.rand(4,max), h:DDLS.rand(4,max)})
+        }
+        */
 
-    i = world.heroes.length, h;
-    while(i--){
+        
+        // bug test
+        world.addObject({x:256, y:256, w:60, h:60, r:90})
+        world.addObject({x:256-120, y:256, w:60, h:60, r:90})
+        world.addObject({x:256+120, y:256, w:60, h:60, r:90})
+        
 
-        h = world.heroes[i];
-        view.drawPath( h.tmppath );
-        view.drawEntity( h );
 
-    }
 
-    gui.update();
-    
-};
+        view.drawMesh( world.mesh );
+
+        world.addHeroe({x:20, y:20, r:4, speed:10, see:true, turn:1 });
+
+       // world.addHeroe({x:300, y:300, r:4, speed:10, see:true });
+        
+        view.domElement.onmousedown = onMouseDown;
+
+        gui.init();
+
+    };
+
+    function onMouseDown (e) {
+        view.drawMesh(world.mesh,true);
+        var rect = e.target.getBoundingClientRect();
+        world.heroes[0].setTarget(e.clientX - rect.left, e.clientY - rect.top);
+    };
+
+    function render() {
+        requestAnimationFrame( render );
+
+        let i = world.objects.length, h;
+        while(i--){
+            world.objects[i].rotation += 0.002; 
+        }
+
+        world.updateMesh()
+        //world.updateAll()
+        //world.rebuild()
+
+        view.drawMesh( world.mesh, true );
+
+        world.update();
+
+        view.clear();
+
+        i = world.heroes.length, h;
+        while(i--){
+
+            h = world.heroes[i];
+            view.drawPath( h.tmppath );
+            view.drawEntity( h );
+
+        }
+
+        gui.update();
+        
+    };
         
 </script>
 </body>

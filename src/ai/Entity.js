@@ -106,6 +106,8 @@ export class Entity {
 
             const startAngle = a !== undefined ? unwrap( a ) : this.angle
 
+            if( this.turnSpeed !== 0 ) this.needTurn = true
+
             this.pathSampler.reset()
             this.tmppath = [...this.path]
             this.pathSampler.path = this.tmppath
@@ -126,7 +128,7 @@ export class Entity {
                 this.needTurn = true
                 this.step = 0
 
-                if(this.angledelta === Infinity || this.angledelta === -Infinity || isNaN(this.angledelta)){ 
+                if( this.angledelta === Infinity || this.angledelta === -Infinity || isNaN(this.angledelta) ){ 
                     this.angledelta = 0 
                     this.turnStep = 0
                     this.needTurn = false

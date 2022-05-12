@@ -1,7 +1,6 @@
-//import './polyfills.js';
 
 import { Debug, TwoPI, REVISION } from './constants.js';
-//import { Point } from './math/Point.js';
+import { Point } from './math/Point.js';
 //import { Matrix2D } from './math/Matrix2D.js';
 //import { Geom2D } from './math/Geom2D.js';
 
@@ -41,6 +40,8 @@ export const DDLS = {
 
 	REVISION:REVISION,
 	Debug:Debug,
+
+	Point:Point,
 
 	randInt:randInt,
 	rand:rand,

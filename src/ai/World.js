@@ -1,4 +1,4 @@
-import { Main, IDX } from '../constants.js'
+import { Main, IDX, torad } from '../constants.js'
 import { RectMesh } from '../factories/RectMesh.js'
 import { BitmapMesh } from '../factories/BitmapMesh.js'
 import { PathFinder } from '../ai/PathFinder.js'
@@ -65,6 +65,12 @@ export class World {
        this.mesh.updateObjects()
 
     }
+
+    updateAll() {
+
+       this.mesh.updateAll()
+
+    }
     
     add( o ) {
 
@@ -81,19 +87,20 @@ export class World {
         
     }
 
-    addObject( s ) {
+    addObject( o = {} ) {
 
-        s = s || {};
-        let o = new Object2D()
-        o.coordinates = s.coord || [-1,-1,1,-1,  1,-1,1,1,  1,1,-1,1,  -1,1,-1,-1]
-        o.position(s.x || 1,s.y || 1)
-        o.scale(s.w || 1, s.h || 1)
-        o.pivot( s.px || 0, s.py || 0)
-        o.rotation = s.r || 0
+        let ob = new Object2D()
+        ob.coordinates = o.coord || [-1,-1,1,-1,  1,-1,1,1,  1,1,-1,1,  -1,1,-1,-1]
+        ob.position( o.x || 1, o.y || 1 )
+        ob.scale( o.w || 1, o.h || 1 )
+        ob.pivot( o.px || 0, o.py || 0 )
 
-        this.mesh.insertObject(o)
-        this.objects.push(o)
-        return o
+        //ob.pivot( o.x || 1, o.y || 1 )
+        ob.rotation = (o.r*torad) || 0
+
+        this.mesh.insertObject(ob)
+        this.objects.push(ob)
+        return ob
 
     }
 
@@ -114,10 +121,11 @@ export class World {
         else this.mesh = new RectMesh( this.w, this.h )
         this.pathFinder.mesh = this.mesh
         //this.mesh._objects = [];
-        let i = this.objects.length
+        let i = this.objects.length, n = 0
         while(i--){
-            this.objects[i]._constraintShape = null
-            this.mesh.insertObject(this.objects[i])
+            this.objects[n]._constraintShape = null
+            this.mesh.insertObject( this.objects[n] )
+            n++
         }
 
     }
