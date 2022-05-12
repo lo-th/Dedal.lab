@@ -9,23 +9,23 @@
 //-------------------------
 //     FACE
 //-------------------------
+export class FromFaceToInnerEdges {
 
-function FromFaceToInnerEdges () {
+    constructor () {
 
-    this._fromFace = null;
-    this._nextEdge = null;
-    
-    Object.defineProperty(this, 'fromFace', {
-        set: function(value) { 
-            this._fromFace = value;
-            this._nextEdge = this._fromFace.edge;
-        }
-    });
-};
+        this._fromFace = null
+        this._nextEdge = null
 
-FromFaceToInnerEdges.prototype = {
+    }
 
-    next: function() {
+    set fromFace ( value ) {
+
+        this._fromFace = value;
+        this._nextEdge = this._fromFace.edge;
+
+    }
+
+    next () {
         if(this._nextEdge != null) {
             this._resultEdge = this._nextEdge;
             this._nextEdge = this._nextEdge.nextLeftEdge;
@@ -34,9 +34,8 @@ FromFaceToInnerEdges.prototype = {
         return this._resultEdge;
     }
 
-};
+}
 
-export { FromFaceToInnerEdges };
 
 //!\\ not used
 /*
@@ -109,24 +108,23 @@ export { FromFaceToNeighbourFaces };
 //-------------------------
 //     MESH
 //-------------------------
+export class FromMeshToVertices {
 
-function FromMeshToVertices () {
+    constructor () {
 
-    this._fromMesh = null;
-    this._currIndex = 0;
+        this._fromMesh = null;
+        this._currIndex = 0;
 
-    Object.defineProperty(this, 'fromMesh', {
-        set: function(value) { 
-            this._fromMesh = value;
-            this._currIndex = 0;
-        }
-    });
+    }
 
-};
+    set fromMesh ( value ) {
 
-FromMeshToVertices.prototype = {
+        this._fromMesh = value;
+                this._currIndex = 0;
 
-    next: function() {
+    }
+
+    next () {
         do if(this._currIndex < this._fromMesh._vertices.length) {
             this._resultVertex = this._fromMesh._vertices[this._currIndex];
             this._currIndex++;
@@ -137,9 +135,8 @@ FromMeshToVertices.prototype = {
         return this._resultVertex;
     }
 
-};
+}
 
-export { FromMeshToVertices };
 
 //!\\ not used
 /*
@@ -178,25 +175,26 @@ export { FromMeshToFaces };
 //     VERTEX
 //-------------------------
 
-function FromVertexToHoldingFaces () {
 
-    this._fromVertex = null;
-    this._nextEdge = null;
+export class FromVertexToHoldingFaces {
 
-    Object.defineProperty(this, 'fromVertex', {
-        set: function( value ) {
+    constructor () {
 
-            this._fromVertex = value;
-            this._nextEdge = this._fromVertex.edge;// || null;
-           // if(this._fromVertex) this._nextEdge = this._fromVertex.edge;// || null;
-           // else DDLS.Log('!! null vertex')
-        }
-    });
-};
+        this._fromVertex = null;
+        this._nextEdge = null;
 
-FromVertexToHoldingFaces.prototype = {
+    }
 
-    next: function() {
+    set fromVertex ( value ) {
+
+        this._fromVertex = value;
+        this._nextEdge = this._fromVertex.edge;
+        // if(this._fromVertex) this._nextEdge = this._fromVertex.edge;// || null;
+         // else DDLS.Log('!! null vertex')
+
+    }
+
+    next () {
         if(this._nextEdge != null) do {
             this._resultFace = this._nextEdge.leftFace;
             this._nextEdge = this._nextEdge.rotLeftEdge;
@@ -210,29 +208,28 @@ FromVertexToHoldingFaces.prototype = {
         return this._resultFace;
     }
 
-};
-
-export { FromVertexToHoldingFaces };
+}
 
 //
 
-function FromVertexToIncomingEdges () {
+export class FromVertexToIncomingEdges {
 
-    this._fromVertex = null;
-    this._nextEdge = null;
+    constructor () {
 
-    Object.defineProperty(this, 'fromVertex', {
-        set: function(value) { 
-            this._fromVertex = value;
-            this._nextEdge = this._fromVertex.edge
-            while(!this._nextEdge.isReal) this._nextEdge = this._nextEdge.rotLeftEdge;
-        }
-    });
-};
+        this._fromVertex = null;
+        this._nextEdge = null;
 
-FromVertexToIncomingEdges.prototype = {
+    }
 
-    next: function() {
+    set fromVertex ( value ) {
+
+        this._fromVertex = value;
+        this._nextEdge = this._fromVertex.edge
+        while(!this._nextEdge.isReal) this._nextEdge = this._nextEdge.rotLeftEdge;
+
+    }
+
+    next () {
         if(this._nextEdge != null) {
             this._resultEdge = this._nextEdge.oppositeEdge;
             do {
@@ -246,31 +243,30 @@ FromVertexToIncomingEdges.prototype = {
         return this._resultEdge;
     }
 
-};
+}
 
-export { FromVertexToIncomingEdges };
 
 //
+export class FromVertexToOutgoingEdges {
 
-function FromVertexToOutgoingEdges () {
+    constructor () {
 
-    this.realEdgesOnly = true;
-    this._fromVertex = null;
-    this._nextEdge = null;
+        this.realEdgesOnly = true;
+        this._fromVertex = null;
+        this._nextEdge = null;
 
-    Object.defineProperty(this, 'fromVertex', {
-        set: function(value) { 
-            this._fromVertex = value;
-            this._nextEdge = this._fromVertex.edge;
-            if(this._nextEdge!=null)
-            while(this.realEdgesOnly && !this._nextEdge.isReal) this._nextEdge = this._nextEdge.rotLeftEdge;
-        }
-    });
-};
+    }
 
-FromVertexToOutgoingEdges.prototype = {
+    set fromVertex ( value ) {
 
-    next: function() {
+        this._fromVertex = value;
+        this._nextEdge = this._fromVertex.edge;
+        if(this._nextEdge!=null)
+        while(this.realEdgesOnly && !this._nextEdge.isReal) this._nextEdge = this._nextEdge.rotLeftEdge;
+
+    }
+
+    next() {
         if(this._nextEdge != null) {
             this._resultEdge = this._nextEdge;
             do {
@@ -283,9 +279,8 @@ FromVertexToOutgoingEdges.prototype = {
         } else this._resultEdge = null;
         return this._resultEdge;
     }
-};
+}
 
-export { FromVertexToOutgoingEdges };
 
 //!\\ not used
 /*

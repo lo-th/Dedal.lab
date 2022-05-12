@@ -1,14 +1,14 @@
-import { Dictionary, Log } from '../constants';
-import { Point } from '../math/Point';
-import { Geom2D } from '../math/Geom2D';
-import { nearEqual } from '../core/Tools';
-import { Graph } from '../core/Graph';
+import { Dictionary, Log } from '../constants.js';
+import { Point } from '../math/Point.js';
+import { Geom2D } from '../math/Geom2D.js';
+import { nearEqual } from '../core/Tools.js';
+import { Graph } from '../core/Graph.js';
 
 
 function EdgeData() {};
 function NodeData() {};
 
-var Potrace = {
+export const Potrace = {
 
     color: { r:255, g:255, b:255 },
     nearly : 50,
@@ -19,14 +19,14 @@ var Potrace = {
 
     buildShapes: function ( bmpData ) {
 
-        var shapes = [];
-        var dictPixelsDone = new Dictionary( 2 );
+        let shapes = [];
+        let dictPixelsDone = new Dictionary( 2 );
 
-        var r = bmpData.height-1;
-        var c = bmpData.width-1;
+        let r = bmpData.height-1;
+        let c = bmpData.width-1;
 
-        for (var row = 1; row < r; row++){
-            for (var col = 0 ; col < c; col++){
+        for (let row = 1; row < r; row++){
+            for (let col = 0 ; col < c; col++){
 
                 if ( Potrace.getWhite(bmpData, col, row) && !Potrace.getWhite( bmpData, col+1, row ) ){
 
@@ -42,13 +42,13 @@ var Potrace = {
 
     getWhite: function ( bmpData, col, row ){
 
-        var valide = false;
+        let valide = false;
 
-        var bytes = bmpData.bytes;
-        var w = bmpData.width;
-        var mask = Potrace.color;
-        var nearly = Potrace.nearly;
-        var id = ( col + ( row * w ) ) << 2; // * 4;
+        let bytes = bmpData.bytes;
+        let w = bmpData.width;
+        let mask = Potrace.color;
+        let nearly = Potrace.nearly;
+        let id = ( col + ( row * w ) ) << 2; // * 4;
 
         if( mask.r !== undefined ){ if( nearEqual( bytes[id] , mask.r, nearly ) ) valide = true; }
         if( mask.g !== undefined ){ if( nearEqual( bytes[id+1] , mask.g, nearly ) ) valide = true; }
@@ -61,19 +61,19 @@ var Potrace = {
 
     buildShape: function ( bmpData, fromPixelRow, fromPixelCol, dictPixelsDone ) {
         
-        var newX = fromPixelCol;
-        var newY = fromPixelRow;
-        var path = [newX,newY];
+        let newX = fromPixelCol;
+        let newY = fromPixelRow;
+        let path = [newX,newY];
         dictPixelsDone.set(newX + "_" + newY, true);
 
-        var w = bmpData.width;
-        var h = bmpData.height;
+        let w = bmpData.width;
+        let h = bmpData.height;
 
-        var curDir = new Point(0,1);
-        var newDir = new Point();
-        var newPixelRow;
-        var newPixelCol;
-        var count = -1;
+        let curDir = new Point(0,1);
+        let newDir = new Point();
+        let newPixelRow;
+        let newPixelCol;
+        let count = -1;
         
         while(true) {
 
@@ -134,9 +134,9 @@ var Potrace = {
 
     buildGraph: function ( shape ) {
 
-        var i = 0;
-        var graph = new Graph();
-        var node;
+        let i = 0;
+        let graph = new Graph();
+        let node;
 
         while( i < shape.length ) {
 
@@ -148,15 +148,15 @@ var Potrace = {
 
         }
 
-        var node1;
-        var node2;
-        var subNode;
-        var distSqrd;
-        var sumDistSqrd;
-        var count;
-        var isValid = false;
-        var edge;
-        var edgeData;
+        let node1;
+        let node2;
+        let subNode;
+        let distSqrd;
+        let sumDistSqrd;
+        let count;
+        let isValid = false;
+        let edge;
+        let edgeData;
         node1 = graph.node;
 
         while( node1 != null ) {
@@ -197,13 +197,13 @@ var Potrace = {
 
     buildPolygon: function ( graph ) {
 
-        var polygon = [], p1, p2, p3;
-        var minNodeIndex = 2147483647;
-        var edge;
-        var score;
-        var higherScore;
-        var lowerScoreEdge = null;
-        var currNode = graph.node;
+        let polygon = [], p1, p2, p3;
+        let minNodeIndex = 2147483647;
+        let edge;
+        let score;
+        let higherScore;
+        let lowerScoreEdge = null;
+        let currNode = graph.node;
 
         while( currNode.data.index < minNodeIndex ) {
 
@@ -238,5 +238,3 @@ var Potrace = {
     }
 
 }
-
-export { Potrace };

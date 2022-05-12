@@ -3,24 +3,24 @@
  * the dedal engine.
  */
 
-export var REVISION = '1.0.0';
+export const REVISION = '1.0.0';
 
 // MATH
 
-export var TTIER = 0.3333333333333333;
-export var torad = 0.0174532925199432957;
-export var todeg = 57.295779513082320876;
-export var EPSILON_NORMAL = 0.01;
-export var EPSILON_SQUARED = 0.0001;
-export var INFINITY = Infinity;
-export var TwoPI = Math.PI * 2;
+export const TTIER = 0.3333333333333333;
+export const torad = Math.PI / 180;
+export const todeg = 180 / Math.PI;
+export const EPSILON_NORMAL = 0.01;
+export const EPSILON_SQUARED = 0.0001;
+export const INFINITY = Infinity;
+export const TwoPI = Math.PI * 2;
 
 // INTERSECTION
 
-export var VERTEX = 0;
-export var EDGE = 1;
-export var FACE = 2;
-export var NULL = 3;
+export const VERTEX = 0;
+export const EDGE = 1;
+export const FACE = 2;
+export const NULL = 3;
 
 // MAIN
 
@@ -44,7 +44,7 @@ var Main = {
 
 export { Main };
 
-var IDX = {
+export const IDX = {
 
     id: { segment:0, shape:0, edge:0, face:0, mesh2D:0, object2D:0, vertex:0, graph:0, graphEdge:0, graphNode:0 },
 
@@ -63,7 +63,6 @@ var IDX = {
 
 }
 
-export { IDX };
 
 
 
@@ -84,13 +83,51 @@ var Debug = {
 
 export { Debug };
 
-export var Log = function Log ( str ){ Debug.log( str ); };
+//export var Log = function Log ( str ){ Debug.log( str ); };
 
-
-
+export const Log = ( str ) => { Debug.log( str ) }
 
 
 // DICTIONARY
+export class Dictionary {
+
+    constructor ( type = 0 ) {
+
+        this.type = type
+        this.m = new Map()
+
+    }
+
+    set ( key, value ) {
+
+        this.m.set( this.type === 1 ? key.id : key, value )
+        
+    }
+
+    get ( key ) {
+
+        if ( !this.m.has( this.type === 1 ? key.id : key ) ) return null;
+        return this.m.get( this.type === 1 ? key.id : key );
+
+    }
+
+    remove ( key ) {
+
+        this.m.delete( this.type === 1 ? key.id : key );
+
+    }
+
+    dispose () {
+
+        this.m.clear()
+        //this.m = null
+
+    }
+
+}
+
+
+/*
 
 function Dictionary ( type ){
 
@@ -174,4 +211,4 @@ Dictionary.prototype = {
 
 }
 
-export { Dictionary };
+export { Dictionary };*/

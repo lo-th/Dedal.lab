@@ -1,20 +1,20 @@
-import { Main } from '../constants';
-import { Mesh2D } from '../core/Mesh2D';
-import { Entity } from '../ai/Entity';
+import { Main } from '../constants.js';
+import { Mesh2D } from '../core/Mesh2D.js';
+import { Entity } from '../ai/Entity.js';
 
 
-//var TH;
+//let TH;
 
 function ThreeView( scene, world, THREE ) {
 
-    var TH = THREE;
+    let TH = THREE;
 
     this.world = world;
 
     this.maxVertices = 30000;
     this.currentVertex = 0;
 
-    var geometry = new TH.BufferGeometry();
+    let geometry = new TH.BufferGeometry();
     geometry.addAttribute('position', new TH.BufferAttribute( new Float32Array( this.maxVertices * 3 ), 3 ));
     geometry.addAttribute('color', new TH.BufferAttribute( new Float32Array( this.maxVertices * 3 ), 3 ));
     this.positions = geometry.attributes.position.array;
@@ -30,7 +30,7 @@ function ThreeView( scene, world, THREE ) {
     this.maxPathVertices = 1000;
     this.currentPathVertex = 0;
 
-    var geometryPath = new TH.BufferGeometry();
+    let geometryPath = new TH.BufferGeometry();
     geometryPath.addAttribute('position', new TH.BufferAttribute( new Float32Array( this.maxPathVertices * 3 ), 3 ));
     geometryPath.addAttribute('color', new TH.BufferAttribute( new Float32Array( this.maxPathVertices * 3 ), 3 ));
     this.positionsPath = geometryPath.attributes.position.array;
@@ -55,9 +55,9 @@ ThreeView.prototype = {
 
     collapseBuffer : function() {
 
-        var i = this.maxVertices;
-        var min = this.currentVertex;
-        var n = 0;
+        let i = this.maxVertices;
+        let min = this.currentVertex;
+        let n = 0;
         while(i>=min){
             n = i * 3;
             this.positions[n] = 0;
@@ -71,9 +71,9 @@ ThreeView.prototype = {
     },
     collapsePathBuffer : function() {
 
-        var i = this.maxPathVertices;
-        var min = this.currentPathVertex;
-        var n = 0;
+        let i = this.maxPathVertices;
+        let min = this.currentPathVertex;
+        let n = 0;
         while(i>=min){
             n = i * 3;
             this.positionsPath[n] = 0;
@@ -90,7 +90,7 @@ ThreeView.prototype = {
 
         //
 
-        //var redraw = this.world.mesh.updateObjects();
+        //let redraw = this.world.mesh.updateObjects();
         //if(redraw){
         if( this.world.mesh.isRedraw ){
             this.currentVertex = 0;
@@ -104,7 +104,7 @@ ThreeView.prototype = {
 
         this.world.update();
 
-        var i = this.world.heroes.length, h;
+        let i = this.world.heroes.length, h;
 
         while(i--){
 
@@ -114,11 +114,11 @@ ThreeView.prototype = {
             
             if( h.isSelected && h.tmppath.length > 0 ){
                 this.currentPathVertex = 0;
-                var p = this.world.heroes[i].tmppath;
+                let p = this.world.heroes[i].tmppath;
                 //if( p.length === 0 ) return;
-                var prevX = p[0];
-                var prevY = p[1];
-                var j = 2;
+                let prevX = p[0];
+                let prevY = p[1];
+                let j = 2;
 
                 while(j < p.length) {
                     this.insertPath(prevX, prevY, p[j], p[j+1], 1,0,0);
@@ -128,7 +128,7 @@ ThreeView.prototype = {
                 }
 
 
-                /*var j = p.length*0.25, n;
+                /*let j = p.length*0.25, n;
                 while(j--){
                     n = j*4;
                     this.insertPath(p[n], p[n+1], p[n+2], p[n+3], 1,0,0);
@@ -146,8 +146,8 @@ ThreeView.prototype = {
 
     insertLine : function(x1, y1, x2, y2, r, g, b) {
 
-        var i = this.currentVertex;
-        var n = i * 3;
+        let i = this.currentVertex;
+        let n = i * 3;
         this.positions[n] = x1;
         this.positions[n + 1] = 0;
         this.positions[n + 2] = y1;
@@ -167,8 +167,8 @@ ThreeView.prototype = {
 
     insertPath : function(x1, y1, x2, y2, r, g, b) {
 
-        var i = this.currentPathVertex;
-        var n = i * 3;
+        let i = this.currentPathVertex;
+        let n = i * 3;
         this.positionsPath[n] = x1;
         this.positionsPath[n + 1] = 0;
         this.positionsPath[n + 2] = y1;
@@ -194,11 +194,11 @@ Mesh2D.prototype.draw = function(){
     //console.log('meshdraw')
     this.compute_Data();
 
-    var view = Main.get();
+    let view = Main.get();
 
-    var edge = this.AR_edge;
-    var i = edge.length;
-    var n = 0;
+    let edge = this.AR_edge;
+    let i = edge.length;
+    let n = 0;
     while(i--){
         n = i * 5;
         if(edge[n+4]) {

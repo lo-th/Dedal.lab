@@ -1,57 +1,51 @@
-import { IDX, EDGE } from '../constants';
+import { IDX, EDGE } from '../constants.js';
 
-function Edge () {
+export class Edge {
 
-    this.type = EDGE;
-    this.id = IDX.get('edge');
+    constructor () {
 
-    this.fromConstraintSegments = [];
-    this.isConstrained = false;
-    this.isReal = false;
-    this.originVertex = null;
-    this.oppositeEdge = null;
-    this.nextLeftEdge = null;
-    this.leftFace = null;
+        this.type = EDGE;
+        this.id = IDX.get('edge');
 
-};
+        this.fromConstraintSegments = [];
+        this.isConstrained = false;
+        this.isReal = false;
+        this.originVertex = null;
+        this.oppositeEdge = null;
+        this.nextLeftEdge = null;
+        this.leftFace = null;
 
-Object.defineProperties( Edge.prototype, {
+    }
 
-    destinationVertex: {
-        get: function() { return this.oppositeEdge.originVertex; }
-    },
+    get destinationVertex () {
+        return this.oppositeEdge.originVertex
+    }
 
-    nextRightEdge: {
-        get: function() { return this.oppositeEdge.nextLeftEdge.nextLeftEdge.oppositeEdge; }
-    },
+    get nextRightEdge () {
+        return this.oppositeEdge.nextLeftEdge.nextLeftEdge.oppositeEdge
+    }
 
-    prevRightEdge: {
-        get: function() { return this.oppositeEdge.nextLeftEdge.oppositeEdge; }
-    },
+    get prevRightEdge () {
+        return this.oppositeEdge.nextLeftEdge.oppositeEdge
+    }
 
-    prevLeftEdge: {
-        get: function() { return this.nextLeftEdge.nextLeftEdge; }
-    },
+    get prevLeftEdge () {
+        return this.nextLeftEdge.nextLeftEdge
+    }
 
-    rotLeftEdge: {
-        get: function() { return this.nextLeftEdge.nextLeftEdge.oppositeEdge; }
-    },
+    get rotLeftEdge () {
+        return this.nextLeftEdge.nextLeftEdge.oppositeEdge
+    }
 
-    rotRightEdge: {
-        get: function() { return this.oppositeEdge.nextLeftEdge; }
-    },
+    get rotRightEdge () {
+        return this.oppositeEdge.nextLeftEdge
+    }
 
-    rightFace: {
-        get: function() { return this.oppositeEdge.leftFace; }
-    },
+    get rightFace () {
+        return this.oppositeEdge.leftFace
+    }
 
-} );
-
-Object.assign( Edge.prototype, {
-
-    constructor: Edge,
-
-    setDatas: function( originVertex, oppositeEdge, nextLeftEdge, leftFace, isReal, isConstrained ) {
+    setDatas( originVertex, oppositeEdge, nextLeftEdge, leftFace, isReal, isConstrained ) {
 
         this.isConstrained = isReal !== undefined ? isConstrained : false;
         this.isReal = isReal !== undefined ? isReal : true;
@@ -60,28 +54,28 @@ Object.assign( Edge.prototype, {
         this.nextLeftEdge = nextLeftEdge;
         this.leftFace = leftFace;
 
-    },
+    }
 
-    getDatas: function () {
+    getDatas () {
 
         return [ this.originVertex.pos.x, this.originVertex.pos.y, this.destinationVertex.pos.x, this.destinationVertex.pos.y, this.isConstrained ? 1:0 ];
 
-    },
+    }
 
-    addFromConstraintSegment: function ( segment ) {
+    addFromConstraintSegment ( segment ) {
 
         if ( this.fromConstraintSegments.indexOf(segment) === -1 ) this.fromConstraintSegments.push(segment);
 
-    },
+    }
 
-    removeFromConstraintSegment: function( segment ) {
+    removeFromConstraintSegment( segment ) {
 
-        var index = this.fromConstraintSegments.indexOf( segment );
+        const index = this.fromConstraintSegments.indexOf( segment );
         if ( index !== -1 ) this.fromConstraintSegments.splice(index, 1);
 
-    },
+    }
 
-    dispose: function() {
+    dispose () {
 
         this.originVertex = null;
         this.oppositeEdge = null;
@@ -89,14 +83,12 @@ Object.assign( Edge.prototype, {
         this.leftFace = null;
         this.fromConstraintSegments = null;
 
-    },
+    }
 
-    toString: function() {
+    toString () {
 
         return "edge " + this.originVertex.id + " - " + this.destinationVertex.id;
 
     }
 
-} );
-
-export { Edge };
+}

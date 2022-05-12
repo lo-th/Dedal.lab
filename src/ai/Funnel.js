@@ -1,52 +1,57 @@
-import { Integral, Squared, SquaredSqrt, fix } from '../core/Tools';
-import { Point } from '../math/Point';
-import { Geom2D } from '../math/Geom2D';
-import { Dictionary, Log, EDGE, TwoPI } from '../constants';
+import { Integral, Squared, SquaredSqrt, fix } from '../core/Tools.js';
+import { Point } from '../math/Point.js';
+import { Geom2D } from '../math/Geom2D.js';
+import { Dictionary, Log, EDGE, TwoPI } from '../constants.js';
 
-function Funnel() {
 
-    this._currPoolPointsIndex = 0;
-    this._poolPointsSize = 3000;
-    this._numSamplesCircle = 16;
-    this._radiusSquared = 0;
-    this._radius = 0;
-    this._poolPoints = [];
-    var l = this._poolPointsSize, n=0;
-    while(n < l) {
-        var i = n++;
-        this._poolPoints.push(new Point());
+export class Funnel {
+
+    constructor () {
+
+        this._currPoolPointsIndex = 0;
+        this._poolPointsSize = 3000;
+        this._numSamplesCircle = 16;
+        this._radiusSquared = 0;
+        this._radius = 0;
+        this._poolPoints = [];
+        let l = this._poolPointsSize, n=0;
+        while(n < l) {
+            let i = n++;
+            this._poolPoints.push(new Point());
+        }
+
+
     }
 
-    Object.defineProperty(this, 'radius', {
-        get: function() { return this._radius; },
-        set: function(value) { 
-            this._radius = Math.max(0,value);
-            this._radiusSquared = this._radius * this._radius;
-            this._sampleCircle = [];
-            if(this._radius == 0) return;
-            var l = this._numSamplesCircle, n = 0, r;
-            while(n < l) {
-                var i = n++;
-                r = - TwoPI * i / this._numSamplesCircle;
-                this._sampleCircle.push(new Point(this._radius * Math.cos(r),this._radius * Math.sin(r)));
-            }
-            this._sampleCircleDistanceSquared = Squared(this._sampleCircle[0].x - this._sampleCircle[1].x, this._sampleCircle[0].y - this._sampleCircle[1].y);
+    get radius () {
+
+        return this._radius
+
+    }
+
+    set radius ( value ) {
+
+        this._radius = Math.max(0,value);
+        this._radiusSquared = this._radius * this._radius;
+        this._sampleCircle = [];
+        if(this._radius == 0) return;
+        let l = this._numSamplesCircle, n = 0, r;
+        while(n < l) {
+            let i = n++;
+            r = - TwoPI * i / this._numSamplesCircle;
+            this._sampleCircle.push(new Point(this._radius * Math.cos(r),this._radius * Math.sin(r)));
         }
-    });
+        this._sampleCircleDistanceSquared = Squared(this._sampleCircle[0].x - this._sampleCircle[1].x, this._sampleCircle[0].y - this._sampleCircle[1].y);
 
-};
+    }
 
-Funnel.prototype = {
-
-    constructor: Funnel,
-
-    dispose: function() {
+    dispose () {
 
         this._sampleCircle = null;
 
-    },
+    }
 
-    getPoint: function( x, y ) {
+    getPoint ( x, y ) {
 
         y = y || 0;
         x = x || 0;
@@ -58,23 +63,23 @@ Funnel.prototype = {
             this._poolPointsSize++;
         }
         return this.__point;
-    },
+    }
 
-    getCopyPoint: function ( pointToCopy ) {
+    getCopyPoint ( pointToCopy ) {
 
         return this.getPoint( pointToCopy.x, pointToCopy.y );
 
-    },
+    }
 
-    findPath: function ( from, target, listFaces, listEdges, resultPath ) {
+    findPath ( from, target, listFaces, listEdges, resultPath ) {
 
-        var p_from = from;
-        var p_to = target;
-        var rad = this._radius * 1.01;
+        let p_from = from;
+        let p_to = target;
+        let rad = this._radius * 1.01;
         this._currPoolPointsIndex = 0;
         if(this._radius > 0) {
-            var checkFace = listFaces[0];
-            var distanceSquared, distance, p1, p2, p3;
+            let checkFace = listFaces[0];
+            let distanceSquared, distance, p1, p2, p3;
             p1 = checkFace.edge.originVertex.pos;
             p2 = checkFace.edge.destinationVertex.pos;
             p3 = checkFace.edge.nextLeftEdge.destinationVertex.pos;
@@ -130,7 +135,7 @@ Funnel.prototype = {
             }
         }
         // we build starting and ending points
-        var startPoint, endPoint;
+        let startPoint, endPoint;
         startPoint = p_from.clone();//new Point(fromX,fromY);
         endPoint = p_to.clone();//new Point(toX,toY);
         if(listFaces.length == 1) {
@@ -140,16 +145,16 @@ Funnel.prototype = {
             resultPath.push(fix(endPoint.y));
             return;
         }
-        var i, j, k, l, n;
-        var currEdge = null;
-        var currVertex = null;
-        var direction;
+        let i, j, k, l, n;
+        let currEdge = null;
+        let currVertex = null;
+        let direction;
 
 
 
         // first we skip the first face and first edge if the starting point lies on the first interior edge:
 
-        var edgeTmp = Geom2D.isInFace( p_from, listFaces[0] );
+        let edgeTmp = Geom2D.isInFace( p_from, listFaces[0] );
 
         if ( edgeTmp.type === EDGE ){
             if ( listEdges[0] === edgeTmp ){
@@ -160,11 +165,11 @@ Funnel.prototype = {
             }
         }
         //{
-           /* var _g = Geom2D.isInFacePrime(fromX,fromY,listFaces[0]);
-            var _g = Geom2D.isInFace(fromX,fromY,listFaces[0]);
+           /* let _g = Geom2D.isInFacePrime(fromX,fromY,listFaces[0]);
+            let _g = Geom2D.isInFace(fromX,fromY,listFaces[0]);
             switch(_g[1]) {
             case 1:
-                var edge = _g[2];
+                let edge = _g[2];
                 if(listEdges[0] == edge) {
                     listEdges.shift();
                     listFaces.shift();
@@ -176,21 +181,21 @@ Funnel.prototype = {
 
         // our funnels, inited with starting point  
 
-        var funnelLeft = [];
-        var funnelRight = [];
+        let funnelLeft = [];
+        let funnelRight = [];
         funnelLeft.push(startPoint);
         funnelRight.push(startPoint);
-        var verticesDoneSide = new Dictionary( 1 );
-        var pointsList = [];
-        var pointSides = new Dictionary( 0 );
-        var pointSuccessor = new Dictionary( 0 );
+        let verticesDoneSide = new Dictionary( 1 );
+        let pointsList = [];
+        let pointSides = new Dictionary( 0 );
+        let pointSuccessor = new Dictionary( 0 );
         pointSides.set(startPoint,0);
         //0;
         currEdge = listEdges[0];
-        var relativPos = Geom2D.getRelativePosition2(p_from,currEdge);
-        var prevPoint;
-        var newPointA;
-        var newPointB;
+        let relativPos = Geom2D.getRelativePosition2(p_from,currEdge);
+        let prevPoint;
+        let newPointA;
+        let newPointB;
         newPointA = this.getCopyPoint(currEdge.destinationVertex.pos);
         newPointB = this.getCopyPoint(currEdge.originVertex.pos);
         pointsList.push(newPointA);
@@ -209,12 +214,12 @@ Funnel.prototype = {
             verticesDoneSide.set(currEdge.destinationVertex,-1);
             verticesDoneSide.set(currEdge.originVertex,1);
         }
-        var fromVertex = listEdges[0].originVertex;
-        var fromFromVertex = listEdges[0].destinationVertex;
-        var _g1 = 1;
-        var _g2 = listEdges.length;
+        let fromVertex = listEdges[0].originVertex;
+        let fromFromVertex = listEdges[0].destinationVertex;
+        let _g1 = 1;
+        let _g2 = listEdges.length;
         while(_g1 < _g2) {
-            var i1 = _g1++;
+            let i1 = _g1++;
             currEdge = listEdges[i1];
             if(currEdge.originVertex == fromVertex) currVertex = currEdge.destinationVertex; 
             else if(currEdge.destinationVertex == fromVertex) currVertex = currEdge.originVertex; 
@@ -239,16 +244,16 @@ Funnel.prototype = {
         pointSuccessor.set(prevPoint,endPoint);
         pointSides.set(endPoint,0);
 
-        var pathPoints = [];
-        var pathSides = new Dictionary( 1 );
+        let pathPoints = [];
+        let pathSides = new Dictionary( 1 );
         pathPoints.push(startPoint);
         pathSides.set(startPoint,0);
         //0;
-        var currPos;
-        var _g11 = 0;
-        var _g3 = pointsList.length;
+        let currPos;
+        let _g11 = 0;
+        let _g3 = pointsList.length;
         while(_g11 < _g3) {
-            var i2 = _g11++;
+            let i2 = _g11++;
             currPos = pointsList[i2];
             if(pointSides.get(currPos) == -1) {
                 j = funnelLeft.length - 2;
@@ -256,9 +261,9 @@ Funnel.prototype = {
                     direction = Geom2D.getDirection(funnelLeft[j], funnelLeft[j + 1], currPos);
                     if(direction != -1) {
                         funnelLeft.shift();
-                        var _g21 = 0;
+                        let _g21 = 0;
                         while(_g21 < j) {
-                            var k5 = _g21++;
+                            let k5 = _g21++;
                             pathPoints.push(funnelLeft[0]);
                             pathSides.set(funnelLeft[0],1);
                             funnelLeft.shift();
@@ -286,9 +291,9 @@ Funnel.prototype = {
                     direction = Geom2D.getDirection(funnelRight[j], funnelRight[j + 1], currPos);
                     if(direction != 1) {
                         funnelRight.shift();
-                        var _g22 = 0;
+                        let _g22 = 0;
                         while(_g22 < j) {
-                            var k6 = _g22++;
+                            let k6 = _g22++;
                             pathPoints.push(funnelRight[0]);
                             pathSides.set(funnelRight[0],-1);
                             funnelRight.shift();
@@ -312,16 +317,16 @@ Funnel.prototype = {
                 }
             }
         }
-        var blocked = false;
+        let blocked = false;
         j = funnelRight.length - 2;
         while(j >= 0) {
             direction = Geom2D.getDirection(funnelRight[j], funnelRight[j + 1], p_to);
             if(direction != 1) {
                 funnelRight.shift();
-                var _g12 = 0;
-                var _g4 = j + 1;
+                let _g12 = 0;
+                let _g4 = j + 1;
                 while(_g12 < _g4) {
-                    var k7 = _g12++;
+                    let k7 = _g12++;
                     pathPoints.push(funnelRight[0]);
                     pathSides.set(funnelRight[0],-1);
                     funnelRight.shift();
@@ -339,10 +344,10 @@ Funnel.prototype = {
                 direction = Geom2D.getDirection(funnelLeft[j], funnelLeft[j + 1], p_to);
                 if(direction != -1) {
                     funnelLeft.shift();
-                    var _g13 = 0;
-                    var _g5 = j + 1;
+                    let _g13 = 0;
+                    let _g5 = j + 1;
                     while(_g13 < _g5) {
-                        var k8 = _g13++;
+                        let k8 = _g13++;
                         pathPoints.push(funnelLeft[0]);
                         pathSides.set(funnelLeft[0],1);
                         funnelLeft.shift();
@@ -360,25 +365,25 @@ Funnel.prototype = {
             pathSides.set(endPoint,0);
             blocked = true;
         }
-        var adjustedPoints = [];
+        let adjustedPoints = [];
         if(this._radius > 0) {
-            var newPath = [];
+            let newPath = [];
             if(pathPoints.length == 2) this.adjustWithTangents(pathPoints[0],false,pathPoints[1],false,pointSides,pointSuccessor,newPath,adjustedPoints); else if(pathPoints.length > 2) {
                 this.adjustWithTangents(pathPoints[0],false,pathPoints[1],true,pointSides,pointSuccessor,newPath,adjustedPoints);
                 if(pathPoints.length > 3) {
-                    var _g14 = 1;
-                    var _g6 = pathPoints.length - 3 + 1;
+                    let _g14 = 1;
+                    let _g6 = pathPoints.length - 3 + 1;
                     while(_g14 < _g6) {
-                        var i3 = _g14++;
+                        let i3 = _g14++;
                         this.adjustWithTangents(pathPoints[i3],true,pathPoints[i3 + 1],true,pointSides,pointSuccessor,newPath,adjustedPoints);
                     }
                 }
-                var pathLength = pathPoints.length;
+                let pathLength = pathPoints.length;
                 this.adjustWithTangents(pathPoints[pathLength - 2],true,pathPoints[pathLength - 1],false,pointSides,pointSuccessor,newPath,adjustedPoints);
             }
             newPath.push(endPoint);
             this.checkAdjustedPath(newPath,adjustedPoints,pointSides);
-            var smoothPoints = [];
+            let smoothPoints = [];
             i = newPath.length - 2;
             while(i >= 1) {
                 this.smoothAngle(adjustedPoints[i * 2 - 1],newPath[i],adjustedPoints[i * 2],pointSides.get(newPath[i]),smoothPoints);
@@ -396,15 +401,15 @@ Funnel.prototype = {
             resultPath.push(fix(adjustedPoints[i].y));
         }
 
-    },
+    }
 
-    adjustWithTangents: function( p1, applyRadiusToP1, p2, applyRadiusToP2, pointSides, pointSuccessor, newPath, adjustedPoints ) {
+    adjustWithTangents( p1, applyRadiusToP1, p2, applyRadiusToP2, pointSides, pointSuccessor, newPath, adjustedPoints ) {
 
-        var tangentsResult = [];
-        var side1 = pointSides.get(p1);
-        var side2 = pointSides.get(p2);
-        var pTangent1 = null;
-        var pTangent2 = null;
+        let tangentsResult = [];
+        let side1 = pointSides.get(p1);
+        let side2 = pointSides.get(p2);
+        let pTangent1 = null;
+        let pTangent2 = null;
         if(!applyRadiusToP1 && !applyRadiusToP2) {
             pTangent1 = p1;
             pTangent2 = p2;
@@ -459,8 +464,8 @@ Funnel.prototype = {
             Log("NO TANGENT, points are too close for radius");
             return;
         }
-        var successor = pointSuccessor.get(p1);
-        var distance;
+        let successor = pointSuccessor.get(p1);
+        let distance;
         while(successor != p2) {
             distance = Geom2D.distanceSquaredPointToSegment(successor,pTangent1,pTangent2);
             if(distance < this._radiusSquared) {
@@ -473,27 +478,27 @@ Funnel.prototype = {
         adjustedPoints.push(pTangent2);
         newPath.push(p1);
 
-    },
+    }
 
-    checkAdjustedPath: function( newPath, adjustedPoints, pointSides ) {
+    checkAdjustedPath( newPath, adjustedPoints, pointSides ) {
 
-        var needCheck = true;
-        var point0;
-        var point0Side;
-        var point1;
-        var point1Side;
-        var point2;
-        var point2Side;
-        var pt1;
-        var pt2;
-        var pt3;
-        var dot;
-        var tangentsResult = [];
-        var pTangent1 = null;
-        var pTangent2 = null;
+        let needCheck = true;
+        let point0;
+        let point0Side;
+        let point1;
+        let point1Side;
+        let point2;
+        let point2Side;
+        let pt1;
+        let pt2;
+        let pt3;
+        let dot;
+        let tangentsResult = [];
+        let pTangent1 = null;
+        let pTangent2 = null;
         while(needCheck) {
             needCheck = false;
-            var i = 2;
+            let i = 2;
             while(i < newPath.length) {
                 point2 = newPath[i];
                 point2Side = pointSides.get(point2);
@@ -548,7 +553,7 @@ Funnel.prototype = {
                         newPath.splice(i-1, 1);
                         adjustedPoints.splice((i-1)*2-1, 2);
                         tangentsResult.splice(0, tangentsResult.length);
-                        /*var temp = (i - 2) * 2;
+                        /*let temp = (i - 2) * 2;
                         adjustedPoints.splice(temp,1);
                         adjustedPoints.splice(temp,0,pTangent1);
                         temp = i * 2 - 1;
@@ -563,24 +568,24 @@ Funnel.prototype = {
                 i++;
             }
         }
-    },
+    }
 
-    smoothAngle: function( prevPoint, pointToSmooth, nextPoint, side, encirclePoints ) {
+    smoothAngle( prevPoint, pointToSmooth, nextPoint, side, encirclePoints ) {
 
-        var angleType = Geom2D.getDirection(prevPoint,pointToSmooth,nextPoint);
-        var distanceSquared = Squared(prevPoint.x - nextPoint.x, prevPoint.y - nextPoint.y);
+        let angleType = Geom2D.getDirection(prevPoint,pointToSmooth,nextPoint);
+        let distanceSquared = Squared(prevPoint.x - nextPoint.x, prevPoint.y - nextPoint.y);
         if(distanceSquared <= this._sampleCircleDistanceSquared) return;
-        var index = 0;
-        var side1;
-        var side2;
-        var pointInArea;
-        var p_toCheck;
-        //var xToCheck;
-        //var yToCheck;
-        var _g1 = 0;
-        var _g = this._numSamplesCircle;
+        let index = 0;
+        let side1;
+        let side2;
+        let pointInArea;
+        let p_toCheck;
+        //let xToCheck;
+        //let yToCheck;
+        let _g1 = 0;
+        let _g = this._numSamplesCircle;
         while(_g1 < _g) {
-            var i = _g1++;
+            let i = _g1++;
             pointInArea = false;
             p_toCheck = pointToSmooth.clone().add(this._sampleCircle[i]);
             //p_toCheck = new Point(pointToSmooth.x + this._sampleCircle[i].x, pointToSmooth.y + this._sampleCircle[i].y);
@@ -599,7 +604,7 @@ Funnel.prototype = {
                 encirclePoints.splice(index, 0, p_toCheck);
                 //encirclePoints.splice(index, 0, new Point(xToCheck, yToCheck));
                 //encirclePoints.splice(index,0);
-                //var x = new Point(xToCheck,yToCheck);
+                //let x = new Point(xToCheck,yToCheck);
                 //encirclePoints.splice(index,0,x);
                 index++;
             } else index = 0;
@@ -607,6 +612,4 @@ Funnel.prototype = {
         if(side == -1) encirclePoints.reverse();
         
     }
-};
-
-export { Funnel };
+}

@@ -1,62 +1,59 @@
+export class RandGenerator {
 
-function RandGenerator ( seed, min, max ) {
+    constructor( seed = 1234, min = 0, max = 1 ) {
 
-    this.min = min || 0;
-    this.max = max || 1;
-    this.seed = this.currentSeed = seed || 1234;
-    this.nid = 0;
+        this.min = min
+        this.max = max
+        this.seed = this.currentSeed = seed
+        this.nid = 0
 
-};
+    }
 
-RandGenerator.prototype = {
-
-    constructor: RandGenerator,
-
-    getSeed: function () {
+    getSeed() {
 
         return this.seed;
 
-    }, 
+    } 
 
-    setSeed: function ( value ) {
+    setSeed( value ) {
 
         this.seed = this.currentSeed = value;
 
-    },
+    }
 
-    reset: function() {
+    reset() {
 
         this.currentSeed = this.seed;
         this.nid = 0;
 
-    },
+    }
 
-    next: function () {
+    next() {
 
-        var tmp = this.currentSeed * 1;
-        var temp = ( tmp * tmp ).toString();
+        let tmp = this.currentSeed * 1;
+        let temp = ( tmp * tmp ).toString();
         while( temp.length < 8 ) temp = "0" + temp;
         this.currentSeed = parseInt( temp.substr( 1 , 5 ) );
-        var res = Math.round( this.min + ( this.currentSeed / 99999 ) * ( this.max - this.min ));
+        let res = Math.round( this.min + ( this.currentSeed / 99999 ) * ( this.max - this.min ));
         if( this.currentSeed === 0 ) this.currentSeed = this.seed + this.nid;
         this.nid++;
         if( this.nid === 200 ) this.reset();
 
         return res;
 
-    },
+    }
 
-    nextInRange: function( min, max ) {
+    nextInRange( min, max ) {
 
         this.min = min;
         this.max = max;
         return this.next();
 
-    },
+    }
 
-    shuffle: function( ar ) {
+    shuffle( ar ) {
 
-        var i = ar.length, n, t;
+        let i = ar.length, n, t;
 
         while( i -- ) {
 
@@ -69,6 +66,4 @@ RandGenerator.prototype = {
 
     }
 
-};
-
-export { RandGenerator };
+}

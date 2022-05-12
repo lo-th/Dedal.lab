@@ -1,33 +1,29 @@
-import { IDX, FACE } from '../constants';
+import { IDX, FACE } from '../constants.js';
 
-function Face() {
+export class Face {
 
-    this.type = FACE;
-    this.id = IDX.get('face');
+    constructor () {
 
-    this.isReal = false;
-    this.edge = null;
-    
-};
+        this.type = FACE;
+        this.id = IDX.get('face');
 
-Face.prototype = {
+        this.isReal = false;
+        this.edge = null;
+        
+    }
 
-    constructor: Face,
-
-    setDatas: function ( edge, isReal ) {
+    setDatas ( edge, isReal ) {
 
         this.isReal = isReal !== undefined ? isReal : true;
         this.edge = edge;
 
-    },
+    }
 
-    dispose: function() {
+    dispose () {
 
         this.edge = null;
         this.isReal = false;
 
     }
 
-};
-
-export { Face };
+}

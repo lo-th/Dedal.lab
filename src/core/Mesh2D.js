@@ -1,52 +1,49 @@
- import { Point } from '../math/Point';
-import { Matrix2D } from '../math/Matrix2D';
-import { Geom2D } from '../math/Geom2D';
+import { Point } from '../math/Point.js';
+import { Matrix2D } from '../math/Matrix2D.js';
+import { Geom2D } from '../math/Geom2D.js';
 
-import { IDX, Dictionary, Log, INFINITY, EPSILON_SQUARED } from '../constants';
-import { Squared } from '../core/Tools';
+import { IDX, Dictionary, Log, INFINITY, EPSILON_SQUARED } from '../constants.js';
+import { Squared } from '../core/Tools.js';
 
-import { FromVertexToOutgoingEdges, FromMeshToVertices, FromVertexToIncomingEdges } from '../core/Iterators';
-import { Shape } from '../core/Shape';
-import { Segment } from '../core/Segment';
-import { Edge } from '../core/Edge';
-import { Face } from '../core/Face';
-import { Vertex } from '../core/Vertex';
+import { FromVertexToOutgoingEdges, FromMeshToVertices, FromVertexToIncomingEdges } from '../core/Iterators.js';
+import { Shape } from '../core/Shape.js';
+import { Segment } from '../core/Segment.js';
+import { Edge } from '../core/Edge.js';
+import { Face } from '../core/Face.js';
+import { Vertex } from '../core/Vertex.js';
 
+export class Mesh2D {
 
-function Mesh2D( width, height ) {
+    constructor ( width, height ) {
 
-    this.id = IDX.get('mesh2D');
-    this.__objectsUpdateInProgress = false;
-    this.__centerVertex = null;
-    this.width = width;
-    this.height = height;
-    this.clipping = true;
-    
-    this._edges = [];
-    this._faces = [];
-    this._objects = [];
-    this._vertices = [];
-    this._constraintShapes = [];
+        this.id = IDX.get('mesh2D');
+        this.__objectsUpdateInProgress = false;
+        this.__centerVertex = null;
+        this.width = width;
+        this.height = height;
+        this.clipping = true;
+        
+        this._edges = [];
+        this._faces = [];
+        this._objects = [];
+        this._vertices = [];
+        this._constraintShapes = [];
 
-    this.__edgesToCheck = [];
+        this.__edgesToCheck = [];
 
-    this.AR_vertex = null;
-    this.AR_edge = null;
+        this.AR_vertex = null;
+        this.AR_edge = null;
 
-    this.isRedraw = true;
+        this.isRedraw = true;
 
-};
+    }
 
-Mesh2D.prototype = {
+    deDuplicEdge () {
 
-    constructor: Mesh2D,
+        let edges = this._edges;
+        let lng = edges.length; 
 
-    deDuplicEdge: function () {
-
-        var edges = this._edges;
-        var lng = edges.length; 
-
-        var i, j, a, b, m, n;
+        let i, j, a, b, m, n;
 
         for( j = lng; j; ) {
             b = edges[--j];
@@ -64,9 +61,9 @@ Mesh2D.prototype = {
             }
         }
 
-    },
+    }
 
-    clear: function ( notObjects ) {
+    clear ( notObjects ) {
 
         while(this._vertices.length > 0) this._vertices.pop().dispose();
         this._vertices = [];
@@ -87,9 +84,9 @@ Mesh2D.prototype = {
         this.AR_vertex = null;
         this.AR_edge = null;
 
-    },
+    }
     
-    dispose: function () {
+    dispose () {
 
         while(this._vertices.length > 0) this._vertices.pop().dispose();
         this._vertices = null;
@@ -108,33 +105,33 @@ Mesh2D.prototype = {
         this.AR_vertex = null;
         this.AR_edge = null;
 
-    },
+    }
 
-    buildFromRecord: function ( rec ) {
+    buildFromRecord ( rec ) {
 
-        var positions = rec.split(";");
-        var l = positions.length, i = 0;
+        let positions = rec.split(";");
+        let l = positions.length, i = 0;
         while(i < l) {
             this.insertConstraintSegment(parseFloat(positions[i]),parseFloat(positions[i + 1]),parseFloat(positions[i + 2]),parseFloat(positions[i + 3]));
             i += 4;
         }
 
-    },
+    }
 
-    insertObject: function ( o ) {
+    insertObject ( o ) {
 
         if( o.constraintShape != null ) this.deleteObject( o );
 
-        var shape = new Shape();
-        var segment;
-        var coordinates = o.coordinates;
+        let shape = new Shape();
+        let segment;
+        let coordinates = o.coordinates;
         
         o.updateMatrixFromValues();
-        var m = o.matrix || new Matrix2D();
-        var p1 = new Point();
-        var p2 = new Point();
+        let m = o.matrix || new Matrix2D();
+        let p1 = new Point();
+        let p2 = new Point();
 
-        var l = coordinates.length, i = 0;
+        let l = coordinates.length, i = 0;
         //while(i < l) {
         for (i=0; i<l; i+=4){
             p1.set( coordinates[i], coordinates[i+1] ).transformMat2D(m);
@@ -152,24 +149,24 @@ Mesh2D.prototype = {
 
         if( !this.__objectsUpdateInProgress ) this._objects.push( o );
 
-    },
+    }
 
-    deleteObject: function ( o ) {
+    deleteObject ( o ) {
 
         if( o.constraintShape == null ) return;
         this.deleteConstraintShape( o.constraintShape );
         o.constraintShape = null;
         if(!this.__objectsUpdateInProgress) {
-            var index = this._objects.indexOf( o );
+            let index = this._objects.indexOf( o );
             this._objects.splice( index, 1 );
         }
 
-    },
+    }
 
-    updateObjects: function() {
+    updateObjects () {
 
         this.__objectsUpdateInProgress = true;
-        var l = this._objects.length, i = 0, o;
+        let l = this._objects.length, i = 0, o;
         while( i < l ) {
 
             o = this._objects[i];
@@ -184,7 +181,7 @@ Mesh2D.prototype = {
         }
         this.__objectsUpdateInProgress = false;
 
-    },
+    }
 
     // insert a new collection of constrained edges.
     // Coordinates parameter is a list with form [x0, y0, x1, y1, x2, y2, x3, y3, x4, y4, ....]
@@ -192,11 +189,11 @@ Mesh2D.prototype = {
     // and where each couple sequence (xi, yi) is a point.
     // Segments are not necessary connected.
     // Segments can overlap (then they will be automaticaly subdivided).
-    insertConstraintShape: function( coordinates ) {
+    insertConstraintShape ( coordinates ) {
 
-        var shape = new Shape();
-        var segment = null;
-        var l = coordinates.length, i = 0;
+        let shape = new Shape();
+        let segment = null;
+        let l = coordinates.length, i = 0;
 
         while( i < l ) {
             segment = this.insertConstraintSegment( coordinates[i], coordinates[i + 1], coordinates[i + 2], coordinates[i + 3] );
@@ -209,11 +206,11 @@ Mesh2D.prototype = {
         this._constraintShapes.push(shape);
         return shape;
 
-    },
+    }
 
-    deleteConstraintShape: function ( shape ) {
+    deleteConstraintShape ( shape ) {
 
-        var i = 0, l = shape.segments.length;
+        let i = 0, l = shape.segments.length;
         while( i < l ) {
             this.deleteConstraintSegment(shape.segments[i]);
             i++;
@@ -223,32 +220,32 @@ Mesh2D.prototype = {
         this._constraintShapes.splice(this._constraintShapes.indexOf(shape),1);
         shape.dispose();
 
-    },
+    }
 
-    insertConstraintSegment: function ( x1, y1, x2, y2 ) {
+    insertConstraintSegment ( x1, y1, x2, y2 ) {
 
-        var newX1 = x1;
-        var newY1 = y1;
-        var newX2 = x2;
-        var newY2 = y2;
+        let newX1 = x1;
+        let newY1 = y1;
+        let newX2 = x2;
+        let newY2 = y2;
 
         if ( (x1 > this.width && x2 > this.width) || (x1 < 0 && x2 < 0) || (y1 > this.height && y2 > this.height) || (y1 < 0 && y2 < 0)  ) return null;
         else{
-            var nx = x2 - x1;
-            var ny = y2 - y1;
-            var tmin = - INFINITY;
-            var tmax = INFINITY;
+            let nx = x2 - x1;
+            let ny = y2 - y1;
+            let tmin = - INFINITY;
+            let tmax = INFINITY;
             
             if (nx != 0.0){
-                var tx1 = (0 - x1)/nx;
-                var tx2 = (this.width - x1)/nx;
+                let tx1 = (0 - x1)/nx;
+                let tx2 = (this.width - x1)/nx;
                 
                 tmin = Math.max(tmin, Math.min(tx1, tx2));
                 tmax = Math.min(tmax, Math.max(tx1, tx2));
             }
             if (ny != 0.0){
-                var ty1 = (0 - y1)/ny;
-                var ty2 = (this.height - y1)/ny;
+                let ty1 = (0 - y1)/ny;
+                let ty2 = (this.height - y1)/ny;
                 
                 tmin = Math.max(tmin, Math.min(ty1, ty2));
                 tmax = Math.min(tmax, Math.max(ty1, ty2));
@@ -269,36 +266,36 @@ Mesh2D.prototype = {
         }
 
         // we check the vertices insertions
-        var vertexDown = this.insertVertex(newX1,newY1);
+        let vertexDown = this.insertVertex(newX1,newY1);
         if(vertexDown == null) return null;
-        var vertexUp = this.insertVertex(newX2,newY2);
+        let vertexUp = this.insertVertex(newX2,newY2);
         if(vertexUp == null) return null;
         if(vertexDown.id === vertexUp.id) return null;
         //if(vertexDown === vertexUp) return null;
 
         // useful
-        var iterVertexToOutEdges = new FromVertexToOutgoingEdges();
-        var currVertex;
-        var currEdge;
-        var i;
+        let iterVertexToOutEdges = new FromVertexToOutgoingEdges();
+        let currVertex;
+        let currEdge;
+        let i;
 
         // the new constraint segment
-        var segment = new Segment();
-        var tempEdgeDownUp = new Edge();
-        var tempSdgeUpDown = new Edge();
+        let segment = new Segment();
+        let tempEdgeDownUp = new Edge();
+        let tempSdgeUpDown = new Edge();
         tempEdgeDownUp.setDatas(vertexDown,tempSdgeUpDown,null,null,true,true);
         tempSdgeUpDown.setDatas(vertexUp,tempEdgeDownUp,null,null,true,true);
 
-        var intersectedEdges = [];
-        var leftBoundingEdges = [];
-        var rightBoundingEdges = [];
+        let intersectedEdges = [];
+        let leftBoundingEdges = [];
+        let rightBoundingEdges = [];
 
-        var currObjet = {type:3};
-        var pIntersect = new Point();
-        var edgeLeft;
-        var newEdgeDownUp;
-        var newEdgeUpDown;
-        var done = false;
+        let currObjet = {type:3};
+        let pIntersect = new Point();
+        let edgeLeft;
+        let newEdgeDownUp;
+        let newEdgeUpDown;
+        let done = false;
         currVertex = vertexDown;
 
         currObjet = currVertex;
@@ -495,10 +492,10 @@ Mesh2D.prototype = {
 
         //return segment;
 
-    },
+    }
 
     // fromSegment, edgeDownUp, intersectedEdges, leftBoundingEdges, rightBoundingEdges
-    insertNewConstrainedEdge: function ( seg, edge, iEdge, lEdge, rEdge ) {
+    insertNewConstrainedEdge ( seg, edge, iEdge, lEdge, rEdge ) {
 
         this._edges.push( edge );
         this._edges.push( edge.oppositeEdge );
@@ -511,15 +508,15 @@ Mesh2D.prototype = {
         this.triangulate( lEdge, true );
         this.triangulate( rEdge, true );
 
-    },
+    }
 
-    deleteConstraintSegment: function ( segment ) {
+    deleteConstraintSegment ( segment ) {
 
-        var vertexToDelete = [];
-        var edge = null;
-        var vertex;
+        let vertexToDelete = [];
+        let edge = null;
+        let vertex;
 
-        var l = segment.edges.length, i = 0;
+        let l = segment.edges.length, i = 0;
         while( i < l ) {
             edge = segment.edges[i];
             edge.removeFromConstraintSegment(segment);
@@ -547,11 +544,11 @@ Mesh2D.prototype = {
         }
 
         segment.dispose();
-    },
+    }
 
-    check: function () {
+    check () {
 
-        var l = this._edges.length, i = 0;
+        let l = this._edges.length, i = 0;
 
         while( i < l ) {
             
@@ -565,25 +562,25 @@ Mesh2D.prototype = {
 
         Log( "check OK" );
 
-    },
+    }
 
-    insertVertex: function ( x, y ) {
+    insertVertex ( x, y ) {
 
         if(x < 0 || y < 0 || x > this.width || y > this.height) return null;
         this.__edgesToCheck.splice(0,this.__edgesToCheck.length);
-        var inObject = Geom2D.locatePosition( new Point(x,y), this);
-        var newVertex = null;
+        let inObject = Geom2D.locatePosition( new Point(x,y), this);
+        let newVertex = null;
         switch(inObject.type) {
         case 0:
-            var vertex = inObject;
+            let vertex = inObject;
             newVertex = vertex;
             break;
         case 1:
-            var edge = inObject;
+            let edge = inObject;
             newVertex = this.splitEdge(edge,x,y);
             break;
         case 2:
-            var face = inObject;
+            let face = inObject;
             newVertex = this.splitFace(face,x,y);
             break;
         case 3:
@@ -592,28 +589,28 @@ Mesh2D.prototype = {
         this.restoreAsDelaunay();
         return newVertex;
 
-    },
+    }
 
-    flipEdge: function ( edge ) {
+    flipEdge ( edge ) {
 
-        var eBot_Top = edge;
-        var eTop_Bot = edge.oppositeEdge;
-        var eLeft_Right = new Edge();
-        var eRight_Left = new Edge();
-        var eTop_Left = eBot_Top.nextLeftEdge;
-        var eLeft_Bot = eTop_Left.nextLeftEdge;
-        var eBot_Right = eTop_Bot.nextLeftEdge;
-        var eRight_Top = eBot_Right.nextLeftEdge;
+        let eBot_Top = edge;
+        let eTop_Bot = edge.oppositeEdge;
+        let eLeft_Right = new Edge();
+        let eRight_Left = new Edge();
+        let eTop_Left = eBot_Top.nextLeftEdge;
+        let eLeft_Bot = eTop_Left.nextLeftEdge;
+        let eBot_Right = eTop_Bot.nextLeftEdge;
+        let eRight_Top = eBot_Right.nextLeftEdge;
 
-        var vBot = eBot_Top.originVertex;
-        var vTop = eTop_Bot.originVertex;
-        var vLeft = eLeft_Bot.originVertex;
-        var vRight = eRight_Top.originVertex;
+        let vBot = eBot_Top.originVertex;
+        let vTop = eTop_Bot.originVertex;
+        let vLeft = eLeft_Bot.originVertex;
+        let vRight = eRight_Top.originVertex;
 
-        var fLeft = eBot_Top.leftFace;
-        var fRight = eTop_Bot.leftFace;
-        var fBot = new Face();
-        var fTop = new Face();
+        let fLeft = eBot_Top.leftFace;
+        let fRight = eTop_Bot.leftFace;
+        let fBot = new Face();
+        let fTop = new Face();
 
         // add the new edges
         this._edges.push(eLeft_Right);
@@ -654,46 +651,46 @@ Mesh2D.prototype = {
 
         return eRight_Left;
 
-    },
+    }
 
-    splitEdge: function ( edge, x, y ) {
+    splitEdge ( edge, x, y ) {
 
         this.__edgesToCheck.splice( 0, this.__edgesToCheck.length );
 
-        var eLeft_Right = edge;
-        var eRight_Left = eLeft_Right.oppositeEdge;
-        var eRight_Top = eLeft_Right.nextLeftEdge;
-        var eTop_Left = eRight_Top.nextLeftEdge;
-        var eLeft_Bot = eRight_Left.nextLeftEdge;
-        var eBot_Right = eLeft_Bot.nextLeftEdge;
+        let eLeft_Right = edge;
+        let eRight_Left = eLeft_Right.oppositeEdge;
+        let eRight_Top = eLeft_Right.nextLeftEdge;
+        let eTop_Left = eRight_Top.nextLeftEdge;
+        let eLeft_Bot = eRight_Left.nextLeftEdge;
+        let eBot_Right = eLeft_Bot.nextLeftEdge;
 
-        var vTop = eTop_Left.originVertex;
-        var vLeft = eLeft_Right.originVertex;
-        var vBot = eBot_Right.originVertex;
-        var vRight = eRight_Left.originVertex;
+        let vTop = eTop_Left.originVertex;
+        let vLeft = eLeft_Right.originVertex;
+        let vBot = eBot_Right.originVertex;
+        let vRight = eRight_Left.originVertex;
 
-        var fTop = eLeft_Right.leftFace;
-        var fBot = eRight_Left.leftFace;
+        let fTop = eLeft_Right.leftFace;
+        let fBot = eRight_Left.leftFace;
 
         // check distance from the position to edge end points
         if((vLeft.pos.x - x) * (vLeft.pos.x - x) + (vLeft.pos.y - y) * (vLeft.pos.y - y) <= EPSILON_SQUARED) return vLeft;
         if((vRight.pos.x - x) * (vRight.pos.x - x) + (vRight.pos.y - y) * (vRight.pos.y - y) <= EPSILON_SQUARED) return vRight;
         // create new objects
-        var vCenter = new Vertex();
-        var eTop_Center = new Edge();
-        var eCenter_Top = new Edge();
-        var eBot_Center = new Edge();
-        var eCenter_Bot = new Edge();
+        let vCenter = new Vertex();
+        let eTop_Center = new Edge();
+        let eCenter_Top = new Edge();
+        let eBot_Center = new Edge();
+        let eCenter_Bot = new Edge();
 
-        var eLeft_Center = new Edge();
-        var eCenter_Left = new Edge();
-        var eRight_Center = new Edge();
-        var eCenter_Right = new Edge();
+        let eLeft_Center = new Edge();
+        let eCenter_Left = new Edge();
+        let eRight_Center = new Edge();
+        let eCenter_Right = new Edge();
 
-        var fTopLeft = new Face();
-        var fBotLeft = new Face();
-        var fBotRight = new Face();
-        var fTopRight = new Face();
+        let fTopLeft = new Face();
+        let fBotLeft = new Face();
+        let fBotRight = new Face();
+        let fTopRight = new Face();
         // add the new vertex
         this._vertices.push(vCenter);
         // add the new edges
@@ -752,15 +749,15 @@ Mesh2D.prototype = {
         // - add the segments the edge is from to the new vertex
         if(eLeft_Right.isConstrained) {
 
-            var fromSegments = eLeft_Right.fromConstraintSegments;
+            let fromSegments = eLeft_Right.fromConstraintSegments;
             eLeft_Center.fromConstraintSegments = fromSegments.slice(0);
             eCenter_Left.fromConstraintSegments = eLeft_Center.fromConstraintSegments;
             eCenter_Right.fromConstraintSegments = fromSegments.slice(0);
             eRight_Center.fromConstraintSegments = eCenter_Right.fromConstraintSegments;
-            var edges;
-            var index;
-            //var n = 0;
-            var l = eLeft_Right.fromConstraintSegments.length, i = 0;
+            let edges;
+            let index;
+            //let n = 0;
+            let l = eLeft_Right.fromConstraintSegments.length, i = 0;
             while(i < l) {
                 //i = n++;
                 edges = eLeft_Right.fromConstraintSegments[i].edges;
@@ -796,31 +793,31 @@ Mesh2D.prototype = {
 
         return vCenter;
 
-    },
+    }
 
-    splitFace: function ( face, x, y ) {
+    splitFace ( face, x, y ) {
 
         this.__edgesToCheck.splice(0,this.__edgesToCheck.length);
-        var eTop_Left = face.edge;
-        var eLeft_Right = eTop_Left.nextLeftEdge;
-        var eRight_Top = eLeft_Right.nextLeftEdge;
-        var vTop = eTop_Left.originVertex;
-        var vLeft = eLeft_Right.originVertex;
-        var vRight = eRight_Top.originVertex;
+        let eTop_Left = face.edge;
+        let eLeft_Right = eTop_Left.nextLeftEdge;
+        let eRight_Top = eLeft_Right.nextLeftEdge;
+        let vTop = eTop_Left.originVertex;
+        let vLeft = eLeft_Right.originVertex;
+        let vRight = eRight_Top.originVertex;
 
         // create new objects
-        var vCenter = new Vertex();
+        let vCenter = new Vertex();
 
-        var eTop_Center = new Edge();
-        var eCenter_Top = new Edge();
-        var eLeft_Center = new Edge();
-        var eCenter_Left = new Edge();
-        var eRight_Center = new Edge();
-        var eCenter_Right = new Edge();
+        let eTop_Center = new Edge();
+        let eCenter_Top = new Edge();
+        let eLeft_Center = new Edge();
+        let eCenter_Left = new Edge();
+        let eRight_Center = new Edge();
+        let eCenter_Right = new Edge();
 
-        var fTopLeft = new Face();
-        var fBot = new Face();
-        var fTopRight = new Face();
+        let fTopLeft = new Face();
+        let fBot = new Face();
+        let fTopRight = new Face();
 
         // add the new vertex
         this._vertices.push(vCenter);
@@ -874,11 +871,11 @@ Mesh2D.prototype = {
 
         return vCenter;
 
-    },
+    }
 
-    restoreAsDelaunay: function () {
+    restoreAsDelaunay () {
 
-        var edge;
+        let edge;
         while(this.__edgesToCheck.length > 0) {
             edge = this.__edgesToCheck.shift();
             if(edge.isReal && !edge.isConstrained && !Geom2D.isDelaunay(edge)) {
@@ -894,28 +891,28 @@ Mesh2D.prototype = {
             }
         }
 
-    },
+    }
 
     // Delete a vertex IF POSSIBLE and then fill the hole with a new triangulation.
     // A vertex can be deleted if:
     // - it is free of constraint segment (no adjacency to any constrained edge)
     // - it is adjacent to exactly 2 contrained edges and is not an end point of any constraint segment
-    deleteVertex: function ( vertex ) {
+    deleteVertex ( vertex ) {
 
-        var i;
-        var freeOfConstraint;
-        var iterEdges = new FromVertexToOutgoingEdges();
+        let i;
+        let freeOfConstraint;
+        let iterEdges = new FromVertexToOutgoingEdges();
         iterEdges.fromVertex = vertex;
         iterEdges.realEdgesOnly = false;
-        var edge;
-        var outgoingEdges = [];
+        let edge;
+        let outgoingEdges = [];
         freeOfConstraint = (vertex.fromConstraintSegments.length == 0)? true : false;
 
-        var bound = [];
-        var realA = false;
-        var realB = false;
-        var boundA = [];
-        var boundB = [];
+        let bound = [];
+        let realA = false;
+        let realB = false;
+        let boundA = [];
+        let boundB = [];
         if(freeOfConstraint){ 
             //while(edge = iterEdges.next()) {
             while((edge = iterEdges.next()) != null) {
@@ -924,17 +921,17 @@ Mesh2D.prototype = {
             }
         } else {
             // we check if the vertex is an end point of a constraint segment
-            var edges;
-            var _g1 = 0;
-            var _g = vertex.fromConstraintSegments.length;
+            let edges;
+            let _g1 = 0;
+            let _g = vertex.fromConstraintSegments.length;
             while(_g1 < _g) {
-                var i1 = _g1++;
+                let i1 = _g1++;
                 edges = vertex.fromConstraintSegments[i1].edges;
                 //if(edges[0].originVertex == vertex || edges[edges.length - 1].destinationVertex == vertex) return false;
                 if(edges[0].originVertex.id === vertex.id || edges[edges.length - 1].destinationVertex.id === vertex.id) return false;
             }
             // we check the count of adjacent constrained edges
-            var count = 0;
+            let count = 0;
             //while(edge = iterEdges.next()) {
             while((edge = iterEdges.next()) != null) {
                 outgoingEdges.push(edge);
@@ -947,16 +944,16 @@ Mesh2D.prototype = {
             // if not disqualified, then we can process
             boundA = [];
             boundB = [];
-            var constrainedEdgeA = null;
-            var constrainedEdgeB = null;
-            var edgeA = new Edge();
-            var edgeB = new Edge();
+            let constrainedEdgeA = null;
+            let constrainedEdgeB = null;
+            let edgeA = new Edge();
+            let edgeB = new Edge();
             this._edges.push(edgeA);
             this._edges.push(edgeB);
-            var _g11 = 0;
-            var _g2 = outgoingEdges.length;
+            let _g11 = 0;
+            let _g2 = outgoingEdges.length;
             while(_g11 < _g2) {
-                var i2 = _g11++;
+                let i2 = _g11++;
                 edge = outgoingEdges[i2];
                 if(edge.isConstrained) {
                     if(constrainedEdgeA == null) {
@@ -981,11 +978,11 @@ Mesh2D.prototype = {
             // we update the segments infos
             edgeA.fromConstraintSegments = constrainedEdgeA.fromConstraintSegments.slice(0);
             edgeB.fromConstraintSegments = edgeA.fromConstraintSegments;
-            var index;
-            var _g12 = 0;
-            var _g3 = vertex.fromConstraintSegments.length;
+            let index;
+            let _g12 = 0;
+            let _g3 = vertex.fromConstraintSegments.length;
             while(_g12 < _g3) {
-                var i3 = _g12++;
+                let i3 = _g12++;
                 edges = vertex.fromConstraintSegments[i3].edges;
                 index = edges.indexOf(constrainedEdgeA);
                 if(index != -1) {
@@ -994,18 +991,18 @@ Mesh2D.prototype = {
                     //edges.splice(index - 1,0,edgeA);
                 } else {
                     edges.splice(edges.indexOf(constrainedEdgeB)-1, 2, edgeB);
-                    //var index2 = edges.indexOf(constrainedEdgeB) - 1;
+                    //let index2 = edges.indexOf(constrainedEdgeB) - 1;
                     //edges.splice(index2,2);
                     //edges.splice(index2,0,edgeB);
                 }
             }
         }
         // Deletion of old faces and edges
-        var faceToDelete;
-        var _g13 = 0;
-        var _g4 = outgoingEdges.length;
+        let faceToDelete;
+        let _g13 = 0;
+        let _g4 = outgoingEdges.length;
         while(_g13 < _g4) {
-            var i4 = _g13++;
+            let i4 = _g13++;
             edge = outgoingEdges[i4];
             faceToDelete = edge.leftFace;
             this._faces.splice(this._faces.indexOf(faceToDelete),1);
@@ -1025,19 +1022,19 @@ Mesh2D.prototype = {
             this.triangulate(boundB,realB);
         }
         return true;
-    },
+    }
     // untriangulate is usually used while a new edge insertion in order to delete the intersected edges
     // edgesList is a list of chained edges oriented from right to left
-    untriangulate: function ( edgesList ) {
+    untriangulate ( edgesList ) {
         // we clean useless faces and adjacent vertices
-        var i;
-        var verticesCleaned = new Dictionary( 1 );
-        var currEdge;
-        var outEdge;
-        var _g1 = 0;
-        var _g = edgesList.length;
+        let i;
+        let verticesCleaned = new Dictionary( 1 );
+        let currEdge;
+        let outEdge;
+        let _g1 = 0;
+        let _g = edgesList.length;
         while(_g1 < _g) {
-            var i1 = _g1++;
+            let i1 = _g1++;
             currEdge = edgesList[i1];
             if(verticesCleaned.get(currEdge.originVertex) == null ){
                 currEdge.originVertex.edge = currEdge.prevLeftEdge.oppositeEdge;
@@ -1056,21 +1053,21 @@ Mesh2D.prototype = {
         }
         verticesCleaned.dispose();
         // finally we delete the intersected edges
-        var _g11 = 0;
-        var _g2 = edgesList.length;
+        let _g11 = 0;
+        let _g2 = edgesList.length;
         while(_g11 < _g2) {
-            var i2 = _g11++;
+            let i2 = _g11++;
             currEdge = edgesList[i2];
             this._edges.splice(this._edges.indexOf(currEdge.oppositeEdge),1);
             this._edges.splice(this._edges.indexOf(currEdge),1);
             currEdge.oppositeEdge.dispose();
             currEdge.dispose();
         }
-    },
+    }
 
     // triangulate is usually used to fill the hole after deletion of a vertex from mesh or after untriangulation
     // - bounds is the list of edges in CCW bounding the surface to retriangulate,
-    triangulate: function ( bound, isReal ) {
+    triangulate ( bound, isReal ) {
 
         if(bound.length < 2) {
             Log("BREAK ! the hole has less than 2 edges");
@@ -1084,7 +1081,7 @@ Mesh2D.prototype = {
         // if the hole is a 3 edges polygon:
         } else if(bound.length === 3) {
 
-            var f = new Face();
+            let f = new Face();
             f.setDatas(bound[0], isReal);
             this._faces.push(f);
             bound[0].leftFace = f;
@@ -1095,21 +1092,21 @@ Mesh2D.prototype = {
             bound[2].nextLeftEdge = bound[0];
         // if more than 3 edges, we process recursively:
         } else {
-            var baseEdge = bound[0];
-            var vertexA = baseEdge.originVertex;
-            var vertexB = baseEdge.destinationVertex;
-            var vertexC;
-            var vertexCheck;
-            var circumcenter = new Point();
-            var radiusSquared = 0;
-            var distanceSquared = 0;
-            var isDelaunay = false;
-            var index = 0;
-            var i;
-            var _g1 = 2;
-            var _g = bound.length;
+            let baseEdge = bound[0];
+            let vertexA = baseEdge.originVertex;
+            let vertexB = baseEdge.destinationVertex;
+            let vertexC;
+            let vertexCheck;
+            let circumcenter = new Point();
+            let radiusSquared = 0;
+            let distanceSquared = 0;
+            let isDelaunay = false;
+            let index = 0;
+            let i;
+            let _g1 = 2;
+            let _g = bound.length;
             while(_g1 < _g) {
-                var i1 = _g1++;
+                let i1 = _g1++;
                 vertexC = bound[i1].originVertex;
                 if(Geom2D.getRelativePosition2(vertexC.pos,baseEdge) == 1) {
                     index = i1;
@@ -1119,10 +1116,10 @@ Mesh2D.prototype = {
                     radiusSquared = Squared(vertexA.pos.x - circumcenter.x, vertexA.pos.y - circumcenter.y);
                     // for perfect regular n-sides polygons, checking strict delaunay circumcircle condition is not possible, so we substract EPSILON to circumcircle radius:
                     radiusSquared -= EPSILON_SQUARED;
-                    var _g3 = 2;
-                    var _g2 = bound.length;
+                    let _g3 = 2;
+                    let _g2 = bound.length;
                     while(_g3 < _g2) {
-                        var j = _g3++;
+                        let j = _g3++;
                         if(j != i1) {
                             vertexCheck = bound[j].originVertex;
                             distanceSquared = Squared(vertexCheck.pos.x - circumcenter.x, vertexCheck.pos.y - circumcenter.y);
@@ -1139,11 +1136,11 @@ Mesh2D.prototype = {
             if(!isDelaunay) {
                 // for perfect regular n-sides polygons, checking delaunay circumcircle condition is not possible
                 Log("NO DELAUNAY FOUND");
-                /*var s = "";
-                var _g11 = 0;
-                var _g4 = bound.length;
+                /*let s = "";
+                let _g11 = 0;
+                let _g4 = bound.length;
                 while(_g11 < _g4) {
-                    var i2 = _g11++;
+                    let i2 = _g11++;
                     s += bound[i2].originVertex.pos.x + " , ";
                     s += bound[i2].originVertex.pos.y + " , ";
                     s += bound[i2].destinationVertex.pos.x + " , ";
@@ -1152,7 +1149,7 @@ Mesh2D.prototype = {
                 index = 2;
             }
 
-            var edgeA, edgeAopp, edgeB, edgeBopp, boundA, boundB, boundM = [];
+            let edgeA, edgeAopp, edgeB, edgeBopp, boundA, boundB, boundM = [];
 
             if(index < (bound.length - 1)) {
                 edgeA = new Edge();
@@ -1188,9 +1185,9 @@ Mesh2D.prototype = {
         // test
         //this.deDuplicEdge();
 
-    },
+    }
 
-    findPositionFromBounds: function ( x, y ) {
+    findPositionFromBounds ( x, y ) {
 
         if(x <= 0) {
             if(y <= 0) return 1; 
@@ -1204,24 +1201,24 @@ Mesh2D.prototype = {
         else if(y >= this.height) return 6; 
         else return 0;
 
-    },
+    }
 
     // for drawing
 
-    compute_Data: function () {
+    compute_Data () {
 
         this.AR_vertex = [];
         this.AR_edge = [];
 
-        //var data_vertex = [];
-        //var data_edges = [];
-        var vertex;
-        var edge;
-        var holdingFace;
-        var iterVertices = new FromMeshToVertices();
+        //let data_vertex = [];
+        //let data_edges = [];
+        let vertex;
+        let edge;
+        let holdingFace;
+        let iterVertices = new FromMeshToVertices();
         iterVertices.fromMesh = this;
-        var iterEdges = new FromVertexToIncomingEdges();
-        var dictVerticesDone = new Dictionary( 1 );
+        let iterEdges = new FromVertexToIncomingEdges();
+        let dictVerticesDone = new Dictionary( 1 );
 
         while((vertex = iterVertices.next()) != null) {
 
@@ -1244,14 +1241,12 @@ Mesh2D.prototype = {
         data_vertex = null;
         data_edges = null;*/
 
-    },
+    }
 
-    vertexIsInsideAABB: function ( vertex, mesh ) {
+    vertexIsInsideAABB ( vertex, mesh ) {
 
         return !( vertex.pos.x < 0 || vertex.pos.x > mesh.width || vertex.pos.y < 0 || vertex.pos.y > mesh.height );
 
     }
 
-};
-
-export { Mesh2D };
+}

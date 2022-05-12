@@ -1,40 +1,40 @@
-import { Dictionary, Log } from '../constants';
-import { Squared, SquaredSqrt } from '../core/Tools';
-import { Point } from '../math/Point';
-import { Geom2D } from '../math/Geom2D';
-import { FromFaceToInnerEdges } from '../core/Iterators';
+import { Dictionary, Log } from '../constants.js';
+import { Squared, SquaredSqrt } from '../core/Tools.js';
+import { Point } from '../math/Point.js';
+import { Geom2D } from '../math/Geom2D.js';
+import { FromFaceToInnerEdges } from '../core/Iterators.js';
 
-function AStar () {
+export class AStar {
 
-    this.fromFace = null;
-    this.toFace = null;
-    this.curFace = null;
+    constructor () {
 
-    this.iterEdge = new FromFaceToInnerEdges();
-    this.mesh = null;
-    this._radius = 0;
-    this.radiusSquared = 0;
-    this.diameter = 0;
-    this.diameterSquared = 0;
+        this.fromFace = null
+        this.toFace = null
+        this.curFace = null
 
+        this.iterEdge = new FromFaceToInnerEdges()
+        this.mesh = null
+        this._radius = 0
+        this.radiusSquared = 0
+        this.diameter = 0
+        this.diameterSquared = 0
 
-    Object.defineProperty(this, 'radius', {
-        get: function() { return this._radius; },
-        set: function(value) { 
-            this._radius = value;
-            this.radiusSquared = this._radius * this._radius;
-            this.diameter = this._radius * 2;
-            this.diameterSquared = this.diameter * this.diameter; 
-        }
-    });
+    }
 
-};
+    get radius () {
+        return this._radius;
+    }
 
-AStar.prototype = {
+    set radius ( value ) {
 
-    constructor: AStar,
+        this._radius = value
+        this.radiusSquared = this._radius * this._radius
+        this.diameter = this._radius * 2
+        this.diameterSquared = this.diameter * this.diameter
 
-    dispose: function() {
+    }
+
+    dispose () {
 
         this.mesh = null;
         this.closedFaces.dispose();
@@ -57,9 +57,9 @@ AStar.prototype = {
         this.scoreG = null;
         this.scoreH = null;
         this.predecessor = null;
-    },
+    }
 
-    findPath: function ( from, target, resultListFaces, resultListEdges ) {
+    findPath ( from, target, resultListFaces, resultListEdges ) {
 
         this.sortedOpenedFaces = [];
         this.closedFaces = new Dictionary( 1 );
@@ -73,7 +73,7 @@ AStar.prototype = {
         this.scoreH = new Dictionary( 1 );
         
 
-        var loc, distance, p1, p2, p3;
+        let loc, distance, p1, p2, p3;
 
         loc = Geom2D.locatePosition( from, this.mesh );
 
@@ -107,17 +107,19 @@ AStar.prototype = {
         this.entryY.set(this.fromFace,from.y);
         this.scoreG.set(this.fromFace,0);
 
-        var dist = SquaredSqrt(target.x - from.x, target.y - from.y);
+        const dist = SquaredSqrt(target.x - from.x, target.y - from.y);
 
         this.scoreH.set(this.fromFace,dist);
         this.scoreF.set(this.fromFace,dist);
 
-        var innerEdge, neighbourFace, f, g, h;
-        var fromPoint = new Point();
-        var entryPoint = new Point();
-        var distancePoint = new Point();
-        var fillDatas = false;
+        let innerEdge, neighbourFace, f, g, h;
+        const fromPoint = new Point();
+        const entryPoint = new Point();
+        const distancePoint = new Point();
+        let fillDatas = false;
+
         while(true) {
+
             if(this.sortedOpenedFaces.length == 0) {
                 Log("NO PATH FOUND (AStar)");
                 this.curFace = null;
@@ -131,17 +133,35 @@ AStar.prototype = {
                 neighbourFace = innerEdge.rightFace;
                 if(!this.closedFaces.get(neighbourFace)) {
                     if(this.curFace != this.fromFace && this._radius > 0 && !this.isWalkableByRadius(this.entryEdges.get(this.curFace),this.curFace,innerEdge)) continue;
-                    fromPoint.x = this.entryX.get(this.curFace);
-                    fromPoint.y = this.entryY.get(this.curFace);
-                    entryPoint.x = fromPoint.x;
-                    entryPoint.y = fromPoint.y;
-                    entryPoint.x = (innerEdge.originVertex.pos.x + innerEdge.destinationVertex.pos.x) * 0.5;
-                    entryPoint.y = (innerEdge.originVertex.pos.y + innerEdge.destinationVertex.pos.y) * 0.5;
-                    distancePoint.x = entryPoint.x - target.x;
-                    distancePoint.y = entryPoint.y - target.y;
+
+                    fromPoint.set( this.entryX.get(this.curFace), this.entryY.get(this.curFace) )
+
+
+
+                    entryPoint.set( (innerEdge.originVertex.pos.x + innerEdge.destinationVertex.pos.x) * 0.5, (innerEdge.originVertex.pos.y + innerEdge.destinationVertex.pos.y) * 0.5 )
+                    
+
+
+
+                    // entryPoint will be the direct point of intersection between fromPoint and toXY if the edge innerEdge
+                    // intersects it
+                    //https://github.com/hxDaedalus/hxDaedalus/commit/f51504bd0fa822148d5e4bdeb7326809ecdbc731
+                    /*const vw1 = innerEdge.originVertex.pos;
+                    const vw2 = innerEdge.destinationVertex.pos;
+                    if (!Geom2D.intersections2segments(fromPoint, target, vw1, vw2, entryPoint)) {
+                        // Recycle the entryPoint variable to create a Point2D(toX, toY)
+                        entryPoint.copy(target)
+                        const vst = vw1.distanceSquaredTo(fromPoint) + vw1.distanceSquaredTo(entryPoint);
+                        const wst = vw2.distanceSquaredTo(fromPoint) + vw2.distanceSquaredTo(entryPoint);
+                        entryPoint.x = vst <= wst ? vw1.x : vw2.x;
+                        entryPoint.y = vst <= wst ? vw1.y : vw2.y;
+                    }*/
+                    
+
+                    distancePoint.copy( entryPoint ).sub( target )
                     h = distancePoint.length();
-                    distancePoint.x = fromPoint.x - entryPoint.x;
-                    distancePoint.y = fromPoint.y - entryPoint.y;
+                    distancePoint.copy( fromPoint ).sub( entryPoint )
+
                     g = this.scoreG.get(this.curFace) + distancePoint.length();
                     f = h + g;
                     fillDatas = false;
@@ -179,17 +199,19 @@ AStar.prototype = {
             this.curFace = this.predecessor.get(this.curFace);
             resultListFaces.unshift(this.curFace);
         }
-    },
-    /*sortingFaces: function(a,b) {
+    }
+
+    /*sortingFaces(a,b) {
         if(this.scoreF.get(a) == this.scoreF.get(b)) return 0; 
         else if(this.scoreF.get(a) < this.scoreF.get(b)) return 1; 
         else return -1;
-    },*/
-    isWalkableByRadius: function ( fromEdge, throughFace, toEdge ) {
+    }*/
+
+    isWalkableByRadius ( fromEdge, throughFace, toEdge ) {
         
-        var vA = null; // the vertex on fromEdge not on toEdge
-        var vB = null; // the vertex on toEdge not on fromEdge
-        var vC = null; // the common vertex of the 2 edges (pivot)
+        let vA = null; // the vertex on fromEdge not on toEdge
+        let vB = null; // the vertex on toEdge not on fromEdge
+        let vC = null; // the common vertex of the 2 edges (pivot)
 
         // we identify the points
         if(fromEdge.originVertex == toEdge.originVertex) {
@@ -210,7 +232,7 @@ AStar.prototype = {
             vC = fromEdge.destinationVertex;
         }
 
-        var dot, result, distSquared, adjEdge;
+        let dot, result, distSquared, adjEdge;
         // if we have a right or obtuse angle on CAB
         dot = (vC.pos.x - vA.pos.x) * (vB.pos.x - vA.pos.x) + (vC.pos.y - vA.pos.y) * (vB.pos.y - vA.pos.y);
         if(dot <= 0) {
@@ -241,24 +263,24 @@ AStar.prototype = {
             if(distSquared >= this.diameterSquared) return true; 
             else return false;
         } else {// if the adjacent is not constrained
-            var distSquaredA = Squared(vC.pos.x - vA.pos.x, vC.pos.y - vA.pos.y);
-            var distSquaredB = Squared(vC.pos.x - vB.pos.x, vC.pos.y - vB.pos.y);
+            let distSquaredA = Squared(vC.pos.x - vA.pos.x, vC.pos.y - vA.pos.y);
+            let distSquaredB = Squared(vC.pos.x - vB.pos.x, vC.pos.y - vB.pos.y);
             if(distSquaredA < this.diameterSquared || distSquaredB < this.diameterSquared) return false; 
             else {
-                var vFaceToCheck = [];
-                var vFaceIsFromEdge = [];
-                var facesDone = new Dictionary( 1 );
+                let vFaceToCheck = [];
+                let vFaceIsFromEdge = [];
+                let facesDone = new Dictionary( 1 );
                 vFaceIsFromEdge.push(adjEdge);
                 if(adjEdge.leftFace == throughFace) {
                     vFaceToCheck.push(adjEdge.rightFace);
-                    var k = adjEdge.rightFace;
+                    let k = adjEdge.rightFace;
                     facesDone.set(k,true);
                 } else {
                     vFaceToCheck.push(adjEdge.leftFace);
-                    var k1 = adjEdge.leftFace;
+                    let k1 = adjEdge.leftFace;
                     facesDone.set(k1,true);
                 }
-                var currFace, faceFromEdge, currEdgeA, nextFaceA, currEdgeB, nextFaceB;
+                let currFace, faceFromEdge, currEdgeA, nextFaceA, currEdgeB, nextFaceB;
                 while(vFaceToCheck.length > 0) {
                     currFace = vFaceToCheck.shift();
                     faceFromEdge = vFaceIsFromEdge.shift();
@@ -315,6 +337,4 @@ AStar.prototype = {
         }
         //?\\return true;
     }
-};
-
-export { AStar };
+}

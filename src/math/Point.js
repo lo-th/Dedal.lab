@@ -1,137 +1,149 @@
+export class Point {
 
-function Point ( x, y ) {
+    constructor( x = 0, y = 0 ) {
 
-    this.x = x || 0;
-    this.y = y || 0;
+        this.x = x
+        this.y = y
 
-};
+    }
 
-Point.prototype = {
+    set( x, y ) {
 
-    constructor: Point,
+        this.x = x
+        this.y = y
+        return this
 
-    set: function ( x, y ) {
+    }
 
-        this.x = x;
-        this.y = y;
-        return this;
+    transform( matrix ) {
 
-    },
+        matrix.tranform( this )
+        return this
 
-    transform: function ( matrix ) {
-
-        matrix.tranform( this );
-        return this;
-
-    },
+    }
     
-    copy: function ( p ) {
+    copy( p ) {
 
-        this.x = p.x;
-        this.y = p.y;
-        return this;
+        this.x = p.x
+        this.y = p.y
+        return this
 
-    },
+    }
 
-    clone: function () {
+    clone() {
 
-        return new Point( this.x, this.y );
+        return new Point( this.x, this.y )
 
-    },
+    }
 
-    sub: function ( p ) {
+    sub( p ) {
 
-        this.x -= p.x;
-        this.y -= p.y;
-        return this;
+        this.x -= p.x
+        this.y -= p.y
+        return this
 
-    },
+    }
 
-    mul: function ( s ) {
+    mul( s ) {
 
-        this.x *= s;
-        this.y *= s;
-        return this;
+        this.x *= s
+        this.y *= s
+        return this
 
-    },
+    }
 
-    add: function( n ) {
+    add( n ) {
 
-        this.x += n.x;
-        this.y += n.y;
-        return this;
+        this.x += n.x
+        this.y += n.y
+        return this
 
-    },
+    }
 
-    div: function ( s ) {
+    div( s ) {
 
-        var v = 1/s;
-        this.x *= v;
-        this.y *= v;
-        return this;
+        let v = 1/s
+        this.x *= v
+        this.y *= v
+        return this
 
-    },
+    }
 
-    negate: function () {
+    negate() {
 
-        return new Point( -this.x, -this.y );
-    
-    },
-
-    transformMat2D: function ( matrix ) {
-
-        var x = this.x, y = this.y, n = matrix.n;
-        this.x = n[0] * x + n[2] * y + n[4];
-        this.y = n[1] * x + n[3] * y + n[5];
-        return this;
-
-    },
-
-    length: function () {
-
-        return Math.sqrt( this.x * this.x + this.y * this.y );
-
-    },
-
-    angular: function ( a ) {
-
-        this.x = Math.cos( a );
-        this.y = Math.sin( a );
-        return this;
-
-    },
-
-    normalize: function () {
-
-        var norm = this.length();
-        this.x /= norm;
-        this.y /= norm;
-        return norm;
-
-    },
-
-    distanceTo: function ( p ) {
-
-        var diffX = this.x - p.x;
-        var diffY = this.y - p.y;
-        return Math.sqrt( diffX * diffX + diffY * diffY );
-
-    },
-
-    distanceSquaredTo: function ( p ) {
-
-        var diffX = this.x - p.x;
-        var diffY = this.y - p.y;
-        return diffX * diffX + diffY * diffY;
-
-    },
-
-    equals: function ( p ) {
-
-        return this.x === p.x && this.y === p.y;
+        return new Point( -this.x, -this.y )
     
     }
 
-};
+    transformMat2D( matrix ) {
 
-export { Point };
+        let x = this.x, y = this.y, n = matrix.n
+        this.x = n[0] * x + n[2] * y + n[4]
+        this.y = n[1] * x + n[3] * y + n[5]
+        return this
+
+    }
+
+    length() {
+
+        return Math.sqrt( this.x * this.x + this.y * this.y )
+
+    }
+
+    angular( a ) {
+
+        this.x = Math.cos( a )
+        this.y = Math.sin( a )
+        return this
+
+    }
+
+    normalize() {
+
+        const norm = this.length()
+        this.x /= norm
+        this.y /= norm
+        return this;
+
+    }
+
+    distanceTo( p ) {
+
+        let diffX = p.x - this.x
+        let diffY = p.y - this.y
+        return Math.sqrt( diffX * diffX + diffY * diffY )
+
+    }
+
+    distanceSquaredTo( p ) {
+
+        let diffX = p.x - this.x
+        let diffY = p.y - this.y
+        return diffX * diffX + diffY * diffY
+
+    }
+
+    equals( p ) {
+
+        return this.x === p.x && this.y === p.y
+    
+    }
+
+    /*angleTo( p ){
+
+        return Math.atan2( p.x - this.x, p.y - this.y )
+        
+    }*/
+    angle(){
+
+        return Math.atan2( - this.y, - this.x ) + Math.PI;
+        
+    }
+
+    angleTo( p ){
+
+        return Math.atan2( p.y - this.y, p.x - this.x )
+        
+    }
+
+}

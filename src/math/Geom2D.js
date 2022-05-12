@@ -1,11 +1,11 @@
-import { Integral, Squared, SquaredSqrt } from '../core/Tools';
-import { Point } from '../math/Point';
-import { RandGenerator } from '../math/RandGenerator';
+import { Integral, Squared, SquaredSqrt } from '../core/Tools.js';
+import { Point } from '../math/Point.js';
+import { RandGenerator } from '../math/RandGenerator.js';
 
-import { VERTEX, EDGE, FACE, NULL, Dictionary, Log, Debug, INFINITY, EPSILON_SQUARED, EPSILON_NORMAL, TTIER } from '../constants';
-import { FromFaceToInnerEdges, FromMeshToVertices, FromVertexToHoldingFaces, FromVertexToIncomingEdges } from '../core/Iterators';
+import { VERTEX, EDGE, FACE, NULL, Dictionary, Log, Debug, INFINITY, EPSILON_SQUARED, EPSILON_NORMAL, TTIER } from '../constants.js';
+import { FromFaceToInnerEdges, FromMeshToVertices, FromVertexToHoldingFaces, FromVertexToIncomingEdges } from '../core/Iterators.js';
 
-var Geom2D = {
+export const Geom2D = {
 
     __samples: [],
     __circumcenter: new Point(),
@@ -13,7 +13,7 @@ var Geom2D = {
 
     locatePosition: function ( p, mesh ) {
 
-        var i, numSamples;
+        let i, numSamples;
 
         // jump and walk algorithm
 
@@ -23,7 +23,7 @@ var Geom2D = {
         
         Geom2D.__samples.splice( 0, Geom2D.__samples.length );
         numSamples = Integral( Math.pow( mesh._vertices.length, TTIER ));
-        //var numSamples = Integral(Math.pow(mesh._vertices.length,));
+        //let numSamples = Integral(Math.pow(mesh._vertices.length,));
         
         //console.log(numSamples, mesh._vertices.length);
 
@@ -38,12 +38,12 @@ var Geom2D = {
             i++;
         }
 
-        var currVertex, currVertexPos, distSquared;
-        var minDistSquared = INFINITY;
-        var closedVertex = null;
+        let currVertex, currVertexPos, distSquared;
+        let minDistSquared = INFINITY;
+        let closedVertex = null;
 
         i = 0;
-        //var n = 0
+        //let n = 0
         while( i < numSamples ) {
         //for ( i = 0 ; i < numSamples; i++ ){
             currVertex = Geom2D.__samples[i];
@@ -56,7 +56,7 @@ var Geom2D = {
             i++;
         }
 
-        var iterFace = new FromVertexToHoldingFaces();
+        let iterFace = new FromVertexToHoldingFaces();
 
         if(closedVertex===null){ 
             Log('no closedVertex find ?');
@@ -65,15 +65,15 @@ var Geom2D = {
 
         iterFace.fromVertex = closedVertex;
 
-        var currFace = iterFace.next();
+        let currFace = iterFace.next();
 
-        var faceVisited = new Dictionary( 0 );
-        var currEdge;
-        var iterEdge = new FromFaceToInnerEdges();
-        var relativPos = 0;
-        var numIter = 0;
+        let faceVisited = new Dictionary( 0 );
+        let currEdge;
+        let iterEdge = new FromFaceToInnerEdges();
+        let relativPos = 0;
+        let numIter = 0;
 
-        var objectContainer = Geom2D.isInFace( p, currFace );
+        let objectContainer = Geom2D.isInFace( p, currFace );
 
         while( faceVisited.get( currFace ) || objectContainer.type === NULL ){
 
@@ -110,17 +110,17 @@ var Geom2D = {
     isCircleIntersectingAnyConstraint: function ( p, radius, mesh ) {
 
         if(p.x <= 0 || p.x >= mesh.width || p.y <= 0 || p.y >= mesh.height) return true;
-        var loc = Geom2D.locatePosition( p, mesh );
-        var face;
+        let loc = Geom2D.locatePosition( p, mesh );
+        let face;
         switch(loc.type) {
             case 0: face = loc.edge.leftFace; break;
             case 1: face = loc.leftFace; break;
             case 2: face = loc; break;
             case 3: face = null; break;
         }
-        var radiusSquared = radius * radius;
-        var pos;
-        var distSquared;
+        let radiusSquared = radius * radius;
+        let pos;
+        let distSquared;
         pos = face.edge.originVertex.pos;
         distSquared = Squared(pos.x - p.x, pos.y - p.y);
         if(distSquared <= radiusSquared) return true;
@@ -130,13 +130,13 @@ var Geom2D = {
         pos = face.edge.nextLeftEdge.nextLeftEdge.originVertex.pos;
         distSquared = Squared(pos.x - p.x, pos.y - p.y);
         if(distSquared <= radiusSquared) return true;
-        var edgesToCheck = [];
+        let edgesToCheck = [];
         edgesToCheck.push(face.edge);
         edgesToCheck.push(face.edge.nextLeftEdge);
         edgesToCheck.push(face.edge.nextLeftEdge.nextLeftEdge);
-        var edge, pos1, pos2;
-        var checkedEdges = new Dictionary( 0 );
-        var intersecting;
+        let edge, pos1, pos2;
+        let checkedEdges = new Dictionary( 0 );
+        let intersecting;
         while(edgesToCheck.length > 0) {
             edge = edgesToCheck.pop();
             checkedEdges.set(edge,true);
@@ -162,7 +162,7 @@ var Geom2D = {
 
     getDirection: function ( p1, p2, p3 ) {
 
-        var dot = (p3.x - p1.x) * (p2.y - p1.y) + (p3.y - p1.y) * (-p2.x + p1.x);
+        let dot = (p3.x - p1.x) * (p2.y - p1.y) + (p3.y - p1.y) * (-p2.x + p1.x);
         return (dot == 0) ? 0 : ((dot > 0) ? 1 : -1);
         /*if(dot == 0) return 0; 
         else if(dot > 0) return 1; 
@@ -191,7 +191,7 @@ var Geom2D = {
 
     Orient2d: function ( p1, p2, p3 ) {
 
-        var val = (p1.x - p3.x) * (p2.y - p3.y) - (p1.y - p3.y) * (p2.x - p3.x);
+        let val = (p1.x - p3.x) * (p2.y - p3.y) - (p1.y - p3.y) * (p2.x - p3.x);
         if (val > -EPSILON_SQUARED && val < EPSILON_SQUARED) return 0;// collinear
         else if (val > 0) return -1;// ccw
         else return 1;// cw
@@ -208,39 +208,39 @@ var Geom2D = {
         // remember polygons are triangle only,
         // and we suppose we have not degenerated flat polygons !
 
-        var result = { type: NULL };
+        let result = { type: NULL };
 
         if(polygon === null) return result;
 
-        var e1_2 = polygon.edge;
-        var e2_3 = e1_2.nextLeftEdge;
-        var e3_1 = e2_3.nextLeftEdge;
+        let e1_2 = polygon.edge;
+        let e2_3 = e1_2.nextLeftEdge;
+        let e3_1 = e2_3.nextLeftEdge;
 
         if( Geom2D.getRelativePosition(p, e1_2) >= 0 && Geom2D.getRelativePosition(p, e2_3) >= 0 && Geom2D.getRelativePosition(p, e3_1) >= 0) {
-            var v1 = e1_2.originVertex;
-            var v2 = e2_3.originVertex;
-            var v3 = e3_1.originVertex;
-            var x1 = v1.pos.x;
-            var y1 = v1.pos.y;
-            var x2 = v2.pos.x;
-            var y2 = v2.pos.y;
-            var x3 = v3.pos.x;
-            var y3 = v3.pos.y;
-            var v_v1squared = Squared(x1 - p.x, y1 - p.y);
-            var v_v2squared = Squared(x2 - p.x, y2 - p.y);
-            var v_v3squared = Squared(x3 - p.x, y3 - p.y);
-            var inv_v1_v2 = 1 / Squared(x2 - x1, y2 - y1);
-            var inv_v2_v3 = 1 / Squared(x3 - x2, y3 - y2);
-            var inv_v3_v1 = 1 / Squared(x1 - x3, y1 - y3);
-            var dot_v_v1v2 = (p.x - x1) * (x2 - x1) + (p.y - y1) * (y2 - y1);
-            var dot_v_v2v3 = (p.x - x2) * (x3 - x2) + (p.y - y2) * (y3 - y2);
-            var dot_v_v3v1 = (p.x - x3) * (x1 - x3) + (p.y - y3) * (y1 - y3);
-            var v_e1_2squared = v_v1squared - dot_v_v1v2 * dot_v_v1v2 * inv_v1_v2;
-            var v_e2_3squared = v_v2squared - dot_v_v2v3 * dot_v_v2v3 * inv_v2_v3;
-            var v_e3_1squared = v_v3squared - dot_v_v3v1 * dot_v_v3v1 * inv_v3_v1;
-            var closeTo_e1_2 = v_e1_2squared <= EPSILON_SQUARED ? true:false;
-            var closeTo_e2_3 = v_e2_3squared <= EPSILON_SQUARED ? true:false;
-            var closeTo_e3_1 = v_e3_1squared <= EPSILON_SQUARED ? true:false;
+            let v1 = e1_2.originVertex;
+            let v2 = e2_3.originVertex;
+            let v3 = e3_1.originVertex;
+            let x1 = v1.pos.x;
+            let y1 = v1.pos.y;
+            let x2 = v2.pos.x;
+            let y2 = v2.pos.y;
+            let x3 = v3.pos.x;
+            let y3 = v3.pos.y;
+            let v_v1squared = Squared(x1 - p.x, y1 - p.y);
+            let v_v2squared = Squared(x2 - p.x, y2 - p.y);
+            let v_v3squared = Squared(x3 - p.x, y3 - p.y);
+            let inv_v1_v2 = 1 / Squared(x2 - x1, y2 - y1);
+            let inv_v2_v3 = 1 / Squared(x3 - x2, y3 - y2);
+            let inv_v3_v1 = 1 / Squared(x1 - x3, y1 - y3);
+            let dot_v_v1v2 = (p.x - x1) * (x2 - x1) + (p.y - y1) * (y2 - y1);
+            let dot_v_v2v3 = (p.x - x2) * (x3 - x2) + (p.y - y2) * (y3 - y2);
+            let dot_v_v3v1 = (p.x - x3) * (x1 - x3) + (p.y - y3) * (y1 - y3);
+            let v_e1_2squared = v_v1squared - dot_v_v1v2 * dot_v_v1v2 * inv_v1_v2;
+            let v_e2_3squared = v_v2squared - dot_v_v2v3 * dot_v_v2v3 * inv_v2_v3;
+            let v_e3_1squared = v_v3squared - dot_v_v3v1 * dot_v_v3v1 * inv_v3_v1;
+            let closeTo_e1_2 = v_e1_2squared <= EPSILON_SQUARED ? true:false;
+            let closeTo_e2_3 = v_e2_3squared <= EPSILON_SQUARED ? true:false;
+            let closeTo_e3_1 = v_e3_1squared <= EPSILON_SQUARED ? true:false;
             if(closeTo_e1_2) {
                 if(closeTo_e3_1) result = v1; 
                 else if(closeTo_e2_3) result = v2; 
@@ -256,21 +256,21 @@ var Geom2D = {
 
     clipSegmentByTriangle: function ( s1, s2, t1, t2, t3, pResult1, pResult2 ) {
 
-        var side1_1 = Geom2D.getDirection(t1, t2, s1);
-        var side1_2 = Geom2D.getDirection(t1, t2, s2);
+        let side1_1 = Geom2D.getDirection(t1, t2, s1);
+        let side1_2 = Geom2D.getDirection(t1, t2, s2);
         if(side1_1 <= 0 && side1_2 <= 0) return false;
-        var side2_1 = Geom2D.getDirection(t2, t3, s1);
-        var side2_2 = Geom2D.getDirection(t2, t3, s2);
+        let side2_1 = Geom2D.getDirection(t2, t3, s1);
+        let side2_2 = Geom2D.getDirection(t2, t3, s2);
         if(side2_1 <= 0 && side2_2 <= 0) return false;
-        var side3_1 = Geom2D.getDirection(t3, t1, s1);
-        var side3_2 = Geom2D.getDirection(t3, t1, s2);
+        let side3_1 = Geom2D.getDirection(t3, t1, s1);
+        let side3_2 = Geom2D.getDirection(t3, t1, s2);
         if(side3_1 <= 0 && side3_2 <= 0) return false;
         if(side1_1 >= 0 && side2_1 >= 0 && side3_1 >= 0 && (side1_2 >= 0 && side2_2 >= 0 && side3_2 >= 0)) {
             pResult1 = s1.clone();
             pResult2 = s2.clone();
             return true;
         }
-        var n = 0;
+        let n = 0;
         if( Geom2D.intersections2segments(s1, s2, t1, t2, pResult1, null)) n++;
         if(n == 0) {
             if( Geom2D.intersections2segments(s1, s2, t2, t3, pResult1, null)) n++;
@@ -296,18 +296,18 @@ var Geom2D = {
 
     /*isSegmentIntersectingTriangle: function( s1, s2, t1, t2, t3 ) {
 
-        var side1_1 = Geom2D.getDirection(t1, t2, s1);
-        var side1_2 = Geom2D.getDirection(t1, t2, s2);
+        let side1_1 = Geom2D.getDirection(t1, t2, s1);
+        let side1_2 = Geom2D.getDirection(t1, t2, s2);
         if(side1_1 <= 0 && side1_2 <= 0) return false;
-        var side2_1 = Geom2D.getDirection(t2, t3, s1);
-        var side2_2 = Geom2D.getDirection(t2, t3, s2);
+        let side2_1 = Geom2D.getDirection(t2, t3, s1);
+        let side2_2 = Geom2D.getDirection(t2, t3, s2);
         if(side2_1 <= 0 && side2_2 <= 0) return false;
-        var side3_1 = Geom2D.getDirection(t3, t1, s1);
-        var side3_2 = Geom2D.getDirection(t3, t1, s2);
+        let side3_1 = Geom2D.getDirection(t3, t1, s1);
+        let side3_2 = Geom2D.getDirection(t3, t1, s2);
         if(side3_1 <= 0 && side3_2 <= 0) return false;
         if(side1_1 == 1 && side2_1 == 1 && side3_1 == 1) return true;
         if(side1_1 == 1 && side2_1 == 1 && side3_1 == 1) return true;
-        var side1, side2;
+        let side1, side2;
         if(side1_1 == 1 && side1_2 <= 0 || side1_1 <= 0 && side1_2 == 1) {
             side1 = Geom2D.getDirection(s1, s2, t1);
             side2 = Geom2D.getDirection(s1, s2, t2);
@@ -329,14 +329,14 @@ var Geom2D = {
 
     isDelaunay: function ( edge ) {
 
-        var vLeft = edge.originVertex;
-        var vRight = edge.destinationVertex;
-        var vCorner = edge.nextLeftEdge.destinationVertex;
-        var vOpposite = edge.nextRightEdge.destinationVertex;
+        let vLeft = edge.originVertex;
+        let vRight = edge.destinationVertex;
+        let vCorner = edge.nextLeftEdge.destinationVertex;
+        let vOpposite = edge.nextRightEdge.destinationVertex;
         //getCircumcenter(vCorner.pos.x,vCorner.pos.y,vLeft.pos.x,vLeft.pos.y,vRight.pos.x,vRight.pos.y,__circumcenter);
         Geom2D.getCircumcenter(vCorner.pos, vLeft.pos, vRight.pos, Geom2D.__circumcenter);
-        var squaredRadius = (vCorner.pos.x - Geom2D.__circumcenter.x) * (vCorner.pos.x - Geom2D.__circumcenter.x) + (vCorner.pos.y - Geom2D.__circumcenter.y) * (vCorner.pos.y - Geom2D.__circumcenter.y);
-        var squaredDistance = (vOpposite.pos.x - Geom2D.__circumcenter.x) * (vOpposite.pos.x - Geom2D.__circumcenter.x) + (vOpposite.pos.y - Geom2D.__circumcenter.y) * (vOpposite.pos.y - Geom2D.__circumcenter.y);
+        let squaredRadius = (vCorner.pos.x - Geom2D.__circumcenter.x) * (vCorner.pos.x - Geom2D.__circumcenter.x) + (vCorner.pos.y - Geom2D.__circumcenter.y) * (vCorner.pos.y - Geom2D.__circumcenter.y);
+        let squaredDistance = (vOpposite.pos.x - Geom2D.__circumcenter.x) * (vOpposite.pos.x - Geom2D.__circumcenter.x) + (vOpposite.pos.y - Geom2D.__circumcenter.y) * (vOpposite.pos.y - Geom2D.__circumcenter.y);
         return squaredDistance >= squaredRadius ? true : false;
 
     },
@@ -344,11 +344,11 @@ var Geom2D = {
     getCircumcenter: function ( p1, p2, p3, result ) {
 
         if(result == null) result = new Point();
-        var m1 = (p1.x + p2.x) * 0.5;
-        var m2 = (p1.y + p2.y) * 0.5;
-        var m3 = (p1.x + p3.x) * 0.5;
-        var m4 = (p1.y + p3.y) * 0.5;
-        var t1 = (m1 * (p1.x - p3.x) + (m2 - m4) * (p1.y - p3.y) + m3 * (p3.x - p1.x)) / (p1.x * (p3.y - p2.y) + p2.x * (p1.y - p3.y) + p3.x * (p2.y - p1.y));
+        let m1 = (p1.x + p2.x) * 0.5;
+        let m2 = (p1.y + p2.y) * 0.5;
+        let m3 = (p1.x + p3.x) * 0.5;
+        let m4 = (p1.y + p3.y) * 0.5;
+        let t1 = (m1 * (p1.x - p3.x) + (m2 - m4) * (p1.y - p3.y) + m3 * (p3.x - p1.x)) / (p1.x * (p3.y - p2.y) + p2.x * (p1.y - p3.y) + p3.x * (p2.y - p1.y));
         result.x = m1 + t1 * (p2.y - p1.y);
         result.y = m2 - t1 * (p2.x - p1.x);
         return result;
@@ -358,14 +358,14 @@ var Geom2D = {
     intersections2segments: function ( s1p1, s1p2, s2p1, s2p2, posIntersection, paramIntersection, infiniteLineMode ) {
 
         if(infiniteLineMode == null) infiniteLineMode = false;
-        var t1 = 0;
-        var t2 = 0;
-        var result;
-        var divisor = (s1p1.x - s1p2.x) * (s2p1.y - s2p2.y) + (s1p2.y - s1p1.y) * (s2p1.x - s2p2.x);
+        let t1 = 0;
+        let t2 = 0;
+        let result;
+        let divisor = (s1p1.x - s1p2.x) * (s2p1.y - s2p2.y) + (s1p2.y - s1p1.y) * (s2p1.x - s2p2.x);
         if(divisor == 0) result = false; 
         else {
             result = true;
-            var invDivisor = 1 / divisor;
+            let invDivisor = 1 / divisor;
             if(!infiniteLineMode || posIntersection != null || paramIntersection != null) {
                 t1 = (s1p1.x * (s2p1.y - s2p2.y) + s1p1.y * (s2p2.x - s2p1.x) + s2p1.x * s2p2.y - s2p1.y * s2p2.x) * invDivisor;
                 t2 = (s1p1.x * (s2p1.y - s1p2.y) + s1p1.y * (s1p2.x - s2p1.x) - s1p2.x * s2p1.y + s1p2.y * s2p1.x) * invDivisor;
@@ -394,9 +394,9 @@ var Geom2D = {
 
     isConvex: function ( edge ) {
 
-        var result = true;
-        var eLeft;
-        var vRight;
+        let result = true;
+        let eLeft;
+        let vRight;
         eLeft = edge.nextLeftEdge.oppositeEdge;
         vRight = edge.nextRightEdge.destinationVertex;
         if( Geom2D.getRelativePosition(vRight.pos, eLeft) != -1) result = false; else {
@@ -410,33 +410,33 @@ var Geom2D = {
 
     projectOrthogonaly: function ( vertexPos, edge ) {
 
-        var a = edge.originVertex.pos.x;
-        var b = edge.originVertex.pos.y;
-        var c = edge.destinationVertex.pos.x;
-        var d = edge.destinationVertex.pos.y;
-        var e = vertexPos.x;
-        var f = vertexPos.y;
-        var t1 = (a * a - a * c - a * e + b * b - b * d - b * f + c * e + d * f) / (a * a - 2 * a * c + b * b - 2 * b * d + c * c + d * d);
+        let a = edge.originVertex.pos.x;
+        let b = edge.originVertex.pos.y;
+        let c = edge.destinationVertex.pos.x;
+        let d = edge.destinationVertex.pos.y;
+        let e = vertexPos.x;
+        let f = vertexPos.y;
+        let t1 = (a * a - a * c - a * e + b * b - b * d - b * f + c * e + d * f) / (a * a - 2 * a * c + b * b - 2 * b * d + c * c + d * d);
         vertexPos.x = a + t1 * (c - a);
         vertexPos.y = b + t1 * (d - b);
 
     },
 
     /*projectOrthogonalyOnSegment: function  (px, py, sp1x, sp1y, sp2x, sp2y, result) {
-        var a = sp1x;
-        var b = sp1y;
-        var c = sp2x;
-        var d = sp2y;
-        var e = px;
-        var f = py;       
-        var t1 = (a*a - a*c - a*e + b*b - b*d - b*f + c*e + d*f) / (a*a - 2*a*c + b*b - 2*b*d + c*c + d*d);
+        let a = sp1x;
+        let b = sp1y;
+        let c = sp2x;
+        let d = sp2y;
+        let e = px;
+        let f = py;       
+        let t1 = (a*a - a*c - a*e + b*b - b*d - b*f + c*e + d*f) / (a*a - 2*a*c + b*b - 2*b*d + c*c + d*d);
         result.x = a + t1*(c - a);
         result.y = b + t1*(d - b);
     },*/
 
     intersections2Circles: function ( c1, r1, c2, r2, result ){
 
-        var factor, a, b, first, dist, invd, trans;
+        let factor, a, b, first, dist, invd, trans;
         dist = Squared(c2.x - c1.x, c2.y - c1.y);
         invd = 1 / (2 * dist);
         if((c1.x != c2.x || c1.y != c2.y) && dist <= (r1 + r2) * (r1 + r2) && dist >= (r1 - r2) * (r1 - r2)) {
@@ -449,10 +449,10 @@ var Geom2D = {
 
             
 
-            /*var xFirstPart = (c1.x + c2.x) * 0.5 + (c2.x - c1.x) * (r1 * r1 - r2 * r2) * invd;
-            var yFirstPart = (c1.y + c2.y) * 0.5 + (c2.y - c1.y) * (r1 * r1 - r2 * r2) * invd;
-            var xFactor = (c2.y - c1.y) * invd;
-            var yFactor = (c2.x - c1.x) * invd;*/
+            /*let xFirstPart = (c1.x + c2.x) * 0.5 + (c2.x - c1.x) * (r1 * r1 - r2 * r2) * invd;
+            let yFirstPart = (c1.y + c2.y) * 0.5 + (c2.y - c1.y) * (r1 * r1 - r2 * r2) * invd;
+            let xFactor = (c2.y - c1.y) * invd;
+            let yFactor = (c2.x - c1.x) * invd;*/
             if(result != null) {
                 //result.push(  xFirstPart + xFactor * trans , yFirstPart - yFactor * trans  , xFirstPart - xFactor * trans , yFirstPart + yFactor * trans );
                 //result.push(  xFirstPart + factor.y * trans , yFirstPart - factor.x * trans  , xFirstPart - factor.y * trans , yFirstPart + factor.x * trans );
@@ -465,15 +465,15 @@ var Geom2D = {
 
     intersectionsSegmentCircle: function ( p0, p1, c, r, result ) {
 
-        var p0xSQD = p0.x * p0.x;
-        var p0ySQD = p0.y * p0.y;
-        var a = p1.y * p1.y - 2 * p1.y * p0.y + p0ySQD + p1.x * p1.x - 2 * p1.x * p0.x + p0xSQD;
-        var b = 2 * p0.y * c.y - 2 * p0xSQD + 2 * p1.y * p0.y - 2 * p0ySQD + 2 * p1.x * p0.x - 2 * p1.x * c.x + 2 * p0.x * c.x - 2 * p1.y * c.y;
-        var cc = p0ySQD + c.y * c.y + c.x * c.x - 2 * p0.y * c.y - 2 * p0.x * c.x + p0xSQD - r * r;
-        var delta = b * b - 4 * a * cc;
-        var deltaSQRT;
-        var t0;
-        var t1;
+        let p0xSQD = p0.x * p0.x;
+        let p0ySQD = p0.y * p0.y;
+        let a = p1.y * p1.y - 2 * p1.y * p0.y + p0ySQD + p1.x * p1.x - 2 * p1.x * p0.x + p0xSQD;
+        let b = 2 * p0.y * c.y - 2 * p0xSQD + 2 * p1.y * p0.y - 2 * p0ySQD + 2 * p1.x * p0.x - 2 * p1.x * c.x + 2 * p0.x * c.x - 2 * p1.y * c.y;
+        let cc = p0ySQD + c.y * c.y + c.x * c.x - 2 * p0.y * c.y - 2 * p0.x * c.x + p0xSQD - r * r;
+        let delta = b * b - 4 * a * cc;
+        let deltaSQRT;
+        let t0;
+        let t1;
         if(delta < 0) return false; 
         else if(delta == 0) {
             t0 = -b / (2 * a);
@@ -486,7 +486,7 @@ var Geom2D = {
             deltaSQRT = Math.sqrt(delta);
             t0 = (-b + deltaSQRT) / (2 * a);
             t1 = (-b - deltaSQRT) / (2 * a);
-            var intersecting = false;
+            let intersecting = false;
             if(0 <= t0 && t0 <= 1) {
                 if(result != null) {
                     result.push( p0.x + t0*(p1.x - p0.x), p0.y + t0*(p1.y - p0.y), t0 );
@@ -505,13 +505,13 @@ var Geom2D = {
     },
 
     /*intersectionsLineCircle: function(p0x,p0y,p1x,p1y,cx,cy,r,result) {
-        var p0xSQD = p0x * p0x;
-        var p0ySQD = p0y * p0y;
-        var a = p1y * p1y - 2 * p1y * p0y + p0ySQD + p1x * p1x - 2 * p1x * p0x + p0xSQD;
-        var b = 2 * p0y * cy - 2 * p0xSQD + 2 * p1y * p0y - 2 * p0ySQD + 2 * p1x * p0x - 2 * p1x * cx + 2 * p0x * cx - 2 * p1y * cy;
-        var c = p0ySQD + cy * cy + cx * cx - 2 * p0y * cy - 2 * p0x * cx + p0xSQD - r * r;
-        var delta = b * b - 4 * a * c;
-        var deltaSQRT, t0, t1;
+        let p0xSQD = p0x * p0x;
+        let p0ySQD = p0y * p0y;
+        let a = p1y * p1y - 2 * p1y * p0y + p0ySQD + p1x * p1x - 2 * p1x * p0x + p0xSQD;
+        let b = 2 * p0y * cy - 2 * p0xSQD + 2 * p1y * p0y - 2 * p0ySQD + 2 * p1x * p0x - 2 * p1x * cx + 2 * p0x * cx - 2 * p1y * cy;
+        let c = p0ySQD + cy * cy + cx * cx - 2 * p0y * cy - 2 * p0x * cx + p0xSQD - r * r;
+        let delta = b * b - 4 * a * c;
+        let deltaSQRT, t0, t1;
         if(delta < 0) return false; 
         else if(delta == 0) {
             t0 = -b / (2 * a);
@@ -527,34 +527,34 @@ var Geom2D = {
 
     tangentsPointToCircle: function ( p, c, r, result ) {
 
-        var c2 = p.clone().add(c).mul(0.5);
-        var r2 = 0.5 * SquaredSqrt(p.x - c.x, p.y - c.y);
+        let c2 = p.clone().add(c).mul(0.5);
+        let r2 = 0.5 * SquaredSqrt(p.x - c.x, p.y - c.y);
         return Geom2D.intersections2Circles(c2, r2, c, r, result);
 
     },
 
     tangentsCrossCircleToCircle: function ( r, c1, c2, result ) {
 
-        var distance = SquaredSqrt(c1.x - c2.x, c1.y - c2.y);
-        var radius = distance * 0.25;
-        var center = c2.clone().sub(c1).mul(0.25).add(c1);
+        let distance = SquaredSqrt(c1.x - c2.x, c1.y - c2.y);
+        let radius = distance * 0.25;
+        let center = c2.clone().sub(c1).mul(0.25).add(c1);
 
         if( Geom2D.intersections2Circles( c1, r, center, radius, result )) {
 
-            var t1x = result[0];
-            var t1y = result[1];
-            var t2x = result[2];
-            var t2y = result[3];
-            var mid = c1.clone().add(c2).mul(0.5);
+            let t1x = result[0];
+            let t1y = result[1];
+            let t2x = result[2];
+            let t2y = result[3];
+            let mid = c1.clone().add(c2).mul(0.5);
 
-            var dotProd = (t1x - mid.x) * (c2.y - c1.y) + (t1y - mid.y) * (-c2.x + c1.x);
-            var tproj = dotProd / (distance * distance);
-            var projx = mid.x + tproj * (c2.y - c1.y);
-            var projy = mid.y - tproj * (c2.x - c1.x);
-            var t4x = 2 * projx - t1x;
-            var t4y = 2 * projy - t1y;
-            var t3x = t4x + t2x - t1x;
-            var t3y = t2y + t4y - t1y;
+            let dotProd = (t1x - mid.x) * (c2.y - c1.y) + (t1y - mid.y) * (-c2.x + c1.x);
+            let tproj = dotProd / (distance * distance);
+            let projx = mid.x + tproj * (c2.y - c1.y);
+            let projy = mid.y - tproj * (c2.x - c1.x);
+            let t4x = 2 * projx - t1x;
+            let t4y = 2 * projy - t1y;
+            let t3x = t4x + t2x - t1x;
+            let t3y = t2y + t4y - t1y;
             result.push( t3x, t3y, t4x, t4y );
             return true;
             
@@ -564,34 +564,34 @@ var Geom2D = {
 
     tangentsParalCircleToCircle: function ( r, c1, c2, result ) {
 
-        var distance = SquaredSqrt(c1.x - c2.x, c1.y - c2.y);
-        var invD = 1 / distance;
-        var t1x = c1.x + r * (c2.y - c1.y) * invD;
-        var t1y = c1.y + r * (-c2.x + c1.x) * invD;
-        var t2x = 2 * c1.x - t1x;
-        var t2y = 2 * c1.y - t1y;
-        var t3x = t2x + c2.x - c1.x;
-        var t3y = t2y + c2.y - c1.y;
-        var t4x = t1x + c2.x - c1.x;
-        var t4y = t1y + c2.y - c1.y;
+        let distance = SquaredSqrt(c1.x - c2.x, c1.y - c2.y);
+        let invD = 1 / distance;
+        let t1x = c1.x + r * (c2.y - c1.y) * invD;
+        let t1y = c1.y + r * (-c2.x + c1.x) * invD;
+        let t2x = 2 * c1.x - t1x;
+        let t2y = 2 * c1.y - t1y;
+        let t3x = t2x + c2.x - c1.x;
+        let t3y = t2y + c2.y - c1.y;
+        let t4x = t1x + c2.x - c1.x;
+        let t4y = t1y + c2.y - c1.y;
         result.push( t1x, t1y, t2x, t2y, t3x, t3y, t4x, t4y );
 
     },
 
     /*distanceSquaredPointToLine: function(p,a,b) {
-        var a_b_squared = Squared(b.x - a.x, b.y - a.y);
-        var dotProduct = (p.x - a.x) * (b.x - a.x) + (p.y - a.y) * (b.y - a.y);
-        var p_a_squared = Squared(a.x - p.x, a.y - p.y);
+        let a_b_squared = Squared(b.x - a.x, b.y - a.y);
+        let dotProduct = (p.x - a.x) * (b.x - a.x) + (p.y - a.y) * (b.y - a.y);
+        let p_a_squared = Squared(a.x - p.x, a.y - p.y);
         return p_a_squared - dotProduct * dotProduct / a_b_squared;
     },*/
 
     distanceSquaredPointToSegment: function ( p, a, b ) {
 
-        var a_b_squared = Squared(b.x - a.x, b.y - a.y);
-        var dotProduct = ((p.x - a.x) * (b.x - a.x) + (p.y - a.y) * (b.y - a.y)) / a_b_squared;
+        let a_b_squared = Squared(b.x - a.x, b.y - a.y);
+        let dotProduct = ((p.x - a.x) * (b.x - a.x) + (p.y - a.y) * (b.y - a.y)) / a_b_squared;
         if(dotProduct < 0) return Squared(p.x - a.x, p.y - a.y); 
         else if(dotProduct <= 1) {
-            var p_a_squared = Squared(a.x - p.x, a.y - p.y);
+            let p_a_squared = Squared(a.x - p.x, a.y - p.y);
             return p_a_squared - dotProduct * dotProduct * a_b_squared;
         } else return Squared(p.x - b.x, p.y - b.y);
 
@@ -605,12 +605,12 @@ var Geom2D = {
 
     pathLength: function( path ) {
 
-        var sumDistance = 0.;
-        var fromX = path[0];
-        var fromY = path[1];
-        var nextX, nextY, x, y, distance;
-        var i = 2;
-        var l = path.length;
+        let sumDistance = 0.;
+        let fromX = path[0];
+        let fromY = path[1];
+        let nextX, nextY, x, y, distance;
+        let i = 2;
+        let l = path.length;
 
         while( i < l ) {
 
@@ -630,5 +630,3 @@ var Geom2D = {
     },
 
 }
-
-export { Geom2D };

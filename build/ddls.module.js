@@ -1,3 +1,8 @@
+/**
+ * @license
+ * Copyright 2010-2022 Ddls.js Authors lo-th
+ * SPDX-License-Identifier: MIT
+ */
 // Polyfills
 
 if ( Number.EPSILON === undefined ) {
@@ -46,8 +51,6 @@ if ( Object.assign === undefined ) {
 
 		Object.assign = function ( target ) {
 
-			'use strict';
-
 			if ( target === undefined || target === null ) {
 
 				throw new TypeError( 'Cannot convert undefined or null to object' );
@@ -89,24 +92,24 @@ if ( Object.assign === undefined ) {
  * the dedal engine.
  */
 
-var REVISION = '1.0.0';
+const REVISION = '1.0.0';
 
 // MATH
 
-var TTIER = 0.3333333333333333;
-var torad = 0.0174532925199432957;
-var todeg = 57.295779513082320876;
-var EPSILON_NORMAL = 0.01;
-var EPSILON_SQUARED = 0.0001;
-var INFINITY = Infinity;
-var TwoPI = Math.PI * 2;
+const TTIER = 0.3333333333333333;
+const torad = Math.PI / 180;
+const todeg = 180 / Math.PI;
+const EPSILON_NORMAL = 0.01;
+const EPSILON_SQUARED = 0.0001;
+const INFINITY = Infinity;
+const TwoPI = Math.PI * 2;
 
 // INTERSECTION
 
-var VERTEX = 0;
-var EDGE = 1;
-var FACE = 2;
-var NULL = 3;
+const VERTEX = 0;
+const EDGE = 1;
+const FACE = 2;
+const NULL = 3;
 
 // MAIN
 
@@ -128,7 +131,7 @@ var Main = {
     
 };
 
-var IDX = {
+const IDX = {
 
     id: { segment:0, shape:0, edge:0, face:0, mesh2D:0, object2D:0, vertex:0, graph:0, graphEdge:0, graphNode:0 },
 
@@ -147,6 +150,9 @@ var IDX = {
 
 };
 
+
+
+
 // LOG
 
 var Debug = {
@@ -162,13 +168,51 @@ var Debug = {
     }
 }; 
 
-var Log = function Log ( str ){ Debug.log( str ); };
+//export var Log = function Log ( str ){ Debug.log( str ); };
 
-
-
+const Log = ( str ) => { Debug.log( str ); };
 
 
 // DICTIONARY
+class Dictionary {
+
+    constructor ( type = 0 ) {
+
+        this.type = type;
+        this.m = new Map();
+
+    }
+
+    set ( key, value ) {
+
+        this.m.set( this.type === 1 ? key.id : key, value );
+        
+    }
+
+    get ( key ) {
+
+        if ( !this.m.has( this.type === 1 ? key.id : key ) ) return null;
+        return this.m.get( this.type === 1 ? key.id : key );
+
+    }
+
+    remove ( key ) {
+
+        this.m.delete( this.type === 1 ? key.id : key );
+
+    }
+
+    dispose () {
+
+        this.m.clear();
+        //this.m = null
+
+    }
+
+}
+
+
+/*
 
 function Dictionary ( type ){
 
@@ -185,7 +229,7 @@ function Dictionary ( type ){
 
     }
 
-}
+};
 
 Dictionary.prototype = {
 
@@ -250,186 +294,201 @@ Dictionary.prototype = {
 
     }
 
-};
-
-function Point ( x, y ) {
-
-    this.x = x || 0;
-    this.y = y || 0;
-
 }
 
-Point.prototype = {
+export { Dictionary };*/
 
-    constructor: Point,
+class Point {
 
-    set: function ( x, y ) {
+    constructor( x = 0, y = 0 ) {
 
         this.x = x;
         this.y = y;
-        return this;
 
-    },
+    }
 
-    transform: function ( matrix ) {
+    set( x, y ) {
+
+        this.x = x;
+        this.y = y;
+        return this
+
+    }
+
+    transform( matrix ) {
 
         matrix.tranform( this );
-        return this;
+        return this
 
-    },
+    }
     
-    copy: function ( p ) {
+    copy( p ) {
 
         this.x = p.x;
         this.y = p.y;
-        return this;
+        return this
 
-    },
+    }
 
-    clone: function () {
+    clone() {
 
-        return new Point( this.x, this.y );
+        return new Point( this.x, this.y )
 
-    },
+    }
 
-    sub: function ( p ) {
+    sub( p ) {
 
         this.x -= p.x;
         this.y -= p.y;
-        return this;
+        return this
 
-    },
+    }
 
-    mul: function ( s ) {
+    mul( s ) {
 
         this.x *= s;
         this.y *= s;
-        return this;
+        return this
 
-    },
+    }
 
-    add: function( n ) {
+    add( n ) {
 
         this.x += n.x;
         this.y += n.y;
-        return this;
+        return this
 
-    },
+    }
 
-    div: function ( s ) {
+    div( s ) {
 
-        var v = 1/s;
+        let v = 1/s;
         this.x *= v;
         this.y *= v;
-        return this;
+        return this
 
-    },
+    }
 
-    negate: function () {
+    negate() {
 
-        return new Point( -this.x, -this.y );
-    
-    },
-
-    transformMat2D: function ( matrix ) {
-
-        var x = this.x, y = this.y, n = matrix.n;
-        this.x = n[0] * x + n[2] * y + n[4];
-        this.y = n[1] * x + n[3] * y + n[5];
-        return this;
-
-    },
-
-    length: function () {
-
-        return Math.sqrt( this.x * this.x + this.y * this.y );
-
-    },
-
-    angular: function ( a ) {
-
-        this.x = Math.cos( a );
-        this.y = Math.sin( a );
-        return this;
-
-    },
-
-    normalize: function () {
-
-        var norm = this.length();
-        this.x /= norm;
-        this.y /= norm;
-        return norm;
-
-    },
-
-    distanceTo: function ( p ) {
-
-        var diffX = this.x - p.x;
-        var diffY = this.y - p.y;
-        return Math.sqrt( diffX * diffX + diffY * diffY );
-
-    },
-
-    distanceSquaredTo: function ( p ) {
-
-        var diffX = this.x - p.x;
-        var diffY = this.y - p.y;
-        return diffX * diffX + diffY * diffY;
-
-    },
-
-    equals: function ( p ) {
-
-        return this.x === p.x && this.y === p.y;
+        return new Point( -this.x, -this.y )
     
     }
 
-};
+    transformMat2D( matrix ) {
 
-function Matrix2D ( a, b, c, d, e, f ) {
+        let x = this.x, y = this.y, n = matrix.n;
+        this.x = n[0] * x + n[2] * y + n[4];
+        this.y = n[1] * x + n[3] * y + n[5];
+        return this
 
-    this.n = [ a || 1, b || 0, c || 0, d || 1, e || 0, f || 0 ];
+    }
+
+    length() {
+
+        return Math.sqrt( this.x * this.x + this.y * this.y )
+
+    }
+
+    angular( a ) {
+
+        this.x = Math.cos( a );
+        this.y = Math.sin( a );
+        return this
+
+    }
+
+    normalize() {
+
+        const norm = this.length();
+        this.x /= norm;
+        this.y /= norm;
+        return this;
+
+    }
+
+    distanceTo( p ) {
+
+        let diffX = p.x - this.x;
+        let diffY = p.y - this.y;
+        return Math.sqrt( diffX * diffX + diffY * diffY )
+
+    }
+
+    distanceSquaredTo( p ) {
+
+        let diffX = p.x - this.x;
+        let diffY = p.y - this.y;
+        return diffX * diffX + diffY * diffY
+
+    }
+
+    equals( p ) {
+
+        return this.x === p.x && this.y === p.y
+    
+    }
+
+    /*angleTo( p ){
+
+        return Math.atan2( p.x - this.x, p.y - this.y )
+        
+    }*/
+    angle(){
+
+        return Math.atan2( - this.y, - this.x ) + Math.PI;
+        
+    }
+
+    angleTo( p ){
+
+        return Math.atan2( p.y - this.y, p.x - this.x )
+        
+    }
 
 }
 
-Matrix2D.prototype = {
+class Matrix2D {
 
-    constructor: Matrix2D,
+    constructor( a = 1, b = 0, c = 0, d = 1, e = 0, f = 0 ) {
 
-    identity: function () {
+        this.n = [ a || 1, b || 0, c || 0, d || 1, e || 0, f || 0 ];
+
+    }
+
+    identity() {
 
         this.n = [ 1, 0, 0, 1, 0, 0 ];
-        return this;
+        return this
 
-    },
+    }
 
-    translate: function ( p ) {
+    translate( p ) {
 
-        var n = this.n;
+        let n = this.n;
         n[4] += p.x;
         n[5] += p.y;
-        return this;
+        return this
 
-    },
+    }
 
-    scale: function ( p ) {
+    scale( p ) {
 
-        var n = this.n;
+        let n = this.n;
         n[0] *= p.x;
         n[1] *= p.y;
         n[2] *= p.x;
         n[3] *= p.y;
         n[4] *= p.x;
         n[5] *= p.y;
-        return this;
+        return this
 
-    },
+    }
 
-    rotate: function ( rad ) {
+    rotate( rad ) {
 
-        var n = this.n;
-        var aa = n[0], ab = n[1],
+        let n = this.n;
+        let aa = n[0], ab = n[1],
         ac = n[2], ad = n[3],
         atx = n[4], aty = n[5],
         st = Math.sin( rad ), ct = Math.cos( rad );
@@ -439,267 +498,168 @@ Matrix2D.prototype = {
         n[3] = -ac*st + ct*ad;
         n[4] = ct*atx + st*aty;
         n[5] = ct*aty - st*atx;
-        return this;
+        return this
 
-    },
+    }
 
-    tranform: function ( p ) {
+    tranform( p ) {
 
-        var n = this.n;
-        var x = n[0] * p.x + n[2] * p.y + n[4];
-        var y = n[1] * p.x + n[3] * p.y + n[5];
+        let n = this.n;
+        let x = n[0] * p.x + n[2] * p.y + n[4];
+        let y = n[1] * p.x + n[3] * p.y + n[5];
         p.x = x;
         p.y = y;
 
-    },
+    }
 
-    transformX: function ( x, y ) {
+    transformX( x, y ) {
 
-        var n = this.n;
-        return n[0] * x + n[2] * y + n[4];
+        let n = this.n;
+        return n[0] * x + n[2] * y + n[4]
 
-    },
+    }
 
-    transformY: function ( x, y ) {
+    transformY( x, y ) {
 
-        var n = this.n;
-        return n[1] * x + n[3] * y + n[5];
+        let n = this.n;
+        return n[1] * x + n[3] * y + n[5]
 
-    },
+    }
 
-    concat: function ( matrix ) { // multiply
+    concat( matrix ) { // multiply
 
-        var n = this.n;
-        var m = matrix.n;
-        var a = n[0] * m[0] + n[1] * m[2];
-        var b = n[0] * m[1] + n[1] * m[3];
-        var c = n[2] * m[0] + n[3] * m[2];
-        var d = n[2] * m[1] + n[3] * m[3];
-        var e = n[4] * m[0] + n[5] * m[2] + m[4];
-        var f = n[4] * m[1] + n[5] * m[3] + m[5];
+        let n = this.n;
+        let m = matrix.n;
+        let a = n[0] * m[0] + n[1] * m[2];
+        let b = n[0] * m[1] + n[1] * m[3];
+        let c = n[2] * m[0] + n[3] * m[2];
+        let d = n[2] * m[1] + n[3] * m[3];
+        let e = n[4] * m[0] + n[5] * m[2] + m[4];
+        let f = n[4] * m[1] + n[5] * m[3] + m[5];
         n[0] = a;
         n[1] = b;
         n[2] = c;
         n[3] = d;
         n[4] = e;
         n[5] = f;
-        return this;
-
-    },
-
-    clone: function () {
-
-        var n = this.n;
-        return new Matrix2D( n[0], n[1], n[2], n[3], n[4], n[5] );
+        return this
 
     }
 
-};
+    clone() {
+
+        let n = this.n;
+        return new Matrix2D( n[0], n[1], n[2], n[3], n[4], n[5] )
+
+    }
+
+}
 
 // MATH function
+const rand = ( low, high ) => ( low + Math.random() * ( high - low ) );
+const randInt = ( low, high ) => ( low + Math.floor( Math.random() * ( high - low + 1 ) ) );
+const unwrap = ( r ) => ( r - (Math.floor((r + Math.PI)/(2*Math.PI)))*2*Math.PI );
+const SquaredSqrt = ( a, b ) => ( Math.sqrt( a * a + b * b ) );
+const nearEqual = ( a, b, e ) => ( Math.abs( a - b ) < e );
+const fix = ( x, n ) => ( x.toFixed(n || 3) * 1 );
+const Squared = ( a, b ) => ( a * a + b * b );
+const Integral = ( x ) => ( Math.floor(x) );
 
-var rand = function ( low, high ){ return low + Math.random() * ( high - low ); };
-var randInt = function ( low, high ){ return low + Math.floor( Math.random() * ( high - low + 1 ) ); };
-
-var Squared = function ( a, b ) { return a * a + b * b; };
-var SquaredSqrt = function ( a, b ) { return Math.sqrt( a * a + b * b ); };
-
-var nearEqual = function ( a, b, e ) { return Math.abs( a - b ) < e; };
-
-var Integral = function(x) { return Math.floor(x); };
-var fix = function(x, n) { return x.toFixed(n || 3) * 1; };
-
-//export var ARRAY = (typeof Float32Array !== 'undefined') ? Float32Array : Array;
-
-//export { randInt };
-
-
-
-function ShapeSimplifier ( coords, epsilon ) {
-
-    epsilon = epsilon || 1;
-    var len = coords.length;
-    //DDLS.Debug.assertFalse((len & 1) != 0,"Wrong size",{ fileName : "ShapeSimplifier.hx", lineNumber : 18, className : "DDLS.ShapeSimplifier", methodName : "simplify"});
-    if(len <= 4) return [].concat(coords);
-    var firstPointX = coords[0];
-    var firstPointY = coords[1];
-    var lastPointX = coords[len - 2];
-    var lastPointY = coords[len - 1];
-    var index = -1;
-    var dist = 0.;
-    var _g1 = 1;
-    var _g = len >> 1;
-    while(_g1 < _g) {
-        var i = _g1++;
-        var currDist = Geom2D.distanceSquaredPointToSegment( new Point(coords[i << 1],coords[(i << 1) + 1]), new Point(firstPointX,firstPointY), new Point(lastPointX,lastPointY) );
-        //var currDist = DDLS.Geom2D.distanceSquaredPointToSegment(coords[i << 1],coords[(i << 1) + 1],firstPointX,firstPointY,lastPointX,lastPointY);
-        if(currDist > dist) {
-            dist = currDist;
-            index = i;
-        }
-    }
-    if(dist > epsilon * epsilon) {
-        var l1 = coords.slice(0,(index << 1) + 2);
-        var l2 = coords.slice(index << 1);
-        var r1 = ShapeSimplifier(l1,epsilon);
-        var r2 = ShapeSimplifier(l2,epsilon);
-        var rs = r1.slice(0,r1.length - 2).concat(r2);
-        return rs;
-    } else return [firstPointX,firstPointY,lastPointX,lastPointY];
-
-}
-
-// PIXEL DATA
-
-function PixelsData(w,h) {
-
-    this.length = w * h;
-    this.bytes = [];//new ARRAY( this.length * 4 );
-    this.width = w;
-    this.height = h;
-
-}
+//export const ARRAY = (typeof Float32Array !== 'undefined') ? Float32Array : Array;
 
 // IMAGE DATA
 
-function fromImageData ( image, imageData ) {
+const fromImageData = ( image, imageData, w, h ) => {
+
+    let canvas, ctx;
 
     if( image ){
 
-        var w = image.width;
-        var h = image.height;
+        w = image.width;
+        h = image.height;
 
-        var canvas = document.createElement("canvas");
+        canvas = document.createElement("canvas");
         canvas.width = w;
         canvas.height = h;
 
-        var ctx = canvas.getContext( "2d" );
+        ctx = canvas.getContext( "2d" );
         ctx.drawImage( image, 0, 0, w, h );
         imageData = ctx.getImageData( 0, 0, w, h );
         
     }
 
-    var pixels = new PixelsData( imageData.width, imageData.height );
-    var data = imageData.data;
-    var l = data.byteLength, i=0;
+    const pixels = {
+        bytes: imageData.data,
+        width: w,
+        height: h
+    };
 
-    for( i = 0; i < l; i++ ){
-
-        pixels.bytes.push( data[i] & 255 );
-
-    }
-    /*while(n < l) {
-        i = n++;
-        pixels.bytes[i] = data[i] & 255;
-    }*/
-
-    if(image){
+    if( image ){
         ctx.clearRect(0,0,w,h);
         canvas = null;
         ctx = null;
     }
 
-    return pixels;
+    return pixels
 
-}
-
-
-
-// IMG LOADER
-/*
-function ImageLoader ( imageNames, loaded_ ) {
-
-    this.images = new Dictionary(2);
-    this.loaded = loaded_;
-    this.count = imageNames.length;
-    var _g = 0;
-    while(_g < imageNames.length) {
-        var name = imageNames[_g];
-        ++_g;
-        this.load(name);
-    }
 };
 
-ImageLoader.prototype = {
-    load: function(img) {
-        var image;
-        var _this = window.document;
-        image = _this.createElement("img");
-        image.style.cssText = 'position:absolute;';
-        image.onload = function(){
-            this.store( image, img.split("/").pop() );
-        }.bind(this);
-        image.src = img;
-    },
-    store: function(image,name) {
-        this.count--;
-        Log("store " + name + " " + this.count);
-        this.images.set(name,image);
-        if(this.count == 0) this.loaded();
+class RandGenerator {
+
+    constructor( seed = 1234, min = 0, max = 1 ) {
+
+        this.min = min;
+        this.max = max;
+        this.seed = this.currentSeed = seed;
+        this.nid = 0;
+
     }
-};
 
-export { ImageLoader };
-*/
-
-function RandGenerator ( seed, min, max ) {
-
-    this.min = min || 0;
-    this.max = max || 1;
-    this.seed = this.currentSeed = seed || 1234;
-    this.nid = 0;
-
-}
-
-RandGenerator.prototype = {
-
-    constructor: RandGenerator,
-
-    getSeed: function () {
+    getSeed() {
 
         return this.seed;
 
-    }, 
+    } 
 
-    setSeed: function ( value ) {
+    setSeed( value ) {
 
         this.seed = this.currentSeed = value;
 
-    },
+    }
 
-    reset: function() {
+    reset() {
 
         this.currentSeed = this.seed;
         this.nid = 0;
 
-    },
+    }
 
-    next: function () {
+    next() {
 
-        var tmp = this.currentSeed * 1;
-        var temp = ( tmp * tmp ).toString();
+        let tmp = this.currentSeed * 1;
+        let temp = ( tmp * tmp ).toString();
         while( temp.length < 8 ) temp = "0" + temp;
         this.currentSeed = parseInt( temp.substr( 1 , 5 ) );
-        var res = Math.round( this.min + ( this.currentSeed / 99999 ) * ( this.max - this.min ));
+        let res = Math.round( this.min + ( this.currentSeed / 99999 ) * ( this.max - this.min ));
         if( this.currentSeed === 0 ) this.currentSeed = this.seed + this.nid;
         this.nid++;
         if( this.nid === 200 ) this.reset();
 
         return res;
 
-    },
+    }
 
-    nextInRange: function( min, max ) {
+    nextInRange( min, max ) {
 
         this.min = min;
         this.max = max;
         return this.next();
 
-    },
+    }
 
-    shuffle: function( ar ) {
+    shuffle( ar ) {
 
-        var i = ar.length, n, t;
+        let i = ar.length, n, t;
 
         while( i -- ) {
 
@@ -712,7 +672,7 @@ RandGenerator.prototype = {
 
     }
 
-};
+}
 
 //-------------------------
 //     EDGE
@@ -725,23 +685,23 @@ RandGenerator.prototype = {
 //-------------------------
 //     FACE
 //-------------------------
+class FromFaceToInnerEdges {
 
-function FromFaceToInnerEdges () {
+    constructor () {
 
-    this._fromFace = null;
-    this._nextEdge = null;
-    
-    Object.defineProperty(this, 'fromFace', {
-        set: function(value) { 
-            this._fromFace = value;
-            this._nextEdge = this._fromFace.edge;
-        }
-    });
-}
+        this._fromFace = null;
+        this._nextEdge = null;
 
-FromFaceToInnerEdges.prototype = {
+    }
 
-    next: function() {
+    set fromFace ( value ) {
+
+        this._fromFace = value;
+        this._nextEdge = this._fromFace.edge;
+
+    }
+
+    next () {
         if(this._nextEdge != null) {
             this._resultEdge = this._nextEdge;
             this._nextEdge = this._nextEdge.nextLeftEdge;
@@ -750,7 +710,8 @@ FromFaceToInnerEdges.prototype = {
         return this._resultEdge;
     }
 
-};
+}
+
 
 //!\\ not used
 /*
@@ -823,24 +784,23 @@ export { FromFaceToNeighbourFaces };
 //-------------------------
 //     MESH
 //-------------------------
+class FromMeshToVertices {
 
-function FromMeshToVertices () {
+    constructor () {
 
-    this._fromMesh = null;
-    this._currIndex = 0;
+        this._fromMesh = null;
+        this._currIndex = 0;
 
-    Object.defineProperty(this, 'fromMesh', {
-        set: function(value) { 
-            this._fromMesh = value;
-            this._currIndex = 0;
-        }
-    });
+    }
 
-}
+    set fromMesh ( value ) {
 
-FromMeshToVertices.prototype = {
+        this._fromMesh = value;
+                this._currIndex = 0;
 
-    next: function() {
+    }
+
+    next () {
         do if(this._currIndex < this._fromMesh._vertices.length) {
             this._resultVertex = this._fromMesh._vertices[this._currIndex];
             this._currIndex++;
@@ -851,7 +811,8 @@ FromMeshToVertices.prototype = {
         return this._resultVertex;
     }
 
-};
+}
+
 
 //!\\ not used
 /*
@@ -890,25 +851,26 @@ export { FromMeshToFaces };
 //     VERTEX
 //-------------------------
 
-function FromVertexToHoldingFaces () {
 
-    this._fromVertex = null;
-    this._nextEdge = null;
+class FromVertexToHoldingFaces {
 
-    Object.defineProperty(this, 'fromVertex', {
-        set: function( value ) {
+    constructor () {
 
-            this._fromVertex = value;
-            this._nextEdge = this._fromVertex.edge;// || null;
-           // if(this._fromVertex) this._nextEdge = this._fromVertex.edge;// || null;
-           // else DDLS.Log('!! null vertex')
-        }
-    });
-}
+        this._fromVertex = null;
+        this._nextEdge = null;
 
-FromVertexToHoldingFaces.prototype = {
+    }
 
-    next: function() {
+    set fromVertex ( value ) {
+
+        this._fromVertex = value;
+        this._nextEdge = this._fromVertex.edge;
+        // if(this._fromVertex) this._nextEdge = this._fromVertex.edge;// || null;
+         // else DDLS.Log('!! null vertex')
+
+    }
+
+    next () {
         if(this._nextEdge != null) do {
             this._resultFace = this._nextEdge.leftFace;
             this._nextEdge = this._nextEdge.rotLeftEdge;
@@ -922,27 +884,28 @@ FromVertexToHoldingFaces.prototype = {
         return this._resultFace;
     }
 
-};
+}
 
 //
 
-function FromVertexToIncomingEdges () {
+class FromVertexToIncomingEdges {
 
-    this._fromVertex = null;
-    this._nextEdge = null;
+    constructor () {
 
-    Object.defineProperty(this, 'fromVertex', {
-        set: function(value) { 
-            this._fromVertex = value;
-            this._nextEdge = this._fromVertex.edge;
-            while(!this._nextEdge.isReal) this._nextEdge = this._nextEdge.rotLeftEdge;
-        }
-    });
-}
+        this._fromVertex = null;
+        this._nextEdge = null;
 
-FromVertexToIncomingEdges.prototype = {
+    }
 
-    next: function() {
+    set fromVertex ( value ) {
+
+        this._fromVertex = value;
+        this._nextEdge = this._fromVertex.edge;
+        while(!this._nextEdge.isReal) this._nextEdge = this._nextEdge.rotLeftEdge;
+
+    }
+
+    next () {
         if(this._nextEdge != null) {
             this._resultEdge = this._nextEdge.oppositeEdge;
             do {
@@ -956,29 +919,30 @@ FromVertexToIncomingEdges.prototype = {
         return this._resultEdge;
     }
 
-};
-
-//
-
-function FromVertexToOutgoingEdges () {
-
-    this.realEdgesOnly = true;
-    this._fromVertex = null;
-    this._nextEdge = null;
-
-    Object.defineProperty(this, 'fromVertex', {
-        set: function(value) { 
-            this._fromVertex = value;
-            this._nextEdge = this._fromVertex.edge;
-            if(this._nextEdge!=null)
-            while(this.realEdgesOnly && !this._nextEdge.isReal) this._nextEdge = this._nextEdge.rotLeftEdge;
-        }
-    });
 }
 
-FromVertexToOutgoingEdges.prototype = {
 
-    next: function() {
+//
+class FromVertexToOutgoingEdges {
+
+    constructor () {
+
+        this.realEdgesOnly = true;
+        this._fromVertex = null;
+        this._nextEdge = null;
+
+    }
+
+    set fromVertex ( value ) {
+
+        this._fromVertex = value;
+        this._nextEdge = this._fromVertex.edge;
+        if(this._nextEdge!=null)
+        while(this.realEdgesOnly && !this._nextEdge.isReal) this._nextEdge = this._nextEdge.rotLeftEdge;
+
+    }
+
+    next() {
         if(this._nextEdge != null) {
             this._resultEdge = this._nextEdge;
             do {
@@ -991,8 +955,7 @@ FromVertexToOutgoingEdges.prototype = {
         } else this._resultEdge = null;
         return this._resultEdge;
     }
-};
-
+}
 
 
 //!\\ not used
@@ -1031,7 +994,7 @@ FromVertexToNeighbourVertices.prototype = {
 export { FromVertexToNeighbourVertices };
 */
 
-var Geom2D = {
+const Geom2D = {
 
     __samples: [],
     __circumcenter: new Point(),
@@ -1039,7 +1002,7 @@ var Geom2D = {
 
     locatePosition: function ( p, mesh ) {
 
-        var i, numSamples;
+        let i, numSamples;
 
         // jump and walk algorithm
 
@@ -1049,7 +1012,7 @@ var Geom2D = {
         
         Geom2D.__samples.splice( 0, Geom2D.__samples.length );
         numSamples = Integral( Math.pow( mesh._vertices.length, TTIER ));
-        //var numSamples = Integral(Math.pow(mesh._vertices.length,));
+        //let numSamples = Integral(Math.pow(mesh._vertices.length,));
         
         //console.log(numSamples, mesh._vertices.length);
 
@@ -1064,12 +1027,12 @@ var Geom2D = {
             i++;
         }
 
-        var currVertex, currVertexPos, distSquared;
-        var minDistSquared = INFINITY;
-        var closedVertex = null;
+        let currVertex, currVertexPos, distSquared;
+        let minDistSquared = INFINITY;
+        let closedVertex = null;
 
         i = 0;
-        //var n = 0
+        //let n = 0
         while( i < numSamples ) {
         //for ( i = 0 ; i < numSamples; i++ ){
             currVertex = Geom2D.__samples[i];
@@ -1082,7 +1045,7 @@ var Geom2D = {
             i++;
         }
 
-        var iterFace = new FromVertexToHoldingFaces();
+        let iterFace = new FromVertexToHoldingFaces();
 
         if(closedVertex===null){ 
             Log('no closedVertex find ?');
@@ -1091,15 +1054,15 @@ var Geom2D = {
 
         iterFace.fromVertex = closedVertex;
 
-        var currFace = iterFace.next();
+        let currFace = iterFace.next();
 
-        var faceVisited = new Dictionary( 0 );
-        var currEdge;
-        var iterEdge = new FromFaceToInnerEdges();
-        var relativPos = 0;
-        var numIter = 0;
+        let faceVisited = new Dictionary( 0 );
+        let currEdge;
+        let iterEdge = new FromFaceToInnerEdges();
+        let relativPos = 0;
+        let numIter = 0;
 
-        var objectContainer = Geom2D.isInFace( p, currFace );
+        let objectContainer = Geom2D.isInFace( p, currFace );
 
         while( faceVisited.get( currFace ) || objectContainer.type === NULL ){
 
@@ -1136,17 +1099,17 @@ var Geom2D = {
     isCircleIntersectingAnyConstraint: function ( p, radius, mesh ) {
 
         if(p.x <= 0 || p.x >= mesh.width || p.y <= 0 || p.y >= mesh.height) return true;
-        var loc = Geom2D.locatePosition( p, mesh );
-        var face;
+        let loc = Geom2D.locatePosition( p, mesh );
+        let face;
         switch(loc.type) {
             case 0: face = loc.edge.leftFace; break;
             case 1: face = loc.leftFace; break;
             case 2: face = loc; break;
             case 3: face = null; break;
         }
-        var radiusSquared = radius * radius;
-        var pos;
-        var distSquared;
+        let radiusSquared = radius * radius;
+        let pos;
+        let distSquared;
         pos = face.edge.originVertex.pos;
         distSquared = Squared(pos.x - p.x, pos.y - p.y);
         if(distSquared <= radiusSquared) return true;
@@ -1156,13 +1119,13 @@ var Geom2D = {
         pos = face.edge.nextLeftEdge.nextLeftEdge.originVertex.pos;
         distSquared = Squared(pos.x - p.x, pos.y - p.y);
         if(distSquared <= radiusSquared) return true;
-        var edgesToCheck = [];
+        let edgesToCheck = [];
         edgesToCheck.push(face.edge);
         edgesToCheck.push(face.edge.nextLeftEdge);
         edgesToCheck.push(face.edge.nextLeftEdge.nextLeftEdge);
-        var edge, pos1, pos2;
-        var checkedEdges = new Dictionary( 0 );
-        var intersecting;
+        let edge, pos1, pos2;
+        let checkedEdges = new Dictionary( 0 );
+        let intersecting;
         while(edgesToCheck.length > 0) {
             edge = edgesToCheck.pop();
             checkedEdges.set(edge,true);
@@ -1188,7 +1151,7 @@ var Geom2D = {
 
     getDirection: function ( p1, p2, p3 ) {
 
-        var dot = (p3.x - p1.x) * (p2.y - p1.y) + (p3.y - p1.y) * (-p2.x + p1.x);
+        let dot = (p3.x - p1.x) * (p2.y - p1.y) + (p3.y - p1.y) * (-p2.x + p1.x);
         return (dot == 0) ? 0 : ((dot > 0) ? 1 : -1);
         /*if(dot == 0) return 0; 
         else if(dot > 0) return 1; 
@@ -1217,7 +1180,7 @@ var Geom2D = {
 
     Orient2d: function ( p1, p2, p3 ) {
 
-        var val = (p1.x - p3.x) * (p2.y - p3.y) - (p1.y - p3.y) * (p2.x - p3.x);
+        let val = (p1.x - p3.x) * (p2.y - p3.y) - (p1.y - p3.y) * (p2.x - p3.x);
         if (val > -EPSILON_SQUARED && val < EPSILON_SQUARED) return 0;// collinear
         else if (val > 0) return -1;// ccw
         else return 1;// cw
@@ -1234,39 +1197,39 @@ var Geom2D = {
         // remember polygons are triangle only,
         // and we suppose we have not degenerated flat polygons !
 
-        var result = { type: NULL };
+        let result = { type: NULL };
 
         if(polygon === null) return result;
 
-        var e1_2 = polygon.edge;
-        var e2_3 = e1_2.nextLeftEdge;
-        var e3_1 = e2_3.nextLeftEdge;
+        let e1_2 = polygon.edge;
+        let e2_3 = e1_2.nextLeftEdge;
+        let e3_1 = e2_3.nextLeftEdge;
 
         if( Geom2D.getRelativePosition(p, e1_2) >= 0 && Geom2D.getRelativePosition(p, e2_3) >= 0 && Geom2D.getRelativePosition(p, e3_1) >= 0) {
-            var v1 = e1_2.originVertex;
-            var v2 = e2_3.originVertex;
-            var v3 = e3_1.originVertex;
-            var x1 = v1.pos.x;
-            var y1 = v1.pos.y;
-            var x2 = v2.pos.x;
-            var y2 = v2.pos.y;
-            var x3 = v3.pos.x;
-            var y3 = v3.pos.y;
-            var v_v1squared = Squared(x1 - p.x, y1 - p.y);
-            var v_v2squared = Squared(x2 - p.x, y2 - p.y);
-            var v_v3squared = Squared(x3 - p.x, y3 - p.y);
-            var inv_v1_v2 = 1 / Squared(x2 - x1, y2 - y1);
-            var inv_v2_v3 = 1 / Squared(x3 - x2, y3 - y2);
-            var inv_v3_v1 = 1 / Squared(x1 - x3, y1 - y3);
-            var dot_v_v1v2 = (p.x - x1) * (x2 - x1) + (p.y - y1) * (y2 - y1);
-            var dot_v_v2v3 = (p.x - x2) * (x3 - x2) + (p.y - y2) * (y3 - y2);
-            var dot_v_v3v1 = (p.x - x3) * (x1 - x3) + (p.y - y3) * (y1 - y3);
-            var v_e1_2squared = v_v1squared - dot_v_v1v2 * dot_v_v1v2 * inv_v1_v2;
-            var v_e2_3squared = v_v2squared - dot_v_v2v3 * dot_v_v2v3 * inv_v2_v3;
-            var v_e3_1squared = v_v3squared - dot_v_v3v1 * dot_v_v3v1 * inv_v3_v1;
-            var closeTo_e1_2 = v_e1_2squared <= EPSILON_SQUARED ? true:false;
-            var closeTo_e2_3 = v_e2_3squared <= EPSILON_SQUARED ? true:false;
-            var closeTo_e3_1 = v_e3_1squared <= EPSILON_SQUARED ? true:false;
+            let v1 = e1_2.originVertex;
+            let v2 = e2_3.originVertex;
+            let v3 = e3_1.originVertex;
+            let x1 = v1.pos.x;
+            let y1 = v1.pos.y;
+            let x2 = v2.pos.x;
+            let y2 = v2.pos.y;
+            let x3 = v3.pos.x;
+            let y3 = v3.pos.y;
+            let v_v1squared = Squared(x1 - p.x, y1 - p.y);
+            let v_v2squared = Squared(x2 - p.x, y2 - p.y);
+            let v_v3squared = Squared(x3 - p.x, y3 - p.y);
+            let inv_v1_v2 = 1 / Squared(x2 - x1, y2 - y1);
+            let inv_v2_v3 = 1 / Squared(x3 - x2, y3 - y2);
+            let inv_v3_v1 = 1 / Squared(x1 - x3, y1 - y3);
+            let dot_v_v1v2 = (p.x - x1) * (x2 - x1) + (p.y - y1) * (y2 - y1);
+            let dot_v_v2v3 = (p.x - x2) * (x3 - x2) + (p.y - y2) * (y3 - y2);
+            let dot_v_v3v1 = (p.x - x3) * (x1 - x3) + (p.y - y3) * (y1 - y3);
+            let v_e1_2squared = v_v1squared - dot_v_v1v2 * dot_v_v1v2 * inv_v1_v2;
+            let v_e2_3squared = v_v2squared - dot_v_v2v3 * dot_v_v2v3 * inv_v2_v3;
+            let v_e3_1squared = v_v3squared - dot_v_v3v1 * dot_v_v3v1 * inv_v3_v1;
+            let closeTo_e1_2 = v_e1_2squared <= EPSILON_SQUARED ? true:false;
+            let closeTo_e2_3 = v_e2_3squared <= EPSILON_SQUARED ? true:false;
+            let closeTo_e3_1 = v_e3_1squared <= EPSILON_SQUARED ? true:false;
             if(closeTo_e1_2) {
                 if(closeTo_e3_1) result = v1; 
                 else if(closeTo_e2_3) result = v2; 
@@ -1282,21 +1245,21 @@ var Geom2D = {
 
     clipSegmentByTriangle: function ( s1, s2, t1, t2, t3, pResult1, pResult2 ) {
 
-        var side1_1 = Geom2D.getDirection(t1, t2, s1);
-        var side1_2 = Geom2D.getDirection(t1, t2, s2);
+        let side1_1 = Geom2D.getDirection(t1, t2, s1);
+        let side1_2 = Geom2D.getDirection(t1, t2, s2);
         if(side1_1 <= 0 && side1_2 <= 0) return false;
-        var side2_1 = Geom2D.getDirection(t2, t3, s1);
-        var side2_2 = Geom2D.getDirection(t2, t3, s2);
+        let side2_1 = Geom2D.getDirection(t2, t3, s1);
+        let side2_2 = Geom2D.getDirection(t2, t3, s2);
         if(side2_1 <= 0 && side2_2 <= 0) return false;
-        var side3_1 = Geom2D.getDirection(t3, t1, s1);
-        var side3_2 = Geom2D.getDirection(t3, t1, s2);
+        let side3_1 = Geom2D.getDirection(t3, t1, s1);
+        let side3_2 = Geom2D.getDirection(t3, t1, s2);
         if(side3_1 <= 0 && side3_2 <= 0) return false;
         if(side1_1 >= 0 && side2_1 >= 0 && side3_1 >= 0 && (side1_2 >= 0 && side2_2 >= 0 && side3_2 >= 0)) {
             pResult1 = s1.clone();
             pResult2 = s2.clone();
             return true;
         }
-        var n = 0;
+        let n = 0;
         if( Geom2D.intersections2segments(s1, s2, t1, t2, pResult1, null)) n++;
         if(n == 0) {
             if( Geom2D.intersections2segments(s1, s2, t2, t3, pResult1, null)) n++;
@@ -1322,18 +1285,18 @@ var Geom2D = {
 
     /*isSegmentIntersectingTriangle: function( s1, s2, t1, t2, t3 ) {
 
-        var side1_1 = Geom2D.getDirection(t1, t2, s1);
-        var side1_2 = Geom2D.getDirection(t1, t2, s2);
+        let side1_1 = Geom2D.getDirection(t1, t2, s1);
+        let side1_2 = Geom2D.getDirection(t1, t2, s2);
         if(side1_1 <= 0 && side1_2 <= 0) return false;
-        var side2_1 = Geom2D.getDirection(t2, t3, s1);
-        var side2_2 = Geom2D.getDirection(t2, t3, s2);
+        let side2_1 = Geom2D.getDirection(t2, t3, s1);
+        let side2_2 = Geom2D.getDirection(t2, t3, s2);
         if(side2_1 <= 0 && side2_2 <= 0) return false;
-        var side3_1 = Geom2D.getDirection(t3, t1, s1);
-        var side3_2 = Geom2D.getDirection(t3, t1, s2);
+        let side3_1 = Geom2D.getDirection(t3, t1, s1);
+        let side3_2 = Geom2D.getDirection(t3, t1, s2);
         if(side3_1 <= 0 && side3_2 <= 0) return false;
         if(side1_1 == 1 && side2_1 == 1 && side3_1 == 1) return true;
         if(side1_1 == 1 && side2_1 == 1 && side3_1 == 1) return true;
-        var side1, side2;
+        let side1, side2;
         if(side1_1 == 1 && side1_2 <= 0 || side1_1 <= 0 && side1_2 == 1) {
             side1 = Geom2D.getDirection(s1, s2, t1);
             side2 = Geom2D.getDirection(s1, s2, t2);
@@ -1355,14 +1318,14 @@ var Geom2D = {
 
     isDelaunay: function ( edge ) {
 
-        var vLeft = edge.originVertex;
-        var vRight = edge.destinationVertex;
-        var vCorner = edge.nextLeftEdge.destinationVertex;
-        var vOpposite = edge.nextRightEdge.destinationVertex;
+        let vLeft = edge.originVertex;
+        let vRight = edge.destinationVertex;
+        let vCorner = edge.nextLeftEdge.destinationVertex;
+        let vOpposite = edge.nextRightEdge.destinationVertex;
         //getCircumcenter(vCorner.pos.x,vCorner.pos.y,vLeft.pos.x,vLeft.pos.y,vRight.pos.x,vRight.pos.y,__circumcenter);
         Geom2D.getCircumcenter(vCorner.pos, vLeft.pos, vRight.pos, Geom2D.__circumcenter);
-        var squaredRadius = (vCorner.pos.x - Geom2D.__circumcenter.x) * (vCorner.pos.x - Geom2D.__circumcenter.x) + (vCorner.pos.y - Geom2D.__circumcenter.y) * (vCorner.pos.y - Geom2D.__circumcenter.y);
-        var squaredDistance = (vOpposite.pos.x - Geom2D.__circumcenter.x) * (vOpposite.pos.x - Geom2D.__circumcenter.x) + (vOpposite.pos.y - Geom2D.__circumcenter.y) * (vOpposite.pos.y - Geom2D.__circumcenter.y);
+        let squaredRadius = (vCorner.pos.x - Geom2D.__circumcenter.x) * (vCorner.pos.x - Geom2D.__circumcenter.x) + (vCorner.pos.y - Geom2D.__circumcenter.y) * (vCorner.pos.y - Geom2D.__circumcenter.y);
+        let squaredDistance = (vOpposite.pos.x - Geom2D.__circumcenter.x) * (vOpposite.pos.x - Geom2D.__circumcenter.x) + (vOpposite.pos.y - Geom2D.__circumcenter.y) * (vOpposite.pos.y - Geom2D.__circumcenter.y);
         return squaredDistance >= squaredRadius ? true : false;
 
     },
@@ -1370,11 +1333,11 @@ var Geom2D = {
     getCircumcenter: function ( p1, p2, p3, result ) {
 
         if(result == null) result = new Point();
-        var m1 = (p1.x + p2.x) * 0.5;
-        var m2 = (p1.y + p2.y) * 0.5;
-        var m3 = (p1.x + p3.x) * 0.5;
-        var m4 = (p1.y + p3.y) * 0.5;
-        var t1 = (m1 * (p1.x - p3.x) + (m2 - m4) * (p1.y - p3.y) + m3 * (p3.x - p1.x)) / (p1.x * (p3.y - p2.y) + p2.x * (p1.y - p3.y) + p3.x * (p2.y - p1.y));
+        let m1 = (p1.x + p2.x) * 0.5;
+        let m2 = (p1.y + p2.y) * 0.5;
+        let m3 = (p1.x + p3.x) * 0.5;
+        let m4 = (p1.y + p3.y) * 0.5;
+        let t1 = (m1 * (p1.x - p3.x) + (m2 - m4) * (p1.y - p3.y) + m3 * (p3.x - p1.x)) / (p1.x * (p3.y - p2.y) + p2.x * (p1.y - p3.y) + p3.x * (p2.y - p1.y));
         result.x = m1 + t1 * (p2.y - p1.y);
         result.y = m2 - t1 * (p2.x - p1.x);
         return result;
@@ -1384,14 +1347,14 @@ var Geom2D = {
     intersections2segments: function ( s1p1, s1p2, s2p1, s2p2, posIntersection, paramIntersection, infiniteLineMode ) {
 
         if(infiniteLineMode == null) infiniteLineMode = false;
-        var t1 = 0;
-        var t2 = 0;
-        var result;
-        var divisor = (s1p1.x - s1p2.x) * (s2p1.y - s2p2.y) + (s1p2.y - s1p1.y) * (s2p1.x - s2p2.x);
+        let t1 = 0;
+        let t2 = 0;
+        let result;
+        let divisor = (s1p1.x - s1p2.x) * (s2p1.y - s2p2.y) + (s1p2.y - s1p1.y) * (s2p1.x - s2p2.x);
         if(divisor == 0) result = false; 
         else {
             result = true;
-            var invDivisor = 1 / divisor;
+            let invDivisor = 1 / divisor;
             if(!infiniteLineMode || posIntersection != null || paramIntersection != null) {
                 t1 = (s1p1.x * (s2p1.y - s2p2.y) + s1p1.y * (s2p2.x - s2p1.x) + s2p1.x * s2p2.y - s2p1.y * s2p2.x) * invDivisor;
                 t2 = (s1p1.x * (s2p1.y - s1p2.y) + s1p1.y * (s1p2.x - s2p1.x) - s1p2.x * s2p1.y + s1p2.y * s2p1.x) * invDivisor;
@@ -1420,9 +1383,9 @@ var Geom2D = {
 
     isConvex: function ( edge ) {
 
-        var result = true;
-        var eLeft;
-        var vRight;
+        let result = true;
+        let eLeft;
+        let vRight;
         eLeft = edge.nextLeftEdge.oppositeEdge;
         vRight = edge.nextRightEdge.destinationVertex;
         if( Geom2D.getRelativePosition(vRight.pos, eLeft) != -1) result = false; else {
@@ -1436,33 +1399,33 @@ var Geom2D = {
 
     projectOrthogonaly: function ( vertexPos, edge ) {
 
-        var a = edge.originVertex.pos.x;
-        var b = edge.originVertex.pos.y;
-        var c = edge.destinationVertex.pos.x;
-        var d = edge.destinationVertex.pos.y;
-        var e = vertexPos.x;
-        var f = vertexPos.y;
-        var t1 = (a * a - a * c - a * e + b * b - b * d - b * f + c * e + d * f) / (a * a - 2 * a * c + b * b - 2 * b * d + c * c + d * d);
+        let a = edge.originVertex.pos.x;
+        let b = edge.originVertex.pos.y;
+        let c = edge.destinationVertex.pos.x;
+        let d = edge.destinationVertex.pos.y;
+        let e = vertexPos.x;
+        let f = vertexPos.y;
+        let t1 = (a * a - a * c - a * e + b * b - b * d - b * f + c * e + d * f) / (a * a - 2 * a * c + b * b - 2 * b * d + c * c + d * d);
         vertexPos.x = a + t1 * (c - a);
         vertexPos.y = b + t1 * (d - b);
 
     },
 
     /*projectOrthogonalyOnSegment: function  (px, py, sp1x, sp1y, sp2x, sp2y, result) {
-        var a = sp1x;
-        var b = sp1y;
-        var c = sp2x;
-        var d = sp2y;
-        var e = px;
-        var f = py;       
-        var t1 = (a*a - a*c - a*e + b*b - b*d - b*f + c*e + d*f) / (a*a - 2*a*c + b*b - 2*b*d + c*c + d*d);
+        let a = sp1x;
+        let b = sp1y;
+        let c = sp2x;
+        let d = sp2y;
+        let e = px;
+        let f = py;       
+        let t1 = (a*a - a*c - a*e + b*b - b*d - b*f + c*e + d*f) / (a*a - 2*a*c + b*b - 2*b*d + c*c + d*d);
         result.x = a + t1*(c - a);
         result.y = b + t1*(d - b);
     },*/
 
     intersections2Circles: function ( c1, r1, c2, r2, result ){
 
-        var factor, a, b, first, dist, invd, trans;
+        let factor, a, b, first, dist, invd, trans;
         dist = Squared(c2.x - c1.x, c2.y - c1.y);
         invd = 1 / (2 * dist);
         if((c1.x != c2.x || c1.y != c2.y) && dist <= (r1 + r2) * (r1 + r2) && dist >= (r1 - r2) * (r1 - r2)) {
@@ -1475,10 +1438,10 @@ var Geom2D = {
 
             
 
-            /*var xFirstPart = (c1.x + c2.x) * 0.5 + (c2.x - c1.x) * (r1 * r1 - r2 * r2) * invd;
-            var yFirstPart = (c1.y + c2.y) * 0.5 + (c2.y - c1.y) * (r1 * r1 - r2 * r2) * invd;
-            var xFactor = (c2.y - c1.y) * invd;
-            var yFactor = (c2.x - c1.x) * invd;*/
+            /*let xFirstPart = (c1.x + c2.x) * 0.5 + (c2.x - c1.x) * (r1 * r1 - r2 * r2) * invd;
+            let yFirstPart = (c1.y + c2.y) * 0.5 + (c2.y - c1.y) * (r1 * r1 - r2 * r2) * invd;
+            let xFactor = (c2.y - c1.y) * invd;
+            let yFactor = (c2.x - c1.x) * invd;*/
             if(result != null) {
                 //result.push(  xFirstPart + xFactor * trans , yFirstPart - yFactor * trans  , xFirstPart - xFactor * trans , yFirstPart + yFactor * trans );
                 //result.push(  xFirstPart + factor.y * trans , yFirstPart - factor.x * trans  , xFirstPart - factor.y * trans , yFirstPart + factor.x * trans );
@@ -1491,15 +1454,15 @@ var Geom2D = {
 
     intersectionsSegmentCircle: function ( p0, p1, c, r, result ) {
 
-        var p0xSQD = p0.x * p0.x;
-        var p0ySQD = p0.y * p0.y;
-        var a = p1.y * p1.y - 2 * p1.y * p0.y + p0ySQD + p1.x * p1.x - 2 * p1.x * p0.x + p0xSQD;
-        var b = 2 * p0.y * c.y - 2 * p0xSQD + 2 * p1.y * p0.y - 2 * p0ySQD + 2 * p1.x * p0.x - 2 * p1.x * c.x + 2 * p0.x * c.x - 2 * p1.y * c.y;
-        var cc = p0ySQD + c.y * c.y + c.x * c.x - 2 * p0.y * c.y - 2 * p0.x * c.x + p0xSQD - r * r;
-        var delta = b * b - 4 * a * cc;
-        var deltaSQRT;
-        var t0;
-        var t1;
+        let p0xSQD = p0.x * p0.x;
+        let p0ySQD = p0.y * p0.y;
+        let a = p1.y * p1.y - 2 * p1.y * p0.y + p0ySQD + p1.x * p1.x - 2 * p1.x * p0.x + p0xSQD;
+        let b = 2 * p0.y * c.y - 2 * p0xSQD + 2 * p1.y * p0.y - 2 * p0ySQD + 2 * p1.x * p0.x - 2 * p1.x * c.x + 2 * p0.x * c.x - 2 * p1.y * c.y;
+        let cc = p0ySQD + c.y * c.y + c.x * c.x - 2 * p0.y * c.y - 2 * p0.x * c.x + p0xSQD - r * r;
+        let delta = b * b - 4 * a * cc;
+        let deltaSQRT;
+        let t0;
+        let t1;
         if(delta < 0) return false; 
         else if(delta == 0) {
             t0 = -b / (2 * a);
@@ -1512,7 +1475,7 @@ var Geom2D = {
             deltaSQRT = Math.sqrt(delta);
             t0 = (-b + deltaSQRT) / (2 * a);
             t1 = (-b - deltaSQRT) / (2 * a);
-            var intersecting = false;
+            let intersecting = false;
             if(0 <= t0 && t0 <= 1) {
                 if(result != null) {
                     result.push( p0.x + t0*(p1.x - p0.x), p0.y + t0*(p1.y - p0.y), t0 );
@@ -1531,13 +1494,13 @@ var Geom2D = {
     },
 
     /*intersectionsLineCircle: function(p0x,p0y,p1x,p1y,cx,cy,r,result) {
-        var p0xSQD = p0x * p0x;
-        var p0ySQD = p0y * p0y;
-        var a = p1y * p1y - 2 * p1y * p0y + p0ySQD + p1x * p1x - 2 * p1x * p0x + p0xSQD;
-        var b = 2 * p0y * cy - 2 * p0xSQD + 2 * p1y * p0y - 2 * p0ySQD + 2 * p1x * p0x - 2 * p1x * cx + 2 * p0x * cx - 2 * p1y * cy;
-        var c = p0ySQD + cy * cy + cx * cx - 2 * p0y * cy - 2 * p0x * cx + p0xSQD - r * r;
-        var delta = b * b - 4 * a * c;
-        var deltaSQRT, t0, t1;
+        let p0xSQD = p0x * p0x;
+        let p0ySQD = p0y * p0y;
+        let a = p1y * p1y - 2 * p1y * p0y + p0ySQD + p1x * p1x - 2 * p1x * p0x + p0xSQD;
+        let b = 2 * p0y * cy - 2 * p0xSQD + 2 * p1y * p0y - 2 * p0ySQD + 2 * p1x * p0x - 2 * p1x * cx + 2 * p0x * cx - 2 * p1y * cy;
+        let c = p0ySQD + cy * cy + cx * cx - 2 * p0y * cy - 2 * p0x * cx + p0xSQD - r * r;
+        let delta = b * b - 4 * a * c;
+        let deltaSQRT, t0, t1;
         if(delta < 0) return false; 
         else if(delta == 0) {
             t0 = -b / (2 * a);
@@ -1553,34 +1516,34 @@ var Geom2D = {
 
     tangentsPointToCircle: function ( p, c, r, result ) {
 
-        var c2 = p.clone().add(c).mul(0.5);
-        var r2 = 0.5 * SquaredSqrt(p.x - c.x, p.y - c.y);
+        let c2 = p.clone().add(c).mul(0.5);
+        let r2 = 0.5 * SquaredSqrt(p.x - c.x, p.y - c.y);
         return Geom2D.intersections2Circles(c2, r2, c, r, result);
 
     },
 
     tangentsCrossCircleToCircle: function ( r, c1, c2, result ) {
 
-        var distance = SquaredSqrt(c1.x - c2.x, c1.y - c2.y);
-        var radius = distance * 0.25;
-        var center = c2.clone().sub(c1).mul(0.25).add(c1);
+        let distance = SquaredSqrt(c1.x - c2.x, c1.y - c2.y);
+        let radius = distance * 0.25;
+        let center = c2.clone().sub(c1).mul(0.25).add(c1);
 
         if( Geom2D.intersections2Circles( c1, r, center, radius, result )) {
 
-            var t1x = result[0];
-            var t1y = result[1];
-            var t2x = result[2];
-            var t2y = result[3];
-            var mid = c1.clone().add(c2).mul(0.5);
+            let t1x = result[0];
+            let t1y = result[1];
+            let t2x = result[2];
+            let t2y = result[3];
+            let mid = c1.clone().add(c2).mul(0.5);
 
-            var dotProd = (t1x - mid.x) * (c2.y - c1.y) + (t1y - mid.y) * (-c2.x + c1.x);
-            var tproj = dotProd / (distance * distance);
-            var projx = mid.x + tproj * (c2.y - c1.y);
-            var projy = mid.y - tproj * (c2.x - c1.x);
-            var t4x = 2 * projx - t1x;
-            var t4y = 2 * projy - t1y;
-            var t3x = t4x + t2x - t1x;
-            var t3y = t2y + t4y - t1y;
+            let dotProd = (t1x - mid.x) * (c2.y - c1.y) + (t1y - mid.y) * (-c2.x + c1.x);
+            let tproj = dotProd / (distance * distance);
+            let projx = mid.x + tproj * (c2.y - c1.y);
+            let projy = mid.y - tproj * (c2.x - c1.x);
+            let t4x = 2 * projx - t1x;
+            let t4y = 2 * projy - t1y;
+            let t3x = t4x + t2x - t1x;
+            let t3y = t2y + t4y - t1y;
             result.push( t3x, t3y, t4x, t4y );
             return true;
             
@@ -1590,34 +1553,34 @@ var Geom2D = {
 
     tangentsParalCircleToCircle: function ( r, c1, c2, result ) {
 
-        var distance = SquaredSqrt(c1.x - c2.x, c1.y - c2.y);
-        var invD = 1 / distance;
-        var t1x = c1.x + r * (c2.y - c1.y) * invD;
-        var t1y = c1.y + r * (-c2.x + c1.x) * invD;
-        var t2x = 2 * c1.x - t1x;
-        var t2y = 2 * c1.y - t1y;
-        var t3x = t2x + c2.x - c1.x;
-        var t3y = t2y + c2.y - c1.y;
-        var t4x = t1x + c2.x - c1.x;
-        var t4y = t1y + c2.y - c1.y;
+        let distance = SquaredSqrt(c1.x - c2.x, c1.y - c2.y);
+        let invD = 1 / distance;
+        let t1x = c1.x + r * (c2.y - c1.y) * invD;
+        let t1y = c1.y + r * (-c2.x + c1.x) * invD;
+        let t2x = 2 * c1.x - t1x;
+        let t2y = 2 * c1.y - t1y;
+        let t3x = t2x + c2.x - c1.x;
+        let t3y = t2y + c2.y - c1.y;
+        let t4x = t1x + c2.x - c1.x;
+        let t4y = t1y + c2.y - c1.y;
         result.push( t1x, t1y, t2x, t2y, t3x, t3y, t4x, t4y );
 
     },
 
     /*distanceSquaredPointToLine: function(p,a,b) {
-        var a_b_squared = Squared(b.x - a.x, b.y - a.y);
-        var dotProduct = (p.x - a.x) * (b.x - a.x) + (p.y - a.y) * (b.y - a.y);
-        var p_a_squared = Squared(a.x - p.x, a.y - p.y);
+        let a_b_squared = Squared(b.x - a.x, b.y - a.y);
+        let dotProduct = (p.x - a.x) * (b.x - a.x) + (p.y - a.y) * (b.y - a.y);
+        let p_a_squared = Squared(a.x - p.x, a.y - p.y);
         return p_a_squared - dotProduct * dotProduct / a_b_squared;
     },*/
 
     distanceSquaredPointToSegment: function ( p, a, b ) {
 
-        var a_b_squared = Squared(b.x - a.x, b.y - a.y);
-        var dotProduct = ((p.x - a.x) * (b.x - a.x) + (p.y - a.y) * (b.y - a.y)) / a_b_squared;
+        let a_b_squared = Squared(b.x - a.x, b.y - a.y);
+        let dotProduct = ((p.x - a.x) * (b.x - a.x) + (p.y - a.y) * (b.y - a.y)) / a_b_squared;
         if(dotProduct < 0) return Squared(p.x - a.x, p.y - a.y); 
         else if(dotProduct <= 1) {
-            var p_a_squared = Squared(a.x - p.x, a.y - p.y);
+            let p_a_squared = Squared(a.x - p.x, a.y - p.y);
             return p_a_squared - dotProduct * dotProduct * a_b_squared;
         } else return Squared(p.x - b.x, p.y - b.y);
 
@@ -1631,12 +1594,12 @@ var Geom2D = {
 
     pathLength: function( path ) {
 
-        var sumDistance = 0.;
-        var fromX = path[0];
-        var fromY = path[1];
-        var nextX, nextY, x, y, distance;
-        var i = 2;
-        var l = path.length;
+        let sumDistance = 0.;
+        let fromX = path[0];
+        let fromY = path[1];
+        let nextX, nextY, x, y, distance;
+        let i = 2;
+        let l = path.length;
 
         while( i < l ) {
 
@@ -1657,58 +1620,52 @@ var Geom2D = {
 
 };
 
-function Edge () {
+class Edge {
 
-    this.type = EDGE;
-    this.id = IDX.get('edge');
+    constructor () {
 
-    this.fromConstraintSegments = [];
-    this.isConstrained = false;
-    this.isReal = false;
-    this.originVertex = null;
-    this.oppositeEdge = null;
-    this.nextLeftEdge = null;
-    this.leftFace = null;
+        this.type = EDGE;
+        this.id = IDX.get('edge');
 
-}
+        this.fromConstraintSegments = [];
+        this.isConstrained = false;
+        this.isReal = false;
+        this.originVertex = null;
+        this.oppositeEdge = null;
+        this.nextLeftEdge = null;
+        this.leftFace = null;
 
-Object.defineProperties( Edge.prototype, {
+    }
 
-    destinationVertex: {
-        get: function() { return this.oppositeEdge.originVertex; }
-    },
+    get destinationVertex () {
+        return this.oppositeEdge.originVertex
+    }
 
-    nextRightEdge: {
-        get: function() { return this.oppositeEdge.nextLeftEdge.nextLeftEdge.oppositeEdge; }
-    },
+    get nextRightEdge () {
+        return this.oppositeEdge.nextLeftEdge.nextLeftEdge.oppositeEdge
+    }
 
-    prevRightEdge: {
-        get: function() { return this.oppositeEdge.nextLeftEdge.oppositeEdge; }
-    },
+    get prevRightEdge () {
+        return this.oppositeEdge.nextLeftEdge.oppositeEdge
+    }
 
-    prevLeftEdge: {
-        get: function() { return this.nextLeftEdge.nextLeftEdge; }
-    },
+    get prevLeftEdge () {
+        return this.nextLeftEdge.nextLeftEdge
+    }
 
-    rotLeftEdge: {
-        get: function() { return this.nextLeftEdge.nextLeftEdge.oppositeEdge; }
-    },
+    get rotLeftEdge () {
+        return this.nextLeftEdge.nextLeftEdge.oppositeEdge
+    }
 
-    rotRightEdge: {
-        get: function() { return this.oppositeEdge.nextLeftEdge; }
-    },
+    get rotRightEdge () {
+        return this.oppositeEdge.nextLeftEdge
+    }
 
-    rightFace: {
-        get: function() { return this.oppositeEdge.leftFace; }
-    },
+    get rightFace () {
+        return this.oppositeEdge.leftFace
+    }
 
-} );
-
-Object.assign( Edge.prototype, {
-
-    constructor: Edge,
-
-    setDatas: function( originVertex, oppositeEdge, nextLeftEdge, leftFace, isReal, isConstrained ) {
+    setDatas( originVertex, oppositeEdge, nextLeftEdge, leftFace, isReal, isConstrained ) {
 
         this.isConstrained = isReal !== undefined ? isConstrained : false;
         this.isReal = isReal !== undefined ? isReal : true;
@@ -1717,28 +1674,28 @@ Object.assign( Edge.prototype, {
         this.nextLeftEdge = nextLeftEdge;
         this.leftFace = leftFace;
 
-    },
+    }
 
-    getDatas: function () {
+    getDatas () {
 
         return [ this.originVertex.pos.x, this.originVertex.pos.y, this.destinationVertex.pos.x, this.destinationVertex.pos.y, this.isConstrained ? 1:0 ];
 
-    },
+    }
 
-    addFromConstraintSegment: function ( segment ) {
+    addFromConstraintSegment ( segment ) {
 
         if ( this.fromConstraintSegments.indexOf(segment) === -1 ) this.fromConstraintSegments.push(segment);
 
-    },
+    }
 
-    removeFromConstraintSegment: function( segment ) {
+    removeFromConstraintSegment( segment ) {
 
-        var index = this.fromConstraintSegments.indexOf( segment );
+        const index = this.fromConstraintSegments.indexOf( segment );
         if ( index !== -1 ) this.fromConstraintSegments.splice(index, 1);
 
-    },
+    }
 
-    dispose: function() {
+    dispose () {
 
         this.originVertex = null;
         this.oppositeEdge = null;
@@ -1746,286 +1703,277 @@ Object.assign( Edge.prototype, {
         this.leftFace = null;
         this.fromConstraintSegments = null;
 
-    },
+    }
 
-    toString: function() {
+    toString () {
 
         return "edge " + this.originVertex.id + " - " + this.destinationVertex.id;
 
     }
 
-} );
-
-function Face() {
-
-    this.type = FACE;
-    this.id = IDX.get('face');
-
-    this.isReal = false;
-    this.edge = null;
-    
 }
 
-Face.prototype = {
+class Face {
 
-    constructor: Face,
+    constructor () {
 
-    setDatas: function ( edge, isReal ) {
+        this.type = FACE;
+        this.id = IDX.get('face');
+
+        this.isReal = false;
+        this.edge = null;
+        
+    }
+
+    setDatas ( edge, isReal ) {
 
         this.isReal = isReal !== undefined ? isReal : true;
         this.edge = edge;
 
-    },
+    }
 
-    dispose: function() {
+    dispose () {
 
         this.edge = null;
         this.isReal = false;
 
     }
 
-};
-
-function Vertex () {
-
-    this.type = VERTEX;
-    this.id = IDX.get('vertex');
-    this.pos = new Point();
-    this.fromConstraintSegments = [];
-    this.edge = null;
-    this.isReal = false;
-
 }
 
-Vertex.prototype = {
-    
-    constructor: Vertex,
+class Vertex {
 
-    setDatas: function ( edge, isReal ) {
+    constructor () {
+
+        this.type = VERTEX;
+        this.id = IDX.get('vertex');
+        this.pos = new Point();
+        this.fromConstraintSegments = [];
+        this.edge = null;
+        this.isReal = false;
+
+    }
+
+    setDatas ( edge, isReal ) {
 
         this.isReal = isReal !== undefined ? isReal : true;
         this.edge = edge;
 
-    },
+    }
 
-    addFromConstraintSegment: function ( segment ) {
+    addFromConstraintSegment ( segment ) {
 
         if ( this.fromConstraintSegments.indexOf(segment) === -1 ) this.fromConstraintSegments.push( segment );
 
-    },
+    }
 
-    removeFromConstraintSegment: function ( segment ) {
+    removeFromConstraintSegment ( segment ) {
 
-        var index = this.fromConstraintSegments.indexOf( segment );
+        const index = this.fromConstraintSegments.indexOf( segment );
         if ( index !== -1 ) this.fromConstraintSegments.splice( index, 1 );
 
-    },
+    }
 
-    dispose: function() {
+    dispose () {
 
         this.pos = null;
         this.edge = null;
         this.fromConstraintSegments = null;
 
-    },
+    }
 
-    toString: function() {
+    toString () {
 
         return "ver_id " + this.id;
 
     }
 
-};
-
-function Shape () {
-
-    this.id = IDX.get('shape');
-    this.segments = [];
-    
 }
 
-Shape.prototype = {
+class Shape {
 
-    constructor: Shape,
+    constructor () {
 
-    dispose: function () {
+        this.id = IDX.get('shape');
+        this.segments = [];
+        
+    }
+
+    dispose () {
 
         while(this.segments.length > 0) this.segments.pop().dispose();
         this.segments = null;
 
     }
 
-};
-
-function Segment ( x, y ) {
-
-    this.id = IDX.get('segment');
-    this.edges = [];
-    this.fromShape = null;
-
 }
 
-Segment.prototype = {
+class Segment {
 
-    constructor: Segment,
+    constructor ( x, y ) {
 
-    addEdge: function ( edge ) {
+        this.id = IDX.get('segment');
+        this.edges = [];
+        this.fromShape = null;
+
+    }
+
+    addEdge ( edge ) {
 
         if ( this.edges.indexOf(edge) === -1 && this.edges.indexOf( edge.oppositeEdge ) === -1 ) this.edges.push( edge );
 
-    },
+    }
 
-    removeEdge: function ( edge ) {
+    removeEdge ( edge ) {
 
-        var index = this.edges.indexOf( edge );
+        const index = this.edges.indexOf( edge );
         if ( index === -1 ) index = this.edges.indexOf( edge.oppositeEdge );
         if ( index !== -1 ) this.edges.splice( index, 1 );
 
-    },
+    }
 
-    dispose: function () {
+    dispose () {
 
         this.edges = null;
         this.fromShape = null;
 
-    },
+    }
 
-    toString: function () {
+    toString () {
 
         return "seg_id " + this.id;
 
     }
 
-};
-
-function Object2D() {
-
-    this.id = IDX.get('object2D');
-
-    this._pivot = new Point();
-    this._position = new Point();
-    this._scale = new Point( 1, 1 );
-    this._matrix = new Matrix2D();
-    this._rotation = 0;
-    this._constraintShape = null;
-    this._coordinates = [];
-    this.hasChanged = false;
-
 }
 
-Object.defineProperties( Object2D.prototype, {
+class Object2D {
 
-    rotation: {
-        get: function () { return this._rotation; },
-        set: function ( value ) { if( this._rotation !== value ) { this._rotation = value; this.hasChanged = true; } }
-    },
+    constructor () {
 
-    matrix: {
-        get: function () { return this._matrix; },
-        set: function ( value ) { this._matrix = value; this.hasChanged = true; }
-    },
+        this.id = IDX.get('object2D');
 
-    coordinates: {
-        get: function () { return this._coordinates; },
-        set: function ( value ) { this._coordinates = value; this.hasChanged = true; }
-    },
-
-    constraintShape: {
-        get: function () { return this._constraintShape; },
-        set: function ( value ) { this._constraintShape = value; this.hasChanged = true; }
-    },
-
-    edges: {
-        
-        get: function () {
-
-            var res = [];
-            var seg = this._constraintShape.segments;
-            var l = seg.length, l2, n=0, n2=0, i=0, j=0;
-            while(n < l) {
-                i = n++;
-                n2 = 0;
-                l2 = seg[i].edges.length;
-                while(n2 < l2) {
-                    j = n2++;
-                    res.push(seg[i].edges[j]);
-                }
-            }
-            return res;
-
-        }
+        this._pivot = new Point();
+        this._position = new Point();
+        this._scale = new Point( 1, 1 );
+        this._matrix = new Matrix2D();
+        this._rotation = 0;
+        this._constraintShape = null;
+        this._coordinates = [];
+        this.hasChanged = false;
 
     }
 
-} );
+    get rotation (){
+        return this._rotation;
+    }
 
-Object.assign( Object2D.prototype, {
-    
-    constructor: Object2D,
+    set rotation ( value ){
+        if( this._rotation !== value ) { this._rotation = value; this.hasChanged = true; }
+    }
 
-    position: function ( x, y ) {
+    get matrix (){
+        return this._matrix;
+    }
+
+    set matrix ( value ){
+        if( this._rotation !== value ) { this._rotation = value; this.hasChanged = true; }
+    }
+
+    get coordinates (){
+        return this._coordinates;
+    }
+
+    set coordinates ( value ){
+        this._coordinates = value; this.hasChanged = true;
+    }
+
+    get constraintShape (){
+        return this._constraintShape;
+    }
+
+    set constraintShape ( value ){
+        this._constraintShape = value; this.hasChanged = true;
+    }
+
+    get edges (){
+        let res = [];
+        let seg = this._constraintShape.segments;
+        let l = seg.length, l2, n=0, n2=0, i=0, j=0;
+        while(n < l) {
+            i = n++;
+            n2 = 0;
+            l2 = seg[i].edges.length;
+            while(n2 < l2) {
+                j = n2++;
+                res.push(seg[i].edges[j]);
+            }
+        }
+        return res;
+    }
+
+
+    position ( x, y ) {
 
         this._position.set( x, y );
         this.hasChanged = true;
 
-    },
+    }
 
-    scale: function ( w, h ) {
+    scale ( w, h ) {
 
         this._scale.set(w,h);
         this.hasChanged = true;
 
-    },
+    }
 
-    pivot: function ( x, y ) {
+    pivot ( x, y ) {
 
         this._pivot.set(x,y);
         this.hasChanged = true;
 
-    },
+    }
 
-    dispose: function () {
+    dispose () {
 
         this._matrix = null;
         this._coordinates = null;
         this._constraintShape = null;
 
-    },
+    }
 
-    updateValuesFromMatrix: function () {
+    updateValuesFromMatrix () {
 
-    },
+    }
 
-    updateMatrixFromValues: function () {
+    updateMatrixFromValues () {
 
         this._matrix.identity().translate(this._pivot.negate()).scale(this._scale).rotate(this._rotation).translate(this._position);
 
     }
 
-} );
-
-function Graph () {
-
-    this.id = IDX.get('graph');
-
-    this.edge = null;
-    this.node = null;
-
 }
 
-Graph.prototype = {
+class Graph {
 
-    constructor: Graph,
+    constructor () {
 
-    dispose: function() {
+        this.id = IDX.get('graph');
 
-        while( this.node != null ) this.deleteNode(this.node);
+        this.edge = null;
+        this.node = null;
 
-    },
+    }
 
-    insertNode: function () {
+    dispose () {
 
-        var node = new GraphNode();
+        while( this.node !== null ) this.deleteNode( this.node );
+
+    }
+
+    insertNode () {
+
+        let node = new GraphNode();
         if(this.node != null) {
             node.next = this.node;
             this.node.prev = node;
@@ -2033,16 +1981,16 @@ Graph.prototype = {
         this.node = node;
         return node;
 
-    },
+    }
 
-    deleteNode: function ( node ) {
+    deleteNode ( node ) {
 
         while(node.outgoingEdge != null) {
             if(node.outgoingEdge.oppositeEdge != null) this.deleteEdge(node.outgoingEdge.oppositeEdge);
             this.deleteEdge(node.outgoingEdge);
         }
-        var otherNode = this.node;
-        var incomingEdge;
+        let otherNode = this.node;
+        let incomingEdge;
         while(otherNode != null) {
             incomingEdge = otherNode.successorNodes.get(node);
             if(incomingEdge != null) this.deleteEdge(incomingEdge);
@@ -2059,13 +2007,13 @@ Graph.prototype = {
         } else node.prev.next = null;
         node.dispose();
 
-    },
+    }
 
-    insertEdge: function ( fromNode, toNode ) {
+    insertEdge ( fromNode, toNode ) {
 
         if( fromNode.successorNodes.get( toNode ) != null ) return null;
 
-        var edge = new GraphEdge();
+        let edge = new GraphEdge();
 
         if(this.edge != null) {
             this.edge.prev = edge;
@@ -2081,16 +2029,18 @@ Graph.prototype = {
             edge.rotNextEdge = fromNode.outgoingEdge;
             fromNode.outgoingEdge = edge;
         } else fromNode.outgoingEdge = edge;
-        var oppositeEdge = toNode.successorNodes.get(fromNode);
-        if(oppositeEdge != null) {
+
+
+        let oppositeEdge = toNode.successorNodes.get(fromNode);
+        if(oppositeEdge !== null) {
             edge.oppositeEdge = oppositeEdge;
             oppositeEdge.oppositeEdge = edge;
         }
         return edge;
 
-    },
+    }
     
-    deleteEdge: function ( edge ) {
+    deleteEdge ( edge ) {
 
         if(this.edge == edge) {
             if(edge.next != null) {
@@ -2110,31 +2060,149 @@ Graph.prototype = {
             edge.rotPrevEdge.rotNextEdge = edge.rotNextEdge;
             edge.rotNextEdge.rotPrevEdge = edge.rotPrevEdge;
         } else edge.rotPrevEdge.rotNextEdge = null;
+
         edge.dispose();
 
     }
 
-};
+    /*insertNode () {
 
-// EDGE
+        let node = new GraphNode()
+        if( this.node !== null ) {
+            node.next = this.node
+            this.node.prev = node
+        }
+        this.node = node
+        return node
 
-function GraphEdge () {
+    }
 
-    this.id = IDX.get('graphEdge');
-    this.next = null;
-    this.prev = null;
-    this.rotPrevEdge = null;
-    this.rotNextEdge = null;
-    this.oppositeEdge = null;
-    this.sourceNode = null;
-    this.destinationNode = null;
-    this.data = null;
+    deleteNode ( node ) {
+
+        while( node.outgoingEdge != null ) {
+            if(node.outgoingEdge.oppositeEdge != null) this.deleteEdge(node.outgoingEdge.oppositeEdge);
+            this.deleteEdge(node.outgoingEdge);
+        }
+        let otherNode = this.node;
+        let incomingEdge;
+        while( otherNode !== null ) {
+            incomingEdge = otherNode.successorNodes.get(node)
+            if(incomingEdge !== null) this.deleteEdge( incomingEdge )
+            otherNode = otherNode.next
+        }
+
+        if( this.node === node ) {
+            if( node.next !== null ) {
+                node.next.prev = null
+                this.node = node.next
+            } else {
+                this.node = null
+            }
+        } else {
+            if( node.next !== null ) {
+                node.prev.next = node.next
+                node.next.prev = node.prev
+            } else {
+                node.prev.next = null
+            }
+        }
+        node.dispose();
+
+    }
+
+    insertEdge ( fromNode, toNode ) {
+
+        if( fromNode.successorNodes.get( toNode ) != null ) return null;
+
+        let edge = new GraphEdge();
+
+        if( this.edge !== null ) {
+            this.edge.prev = edge
+            edge.next = this.edge
+        }
+
+        this.edge = edge;
+        edge.sourceNode = fromNode
+        edge.destinationNode = toNode
+        fromNode.successorNodes.set( toNode, edge )
+
+        if( fromNode.outgoingEdge !== null ) {
+            fromNode.outgoingEdge.rotPrevEdge = edge
+            edge.rotNextEdge = fromNode.outgoingEdge
+            fromNode.outgoingEdge = edge
+        } else {
+            fromNode.outgoingEdge = edge
+        }
+        
+        let oppositeEdge = toNode.successorNodes.get( fromNode )
+        if( oppositeEdge !== null ) {
+            edge.oppositeEdge = oppositeEdge
+            oppositeEdge.oppositeEdge = edge
+        }
+
+        return edge
+
+    }
+    
+    deleteEdge ( edge ) {
+
+        if( this.edge === edge ) {
+            if( edge.next !== null ) {
+                edge.next.prev = null;
+                this.edge = edge.next;
+            } else {
+                this.edge = null;
+            }
+        } else {
+            if( edge.next !== null ) {
+                edge.prev.next = edge.next
+                edge.next.prev = edge.prev
+            } else {
+                edge.prev.next = null
+            }
+        }
+
+        if( edge.sourceNode.outgoingEdge === edge ) {
+            if( edge.rotNextEdge !== null ) {
+                edge.rotNextEdge.rotPrevEdge = null
+                edge.sourceNode.outgoingEdge = edge.rotNextEdge
+            } else {
+                edge.sourceNode.outgoingEdge = null
+            }
+        } else {
+            if( edge.rotNextEdge !== null ) {
+                edge.rotPrevEdge.rotNextEdge = edge.rotNextEdge
+                edge.rotNextEdge.rotPrevEdge = edge.rotPrevEdge
+            } else {
+                edge.rotPrevEdge.rotNextEdge = null
+            }
+        }
+
+        edge.dispose()
+
+    }*/
 
 }
 
-GraphEdge.prototype = {
+// EDGE
 
-    dispose: function () {
+class GraphEdge {
+
+    constructor () {
+
+        this.id = IDX.get('graphEdge');
+        this.next = null;
+        this.prev = null;
+        this.rotPrevEdge = null;
+        this.rotNextEdge = null;
+        this.oppositeEdge = null;
+        this.sourceNode = null;
+        this.destinationNode = null;
+        this.data = null;
+
+    }
+
+    dispose () {
 
         this.next = null;
         this.prev = null;
@@ -2147,26 +2215,24 @@ GraphEdge.prototype = {
 
     }
 
-};
-
-//export { GraphEdge };
+}
 
 // NODE
 
-function GraphNode () {
+class GraphNode {
 
-    this.id = IDX.get('graphNode');
-    this.successorNodes = new Dictionary( 1 );
-    this.prev = null;
-    this.next = null;
-    this.outgoingEdge = null;
-    this.data = null;
+    constructor () {
 
-}
+        this.id = IDX.get('graphNode');
+        this.successorNodes = new Dictionary( 1 );
+        this.prev = null;
+        this.next = null;
+        this.outgoingEdge = null;
+        this.data = null;
 
-GraphNode.prototype = {
+    }
 
-    dispose: function () {
+    dispose () {
 
         this.successorNodes.dispose();
         this.prev = null;
@@ -2177,14 +2243,10 @@ GraphNode.prototype = {
 
     }
 
-};
+}
 
-//export { GraphNode };
-
-function EdgeData() {}
-function NodeData() {}
-
-var Potrace = {
+function EdgeData() {}function NodeData() {}
+const Potrace = {
 
     color: { r:255, g:255, b:255 },
     nearly : 50,
@@ -2195,14 +2257,14 @@ var Potrace = {
 
     buildShapes: function ( bmpData ) {
 
-        var shapes = [];
-        var dictPixelsDone = new Dictionary( 2 );
+        let shapes = [];
+        let dictPixelsDone = new Dictionary( 2 );
 
-        var r = bmpData.height-1;
-        var c = bmpData.width-1;
+        let r = bmpData.height-1;
+        let c = bmpData.width-1;
 
-        for (var row = 1; row < r; row++){
-            for (var col = 0 ; col < c; col++){
+        for (let row = 1; row < r; row++){
+            for (let col = 0 ; col < c; col++){
 
                 if ( Potrace.getWhite(bmpData, col, row) && !Potrace.getWhite( bmpData, col+1, row ) ){
 
@@ -2218,13 +2280,13 @@ var Potrace = {
 
     getWhite: function ( bmpData, col, row ){
 
-        var valide = false;
+        let valide = false;
 
-        var bytes = bmpData.bytes;
-        var w = bmpData.width;
-        var mask = Potrace.color;
-        var nearly = Potrace.nearly;
-        var id = ( col + ( row * w ) ) << 2; // * 4;
+        let bytes = bmpData.bytes;
+        let w = bmpData.width;
+        let mask = Potrace.color;
+        let nearly = Potrace.nearly;
+        let id = ( col + ( row * w ) ) << 2; // * 4;
 
         if( mask.r !== undefined ){ if( nearEqual( bytes[id] , mask.r, nearly ) ) valide = true; }
         if( mask.g !== undefined ){ if( nearEqual( bytes[id+1] , mask.g, nearly ) ) valide = true; }
@@ -2237,19 +2299,19 @@ var Potrace = {
 
     buildShape: function ( bmpData, fromPixelRow, fromPixelCol, dictPixelsDone ) {
         
-        var newX = fromPixelCol;
-        var newY = fromPixelRow;
-        var path = [newX,newY];
+        let newX = fromPixelCol;
+        let newY = fromPixelRow;
+        let path = [newX,newY];
         dictPixelsDone.set(newX + "_" + newY, true);
 
-        var w = bmpData.width;
-        var h = bmpData.height;
+        bmpData.width;
+        bmpData.height;
 
-        var curDir = new Point(0,1);
-        var newDir = new Point();
-        var newPixelRow;
-        var newPixelCol;
-        var count = -1;
+        let curDir = new Point(0,1);
+        let newDir = new Point();
+        let newPixelRow;
+        let newPixelCol;
+        let count = -1;
         
         while(true) {
 
@@ -2310,9 +2372,9 @@ var Potrace = {
 
     buildGraph: function ( shape ) {
 
-        var i = 0;
-        var graph = new Graph();
-        var node;
+        let i = 0;
+        let graph = new Graph();
+        let node;
 
         while( i < shape.length ) {
 
@@ -2324,15 +2386,15 @@ var Potrace = {
 
         }
 
-        var node1;
-        var node2;
-        var subNode;
-        var distSqrd;
-        var sumDistSqrd;
-        var count;
-        var isValid = false;
-        var edge;
-        var edgeData;
+        let node1;
+        let node2;
+        let subNode;
+        let distSqrd;
+        let sumDistSqrd;
+        let count;
+        let isValid = false;
+        let edge;
+        let edgeData;
         node1 = graph.node;
 
         while( node1 != null ) {
@@ -2373,13 +2435,13 @@ var Potrace = {
 
     buildPolygon: function ( graph ) {
 
-        var polygon = [], p1, p2, p3;
-        var minNodeIndex = 2147483647;
-        var edge;
-        var score;
-        var higherScore;
-        var lowerScoreEdge = null;
-        var currNode = graph.node;
+        let polygon = [], p1, p2, p3;
+        let minNodeIndex = 2147483647;
+        let edge;
+        let score;
+        let higherScore;
+        let lowerScoreEdge = null;
+        let currNode = graph.node;
 
         while( currNode.data.index < minNodeIndex ) {
 
@@ -2415,40 +2477,38 @@ var Potrace = {
 
 };
 
-function Mesh2D( width, height ) {
+class Mesh2D {
 
-    this.id = IDX.get('mesh2D');
-    this.__objectsUpdateInProgress = false;
-    this.__centerVertex = null;
-    this.width = width;
-    this.height = height;
-    this.clipping = true;
-    
-    this._edges = [];
-    this._faces = [];
-    this._objects = [];
-    this._vertices = [];
-    this._constraintShapes = [];
+    constructor ( width, height ) {
 
-    this.__edgesToCheck = [];
+        this.id = IDX.get('mesh2D');
+        this.__objectsUpdateInProgress = false;
+        this.__centerVertex = null;
+        this.width = width;
+        this.height = height;
+        this.clipping = true;
+        
+        this._edges = [];
+        this._faces = [];
+        this._objects = [];
+        this._vertices = [];
+        this._constraintShapes = [];
 
-    this.AR_vertex = null;
-    this.AR_edge = null;
+        this.__edgesToCheck = [];
 
-    this.isRedraw = true;
+        this.AR_vertex = null;
+        this.AR_edge = null;
 
-}
+        this.isRedraw = true;
 
-Mesh2D.prototype = {
+    }
 
-    constructor: Mesh2D,
+    deDuplicEdge () {
 
-    deDuplicEdge: function () {
+        let edges = this._edges;
+        let lng = edges.length; 
 
-        var edges = this._edges;
-        var lng = edges.length; 
-
-        var i, j, a, b, m, n;
+        let i, j, a, b, m, n;
 
         for( j = lng; j; ) {
             b = edges[--j];
@@ -2466,9 +2526,9 @@ Mesh2D.prototype = {
             }
         }
 
-    },
+    }
 
-    clear: function ( notObjects ) {
+    clear ( notObjects ) {
 
         while(this._vertices.length > 0) this._vertices.pop().dispose();
         this._vertices = [];
@@ -2489,9 +2549,9 @@ Mesh2D.prototype = {
         this.AR_vertex = null;
         this.AR_edge = null;
 
-    },
+    }
     
-    dispose: function () {
+    dispose () {
 
         while(this._vertices.length > 0) this._vertices.pop().dispose();
         this._vertices = null;
@@ -2510,33 +2570,33 @@ Mesh2D.prototype = {
         this.AR_vertex = null;
         this.AR_edge = null;
 
-    },
+    }
 
-    buildFromRecord: function ( rec ) {
+    buildFromRecord ( rec ) {
 
-        var positions = rec.split(";");
-        var l = positions.length, i = 0;
+        let positions = rec.split(";");
+        let l = positions.length, i = 0;
         while(i < l) {
             this.insertConstraintSegment(parseFloat(positions[i]),parseFloat(positions[i + 1]),parseFloat(positions[i + 2]),parseFloat(positions[i + 3]));
             i += 4;
         }
 
-    },
+    }
 
-    insertObject: function ( o ) {
+    insertObject ( o ) {
 
         if( o.constraintShape != null ) this.deleteObject( o );
 
-        var shape = new Shape();
-        var segment;
-        var coordinates = o.coordinates;
+        let shape = new Shape();
+        let segment;
+        let coordinates = o.coordinates;
         
         o.updateMatrixFromValues();
-        var m = o.matrix || new Matrix2D();
-        var p1 = new Point();
-        var p2 = new Point();
+        let m = o.matrix || new Matrix2D();
+        let p1 = new Point();
+        let p2 = new Point();
 
-        var l = coordinates.length, i = 0;
+        let l = coordinates.length, i = 0;
         //while(i < l) {
         for (i=0; i<l; i+=4){
             p1.set( coordinates[i], coordinates[i+1] ).transformMat2D(m);
@@ -2554,24 +2614,24 @@ Mesh2D.prototype = {
 
         if( !this.__objectsUpdateInProgress ) this._objects.push( o );
 
-    },
+    }
 
-    deleteObject: function ( o ) {
+    deleteObject ( o ) {
 
         if( o.constraintShape == null ) return;
         this.deleteConstraintShape( o.constraintShape );
         o.constraintShape = null;
         if(!this.__objectsUpdateInProgress) {
-            var index = this._objects.indexOf( o );
+            let index = this._objects.indexOf( o );
             this._objects.splice( index, 1 );
         }
 
-    },
+    }
 
-    updateObjects: function() {
+    updateObjects () {
 
         this.__objectsUpdateInProgress = true;
-        var l = this._objects.length, i = 0, o;
+        let l = this._objects.length, i = 0, o;
         while( i < l ) {
 
             o = this._objects[i];
@@ -2586,7 +2646,7 @@ Mesh2D.prototype = {
         }
         this.__objectsUpdateInProgress = false;
 
-    },
+    }
 
     // insert a new collection of constrained edges.
     // Coordinates parameter is a list with form [x0, y0, x1, y1, x2, y2, x3, y3, x4, y4, ....]
@@ -2594,11 +2654,11 @@ Mesh2D.prototype = {
     // and where each couple sequence (xi, yi) is a point.
     // Segments are not necessary connected.
     // Segments can overlap (then they will be automaticaly subdivided).
-    insertConstraintShape: function( coordinates ) {
+    insertConstraintShape ( coordinates ) {
 
-        var shape = new Shape();
-        var segment = null;
-        var l = coordinates.length, i = 0;
+        let shape = new Shape();
+        let segment = null;
+        let l = coordinates.length, i = 0;
 
         while( i < l ) {
             segment = this.insertConstraintSegment( coordinates[i], coordinates[i + 1], coordinates[i + 2], coordinates[i + 3] );
@@ -2611,11 +2671,11 @@ Mesh2D.prototype = {
         this._constraintShapes.push(shape);
         return shape;
 
-    },
+    }
 
-    deleteConstraintShape: function ( shape ) {
+    deleteConstraintShape ( shape ) {
 
-        var i = 0, l = shape.segments.length;
+        let i = 0, l = shape.segments.length;
         while( i < l ) {
             this.deleteConstraintSegment(shape.segments[i]);
             i++;
@@ -2625,32 +2685,32 @@ Mesh2D.prototype = {
         this._constraintShapes.splice(this._constraintShapes.indexOf(shape),1);
         shape.dispose();
 
-    },
+    }
 
-    insertConstraintSegment: function ( x1, y1, x2, y2 ) {
+    insertConstraintSegment ( x1, y1, x2, y2 ) {
 
-        var newX1 = x1;
-        var newY1 = y1;
-        var newX2 = x2;
-        var newY2 = y2;
+        let newX1 = x1;
+        let newY1 = y1;
+        let newX2 = x2;
+        let newY2 = y2;
 
         if ( (x1 > this.width && x2 > this.width) || (x1 < 0 && x2 < 0) || (y1 > this.height && y2 > this.height) || (y1 < 0 && y2 < 0)  ) return null;
-        else{
-            var nx = x2 - x1;
-            var ny = y2 - y1;
-            var tmin = - INFINITY;
-            var tmax = INFINITY;
+        else {
+            let nx = x2 - x1;
+            let ny = y2 - y1;
+            let tmin = - INFINITY;
+            let tmax = INFINITY;
             
             if (nx != 0.0){
-                var tx1 = (0 - x1)/nx;
-                var tx2 = (this.width - x1)/nx;
+                let tx1 = (0 - x1)/nx;
+                let tx2 = (this.width - x1)/nx;
                 
                 tmin = Math.max(tmin, Math.min(tx1, tx2));
                 tmax = Math.min(tmax, Math.max(tx1, tx2));
             }
             if (ny != 0.0){
-                var ty1 = (0 - y1)/ny;
-                var ty2 = (this.height - y1)/ny;
+                let ty1 = (0 - y1)/ny;
+                let ty2 = (this.height - y1)/ny;
                 
                 tmin = Math.max(tmin, Math.min(ty1, ty2));
                 tmax = Math.min(tmax, Math.max(ty1, ty2));
@@ -2671,36 +2731,35 @@ Mesh2D.prototype = {
         }
 
         // we check the vertices insertions
-        var vertexDown = this.insertVertex(newX1,newY1);
+        let vertexDown = this.insertVertex(newX1,newY1);
         if(vertexDown == null) return null;
-        var vertexUp = this.insertVertex(newX2,newY2);
+        let vertexUp = this.insertVertex(newX2,newY2);
         if(vertexUp == null) return null;
         if(vertexDown.id === vertexUp.id) return null;
         //if(vertexDown === vertexUp) return null;
 
         // useful
-        var iterVertexToOutEdges = new FromVertexToOutgoingEdges();
-        var currVertex;
-        var currEdge;
-        var i;
+        let iterVertexToOutEdges = new FromVertexToOutgoingEdges();
+        let currVertex;
+        let currEdge;
 
         // the new constraint segment
-        var segment = new Segment();
-        var tempEdgeDownUp = new Edge();
-        var tempSdgeUpDown = new Edge();
+        let segment = new Segment();
+        let tempEdgeDownUp = new Edge();
+        let tempSdgeUpDown = new Edge();
         tempEdgeDownUp.setDatas(vertexDown,tempSdgeUpDown,null,null,true,true);
         tempSdgeUpDown.setDatas(vertexUp,tempEdgeDownUp,null,null,true,true);
 
-        var intersectedEdges = [];
-        var leftBoundingEdges = [];
-        var rightBoundingEdges = [];
+        let intersectedEdges = [];
+        let leftBoundingEdges = [];
+        let rightBoundingEdges = [];
 
-        var currObjet = {type:3};
-        var pIntersect = new Point();
-        var edgeLeft;
-        var newEdgeDownUp;
-        var newEdgeUpDown;
-        var done = false;
+        let currObjet = {type:3};
+        let pIntersect = new Point();
+        let edgeLeft;
+        let newEdgeDownUp;
+        let newEdgeUpDown;
+        let done = false;
         currVertex = vertexDown;
 
         currObjet = currVertex;
@@ -2897,10 +2956,10 @@ Mesh2D.prototype = {
 
         //return segment;
 
-    },
+    }
 
     // fromSegment, edgeDownUp, intersectedEdges, leftBoundingEdges, rightBoundingEdges
-    insertNewConstrainedEdge: function ( seg, edge, iEdge, lEdge, rEdge ) {
+    insertNewConstrainedEdge ( seg, edge, iEdge, lEdge, rEdge ) {
 
         this._edges.push( edge );
         this._edges.push( edge.oppositeEdge );
@@ -2913,15 +2972,15 @@ Mesh2D.prototype = {
         this.triangulate( lEdge, true );
         this.triangulate( rEdge, true );
 
-    },
+    }
 
-    deleteConstraintSegment: function ( segment ) {
+    deleteConstraintSegment ( segment ) {
 
-        var vertexToDelete = [];
-        var edge = null;
-        var vertex;
+        let vertexToDelete = [];
+        let edge = null;
+        let vertex;
 
-        var l = segment.edges.length, i = 0;
+        let l = segment.edges.length, i = 0;
         while( i < l ) {
             edge = segment.edges[i];
             edge.removeFromConstraintSegment(segment);
@@ -2949,11 +3008,11 @@ Mesh2D.prototype = {
         }
 
         segment.dispose();
-    },
+    }
 
-    check: function () {
+    check () {
 
-        var l = this._edges.length, i = 0;
+        let l = this._edges.length, i = 0;
 
         while( i < l ) {
             
@@ -2967,55 +3026,53 @@ Mesh2D.prototype = {
 
         Log( "check OK" );
 
-    },
+    }
 
-    insertVertex: function ( x, y ) {
+    insertVertex ( x, y ) {
 
         if(x < 0 || y < 0 || x > this.width || y > this.height) return null;
         this.__edgesToCheck.splice(0,this.__edgesToCheck.length);
-        var inObject = Geom2D.locatePosition( new Point(x,y), this);
-        var newVertex = null;
+        let inObject = Geom2D.locatePosition( new Point(x,y), this);
+        let newVertex = null;
         switch(inObject.type) {
         case 0:
-            var vertex = inObject;
+            let vertex = inObject;
             newVertex = vertex;
             break;
         case 1:
-            var edge = inObject;
+            let edge = inObject;
             newVertex = this.splitEdge(edge,x,y);
             break;
         case 2:
-            var face = inObject;
+            let face = inObject;
             newVertex = this.splitFace(face,x,y);
-            break;
-        case 3:
             break;
         }
         this.restoreAsDelaunay();
         return newVertex;
 
-    },
+    }
 
-    flipEdge: function ( edge ) {
+    flipEdge ( edge ) {
 
-        var eBot_Top = edge;
-        var eTop_Bot = edge.oppositeEdge;
-        var eLeft_Right = new Edge();
-        var eRight_Left = new Edge();
-        var eTop_Left = eBot_Top.nextLeftEdge;
-        var eLeft_Bot = eTop_Left.nextLeftEdge;
-        var eBot_Right = eTop_Bot.nextLeftEdge;
-        var eRight_Top = eBot_Right.nextLeftEdge;
+        let eBot_Top = edge;
+        let eTop_Bot = edge.oppositeEdge;
+        let eLeft_Right = new Edge();
+        let eRight_Left = new Edge();
+        let eTop_Left = eBot_Top.nextLeftEdge;
+        let eLeft_Bot = eTop_Left.nextLeftEdge;
+        let eBot_Right = eTop_Bot.nextLeftEdge;
+        let eRight_Top = eBot_Right.nextLeftEdge;
 
-        var vBot = eBot_Top.originVertex;
-        var vTop = eTop_Bot.originVertex;
-        var vLeft = eLeft_Bot.originVertex;
-        var vRight = eRight_Top.originVertex;
+        let vBot = eBot_Top.originVertex;
+        let vTop = eTop_Bot.originVertex;
+        let vLeft = eLeft_Bot.originVertex;
+        let vRight = eRight_Top.originVertex;
 
-        var fLeft = eBot_Top.leftFace;
-        var fRight = eTop_Bot.leftFace;
-        var fBot = new Face();
-        var fTop = new Face();
+        let fLeft = eBot_Top.leftFace;
+        let fRight = eTop_Bot.leftFace;
+        let fBot = new Face();
+        let fTop = new Face();
 
         // add the new edges
         this._edges.push(eLeft_Right);
@@ -3056,46 +3113,46 @@ Mesh2D.prototype = {
 
         return eRight_Left;
 
-    },
+    }
 
-    splitEdge: function ( edge, x, y ) {
+    splitEdge ( edge, x, y ) {
 
         this.__edgesToCheck.splice( 0, this.__edgesToCheck.length );
 
-        var eLeft_Right = edge;
-        var eRight_Left = eLeft_Right.oppositeEdge;
-        var eRight_Top = eLeft_Right.nextLeftEdge;
-        var eTop_Left = eRight_Top.nextLeftEdge;
-        var eLeft_Bot = eRight_Left.nextLeftEdge;
-        var eBot_Right = eLeft_Bot.nextLeftEdge;
+        let eLeft_Right = edge;
+        let eRight_Left = eLeft_Right.oppositeEdge;
+        let eRight_Top = eLeft_Right.nextLeftEdge;
+        let eTop_Left = eRight_Top.nextLeftEdge;
+        let eLeft_Bot = eRight_Left.nextLeftEdge;
+        let eBot_Right = eLeft_Bot.nextLeftEdge;
 
-        var vTop = eTop_Left.originVertex;
-        var vLeft = eLeft_Right.originVertex;
-        var vBot = eBot_Right.originVertex;
-        var vRight = eRight_Left.originVertex;
+        let vTop = eTop_Left.originVertex;
+        let vLeft = eLeft_Right.originVertex;
+        let vBot = eBot_Right.originVertex;
+        let vRight = eRight_Left.originVertex;
 
-        var fTop = eLeft_Right.leftFace;
-        var fBot = eRight_Left.leftFace;
+        let fTop = eLeft_Right.leftFace;
+        let fBot = eRight_Left.leftFace;
 
         // check distance from the position to edge end points
         if((vLeft.pos.x - x) * (vLeft.pos.x - x) + (vLeft.pos.y - y) * (vLeft.pos.y - y) <= EPSILON_SQUARED) return vLeft;
         if((vRight.pos.x - x) * (vRight.pos.x - x) + (vRight.pos.y - y) * (vRight.pos.y - y) <= EPSILON_SQUARED) return vRight;
         // create new objects
-        var vCenter = new Vertex();
-        var eTop_Center = new Edge();
-        var eCenter_Top = new Edge();
-        var eBot_Center = new Edge();
-        var eCenter_Bot = new Edge();
+        let vCenter = new Vertex();
+        let eTop_Center = new Edge();
+        let eCenter_Top = new Edge();
+        let eBot_Center = new Edge();
+        let eCenter_Bot = new Edge();
 
-        var eLeft_Center = new Edge();
-        var eCenter_Left = new Edge();
-        var eRight_Center = new Edge();
-        var eCenter_Right = new Edge();
+        let eLeft_Center = new Edge();
+        let eCenter_Left = new Edge();
+        let eRight_Center = new Edge();
+        let eCenter_Right = new Edge();
 
-        var fTopLeft = new Face();
-        var fBotLeft = new Face();
-        var fBotRight = new Face();
-        var fTopRight = new Face();
+        let fTopLeft = new Face();
+        let fBotLeft = new Face();
+        let fBotRight = new Face();
+        let fTopRight = new Face();
         // add the new vertex
         this._vertices.push(vCenter);
         // add the new edges
@@ -3154,15 +3211,15 @@ Mesh2D.prototype = {
         // - add the segments the edge is from to the new vertex
         if(eLeft_Right.isConstrained) {
 
-            var fromSegments = eLeft_Right.fromConstraintSegments;
+            let fromSegments = eLeft_Right.fromConstraintSegments;
             eLeft_Center.fromConstraintSegments = fromSegments.slice(0);
             eCenter_Left.fromConstraintSegments = eLeft_Center.fromConstraintSegments;
             eCenter_Right.fromConstraintSegments = fromSegments.slice(0);
             eRight_Center.fromConstraintSegments = eCenter_Right.fromConstraintSegments;
-            var edges;
-            var index;
-            //var n = 0;
-            var l = eLeft_Right.fromConstraintSegments.length, i = 0;
+            let edges;
+            let index;
+            //let n = 0;
+            let l = eLeft_Right.fromConstraintSegments.length, i = 0;
             while(i < l) {
                 //i = n++;
                 edges = eLeft_Right.fromConstraintSegments[i].edges;
@@ -3198,31 +3255,31 @@ Mesh2D.prototype = {
 
         return vCenter;
 
-    },
+    }
 
-    splitFace: function ( face, x, y ) {
+    splitFace ( face, x, y ) {
 
         this.__edgesToCheck.splice(0,this.__edgesToCheck.length);
-        var eTop_Left = face.edge;
-        var eLeft_Right = eTop_Left.nextLeftEdge;
-        var eRight_Top = eLeft_Right.nextLeftEdge;
-        var vTop = eTop_Left.originVertex;
-        var vLeft = eLeft_Right.originVertex;
-        var vRight = eRight_Top.originVertex;
+        let eTop_Left = face.edge;
+        let eLeft_Right = eTop_Left.nextLeftEdge;
+        let eRight_Top = eLeft_Right.nextLeftEdge;
+        let vTop = eTop_Left.originVertex;
+        let vLeft = eLeft_Right.originVertex;
+        let vRight = eRight_Top.originVertex;
 
         // create new objects
-        var vCenter = new Vertex();
+        let vCenter = new Vertex();
 
-        var eTop_Center = new Edge();
-        var eCenter_Top = new Edge();
-        var eLeft_Center = new Edge();
-        var eCenter_Left = new Edge();
-        var eRight_Center = new Edge();
-        var eCenter_Right = new Edge();
+        let eTop_Center = new Edge();
+        let eCenter_Top = new Edge();
+        let eLeft_Center = new Edge();
+        let eCenter_Left = new Edge();
+        let eRight_Center = new Edge();
+        let eCenter_Right = new Edge();
 
-        var fTopLeft = new Face();
-        var fBot = new Face();
-        var fTopRight = new Face();
+        let fTopLeft = new Face();
+        let fBot = new Face();
+        let fTopRight = new Face();
 
         // add the new vertex
         this._vertices.push(vCenter);
@@ -3276,11 +3333,11 @@ Mesh2D.prototype = {
 
         return vCenter;
 
-    },
+    }
 
-    restoreAsDelaunay: function () {
+    restoreAsDelaunay () {
 
-        var edge;
+        let edge;
         while(this.__edgesToCheck.length > 0) {
             edge = this.__edgesToCheck.shift();
             if(edge.isReal && !edge.isConstrained && !Geom2D.isDelaunay(edge)) {
@@ -3296,28 +3353,26 @@ Mesh2D.prototype = {
             }
         }
 
-    },
+    }
 
     // Delete a vertex IF POSSIBLE and then fill the hole with a new triangulation.
     // A vertex can be deleted if:
     // - it is free of constraint segment (no adjacency to any constrained edge)
     // - it is adjacent to exactly 2 contrained edges and is not an end point of any constraint segment
-    deleteVertex: function ( vertex ) {
-
-        var i;
-        var freeOfConstraint;
-        var iterEdges = new FromVertexToOutgoingEdges();
+    deleteVertex ( vertex ) {
+        let freeOfConstraint;
+        let iterEdges = new FromVertexToOutgoingEdges();
         iterEdges.fromVertex = vertex;
         iterEdges.realEdgesOnly = false;
-        var edge;
-        var outgoingEdges = [];
+        let edge;
+        let outgoingEdges = [];
         freeOfConstraint = (vertex.fromConstraintSegments.length == 0)? true : false;
 
-        var bound = [];
-        var realA = false;
-        var realB = false;
-        var boundA = [];
-        var boundB = [];
+        let bound = [];
+        let realA = false;
+        let realB = false;
+        let boundA = [];
+        let boundB = [];
         if(freeOfConstraint){ 
             //while(edge = iterEdges.next()) {
             while((edge = iterEdges.next()) != null) {
@@ -3326,17 +3381,17 @@ Mesh2D.prototype = {
             }
         } else {
             // we check if the vertex is an end point of a constraint segment
-            var edges;
-            var _g1 = 0;
-            var _g = vertex.fromConstraintSegments.length;
+            let edges;
+            let _g1 = 0;
+            let _g = vertex.fromConstraintSegments.length;
             while(_g1 < _g) {
-                var i1 = _g1++;
+                let i1 = _g1++;
                 edges = vertex.fromConstraintSegments[i1].edges;
                 //if(edges[0].originVertex == vertex || edges[edges.length - 1].destinationVertex == vertex) return false;
                 if(edges[0].originVertex.id === vertex.id || edges[edges.length - 1].destinationVertex.id === vertex.id) return false;
             }
             // we check the count of adjacent constrained edges
-            var count = 0;
+            let count = 0;
             //while(edge = iterEdges.next()) {
             while((edge = iterEdges.next()) != null) {
                 outgoingEdges.push(edge);
@@ -3349,16 +3404,16 @@ Mesh2D.prototype = {
             // if not disqualified, then we can process
             boundA = [];
             boundB = [];
-            var constrainedEdgeA = null;
-            var constrainedEdgeB = null;
-            var edgeA = new Edge();
-            var edgeB = new Edge();
+            let constrainedEdgeA = null;
+            let constrainedEdgeB = null;
+            let edgeA = new Edge();
+            let edgeB = new Edge();
             this._edges.push(edgeA);
             this._edges.push(edgeB);
-            var _g11 = 0;
-            var _g2 = outgoingEdges.length;
+            let _g11 = 0;
+            let _g2 = outgoingEdges.length;
             while(_g11 < _g2) {
-                var i2 = _g11++;
+                let i2 = _g11++;
                 edge = outgoingEdges[i2];
                 if(edge.isConstrained) {
                     if(constrainedEdgeA == null) {
@@ -3383,11 +3438,11 @@ Mesh2D.prototype = {
             // we update the segments infos
             edgeA.fromConstraintSegments = constrainedEdgeA.fromConstraintSegments.slice(0);
             edgeB.fromConstraintSegments = edgeA.fromConstraintSegments;
-            var index;
-            var _g12 = 0;
-            var _g3 = vertex.fromConstraintSegments.length;
+            let index;
+            let _g12 = 0;
+            let _g3 = vertex.fromConstraintSegments.length;
             while(_g12 < _g3) {
-                var i3 = _g12++;
+                let i3 = _g12++;
                 edges = vertex.fromConstraintSegments[i3].edges;
                 index = edges.indexOf(constrainedEdgeA);
                 if(index != -1) {
@@ -3396,18 +3451,18 @@ Mesh2D.prototype = {
                     //edges.splice(index - 1,0,edgeA);
                 } else {
                     edges.splice(edges.indexOf(constrainedEdgeB)-1, 2, edgeB);
-                    //var index2 = edges.indexOf(constrainedEdgeB) - 1;
+                    //let index2 = edges.indexOf(constrainedEdgeB) - 1;
                     //edges.splice(index2,2);
                     //edges.splice(index2,0,edgeB);
                 }
             }
         }
         // Deletion of old faces and edges
-        var faceToDelete;
-        var _g13 = 0;
-        var _g4 = outgoingEdges.length;
+        let faceToDelete;
+        let _g13 = 0;
+        let _g4 = outgoingEdges.length;
         while(_g13 < _g4) {
-            var i4 = _g13++;
+            let i4 = _g13++;
             edge = outgoingEdges[i4];
             faceToDelete = edge.leftFace;
             this._faces.splice(this._faces.indexOf(faceToDelete),1);
@@ -3427,19 +3482,16 @@ Mesh2D.prototype = {
             this.triangulate(boundB,realB);
         }
         return true;
-    },
+    }
     // untriangulate is usually used while a new edge insertion in order to delete the intersected edges
     // edgesList is a list of chained edges oriented from right to left
-    untriangulate: function ( edgesList ) {
-        // we clean useless faces and adjacent vertices
-        var i;
-        var verticesCleaned = new Dictionary( 1 );
-        var currEdge;
-        var outEdge;
-        var _g1 = 0;
-        var _g = edgesList.length;
+    untriangulate ( edgesList ) {
+        let verticesCleaned = new Dictionary( 1 );
+        let currEdge;
+        let _g1 = 0;
+        let _g = edgesList.length;
         while(_g1 < _g) {
-            var i1 = _g1++;
+            let i1 = _g1++;
             currEdge = edgesList[i1];
             if(verticesCleaned.get(currEdge.originVertex) == null ){
                 currEdge.originVertex.edge = currEdge.prevLeftEdge.oppositeEdge;
@@ -3458,21 +3510,21 @@ Mesh2D.prototype = {
         }
         verticesCleaned.dispose();
         // finally we delete the intersected edges
-        var _g11 = 0;
-        var _g2 = edgesList.length;
+        let _g11 = 0;
+        let _g2 = edgesList.length;
         while(_g11 < _g2) {
-            var i2 = _g11++;
+            let i2 = _g11++;
             currEdge = edgesList[i2];
             this._edges.splice(this._edges.indexOf(currEdge.oppositeEdge),1);
             this._edges.splice(this._edges.indexOf(currEdge),1);
             currEdge.oppositeEdge.dispose();
             currEdge.dispose();
         }
-    },
+    }
 
     // triangulate is usually used to fill the hole after deletion of a vertex from mesh or after untriangulation
     // - bounds is the list of edges in CCW bounding the surface to retriangulate,
-    triangulate: function ( bound, isReal ) {
+    triangulate ( bound, isReal ) {
 
         if(bound.length < 2) {
             Log("BREAK ! the hole has less than 2 edges");
@@ -3486,7 +3538,7 @@ Mesh2D.prototype = {
         // if the hole is a 3 edges polygon:
         } else if(bound.length === 3) {
 
-            var f = new Face();
+            let f = new Face();
             f.setDatas(bound[0], isReal);
             this._faces.push(f);
             bound[0].leftFace = f;
@@ -3497,21 +3549,20 @@ Mesh2D.prototype = {
             bound[2].nextLeftEdge = bound[0];
         // if more than 3 edges, we process recursively:
         } else {
-            var baseEdge = bound[0];
-            var vertexA = baseEdge.originVertex;
-            var vertexB = baseEdge.destinationVertex;
-            var vertexC;
-            var vertexCheck;
-            var circumcenter = new Point();
-            var radiusSquared = 0;
-            var distanceSquared = 0;
-            var isDelaunay = false;
-            var index = 0;
-            var i;
-            var _g1 = 2;
-            var _g = bound.length;
+            let baseEdge = bound[0];
+            let vertexA = baseEdge.originVertex;
+            let vertexB = baseEdge.destinationVertex;
+            let vertexC;
+            let vertexCheck;
+            let circumcenter = new Point();
+            let radiusSquared = 0;
+            let distanceSquared = 0;
+            let isDelaunay = false;
+            let index = 0;
+            let _g1 = 2;
+            let _g = bound.length;
             while(_g1 < _g) {
-                var i1 = _g1++;
+                let i1 = _g1++;
                 vertexC = bound[i1].originVertex;
                 if(Geom2D.getRelativePosition2(vertexC.pos,baseEdge) == 1) {
                     index = i1;
@@ -3521,10 +3572,10 @@ Mesh2D.prototype = {
                     radiusSquared = Squared(vertexA.pos.x - circumcenter.x, vertexA.pos.y - circumcenter.y);
                     // for perfect regular n-sides polygons, checking strict delaunay circumcircle condition is not possible, so we substract EPSILON to circumcircle radius:
                     radiusSquared -= EPSILON_SQUARED;
-                    var _g3 = 2;
-                    var _g2 = bound.length;
+                    let _g3 = 2;
+                    let _g2 = bound.length;
                     while(_g3 < _g2) {
-                        var j = _g3++;
+                        let j = _g3++;
                         if(j != i1) {
                             vertexCheck = bound[j].originVertex;
                             distanceSquared = Squared(vertexCheck.pos.x - circumcenter.x, vertexCheck.pos.y - circumcenter.y);
@@ -3541,11 +3592,11 @@ Mesh2D.prototype = {
             if(!isDelaunay) {
                 // for perfect regular n-sides polygons, checking delaunay circumcircle condition is not possible
                 Log("NO DELAUNAY FOUND");
-                /*var s = "";
-                var _g11 = 0;
-                var _g4 = bound.length;
+                /*let s = "";
+                let _g11 = 0;
+                let _g4 = bound.length;
                 while(_g11 < _g4) {
-                    var i2 = _g11++;
+                    let i2 = _g11++;
                     s += bound[i2].originVertex.pos.x + " , ";
                     s += bound[i2].originVertex.pos.y + " , ";
                     s += bound[i2].destinationVertex.pos.x + " , ";
@@ -3554,7 +3605,7 @@ Mesh2D.prototype = {
                 index = 2;
             }
 
-            var edgeA, edgeAopp, edgeB, edgeBopp, boundA, boundB, boundM = [];
+            let edgeA, edgeAopp, edgeB, edgeBopp, boundA, boundB, boundM = [];
 
             if(index < (bound.length - 1)) {
                 edgeA = new Edge();
@@ -3590,9 +3641,9 @@ Mesh2D.prototype = {
         // test
         //this.deDuplicEdge();
 
-    },
+    }
 
-    findPositionFromBounds: function ( x, y ) {
+    findPositionFromBounds ( x, y ) {
 
         if(x <= 0) {
             if(y <= 0) return 1; 
@@ -3606,24 +3657,23 @@ Mesh2D.prototype = {
         else if(y >= this.height) return 6; 
         else return 0;
 
-    },
+    }
 
     // for drawing
 
-    compute_Data: function () {
+    compute_Data () {
 
         this.AR_vertex = [];
         this.AR_edge = [];
 
-        //var data_vertex = [];
-        //var data_edges = [];
-        var vertex;
-        var edge;
-        var holdingFace;
-        var iterVertices = new FromMeshToVertices();
+        //let data_vertex = [];
+        //let data_edges = [];
+        let vertex;
+        let edge;
+        let iterVertices = new FromMeshToVertices();
         iterVertices.fromMesh = this;
-        var iterEdges = new FromVertexToIncomingEdges();
-        var dictVerticesDone = new Dictionary( 1 );
+        let iterEdges = new FromVertexToIncomingEdges();
+        let dictVerticesDone = new Dictionary( 1 );
 
         while((vertex = iterVertices.next()) != null) {
 
@@ -3646,47 +3696,47 @@ Mesh2D.prototype = {
         data_vertex = null;
         data_edges = null;*/
 
-    },
+    }
 
-    vertexIsInsideAABB: function ( vertex, mesh ) {
+    vertexIsInsideAABB ( vertex, mesh ) {
 
         return !( vertex.pos.x < 0 || vertex.pos.x > mesh.width || vertex.pos.y < 0 || vertex.pos.y > mesh.height );
 
     }
 
-};
-
-function AStar () {
-
-    this.fromFace = null;
-    this.toFace = null;
-    this.curFace = null;
-
-    this.iterEdge = new FromFaceToInnerEdges();
-    this.mesh = null;
-    this._radius = 0;
-    this.radiusSquared = 0;
-    this.diameter = 0;
-    this.diameterSquared = 0;
-
-
-    Object.defineProperty(this, 'radius', {
-        get: function() { return this._radius; },
-        set: function(value) { 
-            this._radius = value;
-            this.radiusSquared = this._radius * this._radius;
-            this.diameter = this._radius * 2;
-            this.diameterSquared = this.diameter * this.diameter; 
-        }
-    });
-
 }
 
-AStar.prototype = {
+class AStar {
 
-    constructor: AStar,
+    constructor () {
 
-    dispose: function() {
+        this.fromFace = null;
+        this.toFace = null;
+        this.curFace = null;
+
+        this.iterEdge = new FromFaceToInnerEdges();
+        this.mesh = null;
+        this._radius = 0;
+        this.radiusSquared = 0;
+        this.diameter = 0;
+        this.diameterSquared = 0;
+
+    }
+
+    get radius () {
+        return this._radius;
+    }
+
+    set radius ( value ) {
+
+        this._radius = value;
+        this.radiusSquared = this._radius * this._radius;
+        this.diameter = this._radius * 2;
+        this.diameterSquared = this.diameter * this.diameter;
+
+    }
+
+    dispose () {
 
         this.mesh = null;
         this.closedFaces.dispose();
@@ -3709,9 +3759,9 @@ AStar.prototype = {
         this.scoreG = null;
         this.scoreH = null;
         this.predecessor = null;
-    },
+    }
 
-    findPath: function ( from, target, resultListFaces, resultListEdges ) {
+    findPath ( from, target, resultListFaces, resultListEdges ) {
 
         this.sortedOpenedFaces = [];
         this.closedFaces = new Dictionary( 1 );
@@ -3725,7 +3775,7 @@ AStar.prototype = {
         this.scoreH = new Dictionary( 1 );
         
 
-        var loc, distance, p1, p2, p3;
+        let loc;
 
         loc = Geom2D.locatePosition( from, this.mesh );
 
@@ -3759,17 +3809,19 @@ AStar.prototype = {
         this.entryY.set(this.fromFace,from.y);
         this.scoreG.set(this.fromFace,0);
 
-        var dist = SquaredSqrt(target.x - from.x, target.y - from.y);
+        const dist = SquaredSqrt(target.x - from.x, target.y - from.y);
 
         this.scoreH.set(this.fromFace,dist);
         this.scoreF.set(this.fromFace,dist);
 
-        var innerEdge, neighbourFace, f, g, h;
-        var fromPoint = new Point();
-        var entryPoint = new Point();
-        var distancePoint = new Point();
-        var fillDatas = false;
+        let innerEdge, neighbourFace, f, g, h;
+        const fromPoint = new Point();
+        const entryPoint = new Point();
+        const distancePoint = new Point();
+        let fillDatas = false;
+
         while(true) {
+
             if(this.sortedOpenedFaces.length == 0) {
                 Log("NO PATH FOUND (AStar)");
                 this.curFace = null;
@@ -3783,17 +3835,35 @@ AStar.prototype = {
                 neighbourFace = innerEdge.rightFace;
                 if(!this.closedFaces.get(neighbourFace)) {
                     if(this.curFace != this.fromFace && this._radius > 0 && !this.isWalkableByRadius(this.entryEdges.get(this.curFace),this.curFace,innerEdge)) continue;
-                    fromPoint.x = this.entryX.get(this.curFace);
-                    fromPoint.y = this.entryY.get(this.curFace);
-                    entryPoint.x = fromPoint.x;
-                    entryPoint.y = fromPoint.y;
-                    entryPoint.x = (innerEdge.originVertex.pos.x + innerEdge.destinationVertex.pos.x) * 0.5;
-                    entryPoint.y = (innerEdge.originVertex.pos.y + innerEdge.destinationVertex.pos.y) * 0.5;
-                    distancePoint.x = entryPoint.x - target.x;
-                    distancePoint.y = entryPoint.y - target.y;
+
+                    fromPoint.set( this.entryX.get(this.curFace), this.entryY.get(this.curFace) );
+
+
+
+                    entryPoint.set( (innerEdge.originVertex.pos.x + innerEdge.destinationVertex.pos.x) * 0.5, (innerEdge.originVertex.pos.y + innerEdge.destinationVertex.pos.y) * 0.5 );
+                    
+
+
+
+                    // entryPoint will be the direct point of intersection between fromPoint and toXY if the edge innerEdge
+                    // intersects it
+                    //https://github.com/hxDaedalus/hxDaedalus/commit/f51504bd0fa822148d5e4bdeb7326809ecdbc731
+                    /*const vw1 = innerEdge.originVertex.pos;
+                    const vw2 = innerEdge.destinationVertex.pos;
+                    if (!Geom2D.intersections2segments(fromPoint, target, vw1, vw2, entryPoint)) {
+                        // Recycle the entryPoint variable to create a Point2D(toX, toY)
+                        entryPoint.copy(target)
+                        const vst = vw1.distanceSquaredTo(fromPoint) + vw1.distanceSquaredTo(entryPoint);
+                        const wst = vw2.distanceSquaredTo(fromPoint) + vw2.distanceSquaredTo(entryPoint);
+                        entryPoint.x = vst <= wst ? vw1.x : vw2.x;
+                        entryPoint.y = vst <= wst ? vw1.y : vw2.y;
+                    }*/
+                    
+
+                    distancePoint.copy( entryPoint ).sub( target );
                     h = distancePoint.length();
-                    distancePoint.x = fromPoint.x - entryPoint.x;
-                    distancePoint.y = fromPoint.y - entryPoint.y;
+                    distancePoint.copy( fromPoint ).sub( entryPoint );
+
                     g = this.scoreG.get(this.curFace) + distancePoint.length();
                     f = h + g;
                     fillDatas = false;
@@ -3831,17 +3901,19 @@ AStar.prototype = {
             this.curFace = this.predecessor.get(this.curFace);
             resultListFaces.unshift(this.curFace);
         }
-    },
-    /*sortingFaces: function(a,b) {
+    }
+
+    /*sortingFaces(a,b) {
         if(this.scoreF.get(a) == this.scoreF.get(b)) return 0; 
         else if(this.scoreF.get(a) < this.scoreF.get(b)) return 1; 
         else return -1;
-    },*/
-    isWalkableByRadius: function ( fromEdge, throughFace, toEdge ) {
+    }*/
+
+    isWalkableByRadius ( fromEdge, throughFace, toEdge ) {
         
-        var vA = null; // the vertex on fromEdge not on toEdge
-        var vB = null; // the vertex on toEdge not on fromEdge
-        var vC = null; // the common vertex of the 2 edges (pivot)
+        let vA = null; // the vertex on fromEdge not on toEdge
+        let vB = null; // the vertex on toEdge not on fromEdge
+        let vC = null; // the common vertex of the 2 edges (pivot)
 
         // we identify the points
         if(fromEdge.originVertex == toEdge.originVertex) {
@@ -3862,7 +3934,7 @@ AStar.prototype = {
             vC = fromEdge.destinationVertex;
         }
 
-        var dot, result, distSquared, adjEdge;
+        let dot, distSquared, adjEdge;
         // if we have a right or obtuse angle on CAB
         dot = (vC.pos.x - vA.pos.x) * (vB.pos.x - vA.pos.x) + (vC.pos.y - vA.pos.y) * (vB.pos.y - vA.pos.y);
         if(dot <= 0) {
@@ -3893,24 +3965,24 @@ AStar.prototype = {
             if(distSquared >= this.diameterSquared) return true; 
             else return false;
         } else {// if the adjacent is not constrained
-            var distSquaredA = Squared(vC.pos.x - vA.pos.x, vC.pos.y - vA.pos.y);
-            var distSquaredB = Squared(vC.pos.x - vB.pos.x, vC.pos.y - vB.pos.y);
+            let distSquaredA = Squared(vC.pos.x - vA.pos.x, vC.pos.y - vA.pos.y);
+            let distSquaredB = Squared(vC.pos.x - vB.pos.x, vC.pos.y - vB.pos.y);
             if(distSquaredA < this.diameterSquared || distSquaredB < this.diameterSquared) return false; 
             else {
-                var vFaceToCheck = [];
-                var vFaceIsFromEdge = [];
-                var facesDone = new Dictionary( 1 );
+                let vFaceToCheck = [];
+                let vFaceIsFromEdge = [];
+                let facesDone = new Dictionary( 1 );
                 vFaceIsFromEdge.push(adjEdge);
                 if(adjEdge.leftFace == throughFace) {
                     vFaceToCheck.push(adjEdge.rightFace);
-                    var k = adjEdge.rightFace;
+                    let k = adjEdge.rightFace;
                     facesDone.set(k,true);
                 } else {
                     vFaceToCheck.push(adjEdge.leftFace);
-                    var k1 = adjEdge.leftFace;
+                    let k1 = adjEdge.leftFace;
                     facesDone.set(k1,true);
                 }
-                var currFace, faceFromEdge, currEdgeA, nextFaceA, currEdgeB, nextFaceB;
+                let currFace, faceFromEdge, currEdgeA, nextFaceA, currEdgeB, nextFaceB;
                 while(vFaceToCheck.length > 0) {
                     currFace = vFaceToCheck.shift();
                     faceFromEdge = vFaceIsFromEdge.shift();
@@ -3967,52 +4039,56 @@ AStar.prototype = {
         }
         //?\\return true;
     }
-};
-
-function Funnel() {
-
-    this._currPoolPointsIndex = 0;
-    this._poolPointsSize = 3000;
-    this._numSamplesCircle = 16;
-    this._radiusSquared = 0;
-    this._radius = 0;
-    this._poolPoints = [];
-    var l = this._poolPointsSize, n=0;
-    while(n < l) {
-        var i = n++;
-        this._poolPoints.push(new Point());
-    }
-
-    Object.defineProperty(this, 'radius', {
-        get: function() { return this._radius; },
-        set: function(value) { 
-            this._radius = Math.max(0,value);
-            this._radiusSquared = this._radius * this._radius;
-            this._sampleCircle = [];
-            if(this._radius == 0) return;
-            var l = this._numSamplesCircle, n = 0, r;
-            while(n < l) {
-                var i = n++;
-                r = - TwoPI * i / this._numSamplesCircle;
-                this._sampleCircle.push(new Point(this._radius * Math.cos(r),this._radius * Math.sin(r)));
-            }
-            this._sampleCircleDistanceSquared = Squared(this._sampleCircle[0].x - this._sampleCircle[1].x, this._sampleCircle[0].y - this._sampleCircle[1].y);
-        }
-    });
-
 }
 
-Funnel.prototype = {
+class Funnel {
 
-    constructor: Funnel,
+    constructor () {
 
-    dispose: function() {
+        this._currPoolPointsIndex = 0;
+        this._poolPointsSize = 3000;
+        this._numSamplesCircle = 16;
+        this._radiusSquared = 0;
+        this._radius = 0;
+        this._poolPoints = [];
+        let l = this._poolPointsSize, n=0;
+        while(n < l) {
+            n++;
+            this._poolPoints.push(new Point());
+        }
+
+
+    }
+
+    get radius () {
+
+        return this._radius
+
+    }
+
+    set radius ( value ) {
+
+        this._radius = Math.max(0,value);
+        this._radiusSquared = this._radius * this._radius;
+        this._sampleCircle = [];
+        if(this._radius == 0) return;
+        let l = this._numSamplesCircle, n = 0, r;
+        while(n < l) {
+            let i = n++;
+            r = - TwoPI * i / this._numSamplesCircle;
+            this._sampleCircle.push(new Point(this._radius * Math.cos(r),this._radius * Math.sin(r)));
+        }
+        this._sampleCircleDistanceSquared = Squared(this._sampleCircle[0].x - this._sampleCircle[1].x, this._sampleCircle[0].y - this._sampleCircle[1].y);
+
+    }
+
+    dispose () {
 
         this._sampleCircle = null;
 
-    },
+    }
 
-    getPoint: function( x, y ) {
+    getPoint ( x, y ) {
 
         y = y || 0;
         x = x || 0;
@@ -4024,23 +4100,23 @@ Funnel.prototype = {
             this._poolPointsSize++;
         }
         return this.__point;
-    },
+    }
 
-    getCopyPoint: function ( pointToCopy ) {
+    getCopyPoint ( pointToCopy ) {
 
         return this.getPoint( pointToCopy.x, pointToCopy.y );
 
-    },
+    }
 
-    findPath: function ( from, target, listFaces, listEdges, resultPath ) {
+    findPath ( from, target, listFaces, listEdges, resultPath ) {
 
-        var p_from = from;
-        var p_to = target;
-        var rad = this._radius * 1.01;
+        let p_from = from;
+        let p_to = target;
+        let rad = this._radius * 1.01;
         this._currPoolPointsIndex = 0;
         if(this._radius > 0) {
-            var checkFace = listFaces[0];
-            var distanceSquared, distance, p1, p2, p3;
+            let checkFace = listFaces[0];
+            let distanceSquared, distance, p1, p2, p3;
             p1 = checkFace.edge.originVertex.pos;
             p2 = checkFace.edge.destinationVertex.pos;
             p3 = checkFace.edge.nextLeftEdge.destinationVertex.pos;
@@ -4096,7 +4172,7 @@ Funnel.prototype = {
             }
         }
         // we build starting and ending points
-        var startPoint, endPoint;
+        let startPoint, endPoint;
         startPoint = p_from.clone();//new Point(fromX,fromY);
         endPoint = p_to.clone();//new Point(toX,toY);
         if(listFaces.length == 1) {
@@ -4106,16 +4182,16 @@ Funnel.prototype = {
             resultPath.push(fix(endPoint.y));
             return;
         }
-        var i, j, k, l, n;
-        var currEdge = null;
-        var currVertex = null;
-        var direction;
+        let i, j, l, n;
+        let currEdge = null;
+        let currVertex = null;
+        let direction;
 
 
 
         // first we skip the first face and first edge if the starting point lies on the first interior edge:
 
-        var edgeTmp = Geom2D.isInFace( p_from, listFaces[0] );
+        let edgeTmp = Geom2D.isInFace( p_from, listFaces[0] );
 
         if ( edgeTmp.type === EDGE ){
             if ( listEdges[0] === edgeTmp ){
@@ -4126,11 +4202,11 @@ Funnel.prototype = {
             }
         }
         //{
-           /* var _g = Geom2D.isInFacePrime(fromX,fromY,listFaces[0]);
-            var _g = Geom2D.isInFace(fromX,fromY,listFaces[0]);
+           /* let _g = Geom2D.isInFacePrime(fromX,fromY,listFaces[0]);
+            let _g = Geom2D.isInFace(fromX,fromY,listFaces[0]);
             switch(_g[1]) {
             case 1:
-                var edge = _g[2];
+                let edge = _g[2];
                 if(listEdges[0] == edge) {
                     listEdges.shift();
                     listFaces.shift();
@@ -4142,21 +4218,21 @@ Funnel.prototype = {
 
         // our funnels, inited with starting point  
 
-        var funnelLeft = [];
-        var funnelRight = [];
+        let funnelLeft = [];
+        let funnelRight = [];
         funnelLeft.push(startPoint);
         funnelRight.push(startPoint);
-        var verticesDoneSide = new Dictionary( 1 );
-        var pointsList = [];
-        var pointSides = new Dictionary( 0 );
-        var pointSuccessor = new Dictionary( 0 );
+        let verticesDoneSide = new Dictionary( 1 );
+        let pointsList = [];
+        let pointSides = new Dictionary( 0 );
+        let pointSuccessor = new Dictionary( 0 );
         pointSides.set(startPoint,0);
         //0;
         currEdge = listEdges[0];
-        var relativPos = Geom2D.getRelativePosition2(p_from,currEdge);
-        var prevPoint;
-        var newPointA;
-        var newPointB;
+        let relativPos = Geom2D.getRelativePosition2(p_from,currEdge);
+        let prevPoint;
+        let newPointA;
+        let newPointB;
         newPointA = this.getCopyPoint(currEdge.destinationVertex.pos);
         newPointB = this.getCopyPoint(currEdge.originVertex.pos);
         pointsList.push(newPointA);
@@ -4175,12 +4251,12 @@ Funnel.prototype = {
             verticesDoneSide.set(currEdge.destinationVertex,-1);
             verticesDoneSide.set(currEdge.originVertex,1);
         }
-        var fromVertex = listEdges[0].originVertex;
-        var fromFromVertex = listEdges[0].destinationVertex;
-        var _g1 = 1;
-        var _g2 = listEdges.length;
+        let fromVertex = listEdges[0].originVertex;
+        let fromFromVertex = listEdges[0].destinationVertex;
+        let _g1 = 1;
+        let _g2 = listEdges.length;
         while(_g1 < _g2) {
-            var i1 = _g1++;
+            let i1 = _g1++;
             currEdge = listEdges[i1];
             if(currEdge.originVertex == fromVertex) currVertex = currEdge.destinationVertex; 
             else if(currEdge.destinationVertex == fromVertex) currVertex = currEdge.originVertex; 
@@ -4205,16 +4281,16 @@ Funnel.prototype = {
         pointSuccessor.set(prevPoint,endPoint);
         pointSides.set(endPoint,0);
 
-        var pathPoints = [];
-        var pathSides = new Dictionary( 1 );
+        let pathPoints = [];
+        let pathSides = new Dictionary( 1 );
         pathPoints.push(startPoint);
         pathSides.set(startPoint,0);
         //0;
-        var currPos;
-        var _g11 = 0;
-        var _g3 = pointsList.length;
+        let currPos;
+        let _g11 = 0;
+        let _g3 = pointsList.length;
         while(_g11 < _g3) {
-            var i2 = _g11++;
+            let i2 = _g11++;
             currPos = pointsList[i2];
             if(pointSides.get(currPos) == -1) {
                 j = funnelLeft.length - 2;
@@ -4222,9 +4298,9 @@ Funnel.prototype = {
                     direction = Geom2D.getDirection(funnelLeft[j], funnelLeft[j + 1], currPos);
                     if(direction != -1) {
                         funnelLeft.shift();
-                        var _g21 = 0;
+                        let _g21 = 0;
                         while(_g21 < j) {
-                            var k5 = _g21++;
+                            _g21++;
                             pathPoints.push(funnelLeft[0]);
                             pathSides.set(funnelLeft[0],1);
                             funnelLeft.shift();
@@ -4252,9 +4328,9 @@ Funnel.prototype = {
                     direction = Geom2D.getDirection(funnelRight[j], funnelRight[j + 1], currPos);
                     if(direction != 1) {
                         funnelRight.shift();
-                        var _g22 = 0;
+                        let _g22 = 0;
                         while(_g22 < j) {
-                            var k6 = _g22++;
+                            _g22++;
                             pathPoints.push(funnelRight[0]);
                             pathSides.set(funnelRight[0],-1);
                             funnelRight.shift();
@@ -4278,16 +4354,16 @@ Funnel.prototype = {
                 }
             }
         }
-        var blocked = false;
+        let blocked = false;
         j = funnelRight.length - 2;
         while(j >= 0) {
             direction = Geom2D.getDirection(funnelRight[j], funnelRight[j + 1], p_to);
             if(direction != 1) {
                 funnelRight.shift();
-                var _g12 = 0;
-                var _g4 = j + 1;
+                let _g12 = 0;
+                let _g4 = j + 1;
                 while(_g12 < _g4) {
-                    var k7 = _g12++;
+                    _g12++;
                     pathPoints.push(funnelRight[0]);
                     pathSides.set(funnelRight[0],-1);
                     funnelRight.shift();
@@ -4305,10 +4381,10 @@ Funnel.prototype = {
                 direction = Geom2D.getDirection(funnelLeft[j], funnelLeft[j + 1], p_to);
                 if(direction != -1) {
                     funnelLeft.shift();
-                    var _g13 = 0;
-                    var _g5 = j + 1;
+                    let _g13 = 0;
+                    let _g5 = j + 1;
                     while(_g13 < _g5) {
-                        var k8 = _g13++;
+                        _g13++;
                         pathPoints.push(funnelLeft[0]);
                         pathSides.set(funnelLeft[0],1);
                         funnelLeft.shift();
@@ -4326,25 +4402,25 @@ Funnel.prototype = {
             pathSides.set(endPoint,0);
             blocked = true;
         }
-        var adjustedPoints = [];
+        let adjustedPoints = [];
         if(this._radius > 0) {
-            var newPath = [];
+            let newPath = [];
             if(pathPoints.length == 2) this.adjustWithTangents(pathPoints[0],false,pathPoints[1],false,pointSides,pointSuccessor,newPath,adjustedPoints); else if(pathPoints.length > 2) {
                 this.adjustWithTangents(pathPoints[0],false,pathPoints[1],true,pointSides,pointSuccessor,newPath,adjustedPoints);
                 if(pathPoints.length > 3) {
-                    var _g14 = 1;
-                    var _g6 = pathPoints.length - 3 + 1;
+                    let _g14 = 1;
+                    let _g6 = pathPoints.length - 3 + 1;
                     while(_g14 < _g6) {
-                        var i3 = _g14++;
+                        let i3 = _g14++;
                         this.adjustWithTangents(pathPoints[i3],true,pathPoints[i3 + 1],true,pointSides,pointSuccessor,newPath,adjustedPoints);
                     }
                 }
-                var pathLength = pathPoints.length;
+                let pathLength = pathPoints.length;
                 this.adjustWithTangents(pathPoints[pathLength - 2],true,pathPoints[pathLength - 1],false,pointSides,pointSuccessor,newPath,adjustedPoints);
             }
             newPath.push(endPoint);
             this.checkAdjustedPath(newPath,adjustedPoints,pointSides);
-            var smoothPoints = [];
+            let smoothPoints = [];
             i = newPath.length - 2;
             while(i >= 1) {
                 this.smoothAngle(adjustedPoints[i * 2 - 1],newPath[i],adjustedPoints[i * 2],pointSides.get(newPath[i]),smoothPoints);
@@ -4362,15 +4438,15 @@ Funnel.prototype = {
             resultPath.push(fix(adjustedPoints[i].y));
         }
 
-    },
+    }
 
-    adjustWithTangents: function( p1, applyRadiusToP1, p2, applyRadiusToP2, pointSides, pointSuccessor, newPath, adjustedPoints ) {
+    adjustWithTangents( p1, applyRadiusToP1, p2, applyRadiusToP2, pointSides, pointSuccessor, newPath, adjustedPoints ) {
 
-        var tangentsResult = [];
-        var side1 = pointSides.get(p1);
-        var side2 = pointSides.get(p2);
-        var pTangent1 = null;
-        var pTangent2 = null;
+        let tangentsResult = [];
+        let side1 = pointSides.get(p1);
+        let side2 = pointSides.get(p2);
+        let pTangent1 = null;
+        let pTangent2 = null;
         if(!applyRadiusToP1 && !applyRadiusToP2) {
             pTangent1 = p1;
             pTangent2 = p2;
@@ -4425,8 +4501,8 @@ Funnel.prototype = {
             Log("NO TANGENT, points are too close for radius");
             return;
         }
-        var successor = pointSuccessor.get(p1);
-        var distance;
+        let successor = pointSuccessor.get(p1);
+        let distance;
         while(successor != p2) {
             distance = Geom2D.distanceSquaredPointToSegment(successor,pTangent1,pTangent2);
             if(distance < this._radiusSquared) {
@@ -4439,27 +4515,27 @@ Funnel.prototype = {
         adjustedPoints.push(pTangent2);
         newPath.push(p1);
 
-    },
+    }
 
-    checkAdjustedPath: function( newPath, adjustedPoints, pointSides ) {
+    checkAdjustedPath( newPath, adjustedPoints, pointSides ) {
 
-        var needCheck = true;
-        var point0;
-        var point0Side;
-        var point1;
-        var point1Side;
-        var point2;
-        var point2Side;
-        var pt1;
-        var pt2;
-        var pt3;
-        var dot;
-        var tangentsResult = [];
-        var pTangent1 = null;
-        var pTangent2 = null;
+        let needCheck = true;
+        let point0;
+        let point0Side;
+        let point1;
+        let point1Side;
+        let point2;
+        let point2Side;
+        let pt1;
+        let pt2;
+        let pt3;
+        let dot;
+        let tangentsResult = [];
+        let pTangent1 = null;
+        let pTangent2 = null;
         while(needCheck) {
             needCheck = false;
-            var i = 2;
+            let i = 2;
             while(i < newPath.length) {
                 point2 = newPath[i];
                 point2Side = pointSides.get(point2);
@@ -4514,7 +4590,7 @@ Funnel.prototype = {
                         newPath.splice(i-1, 1);
                         adjustedPoints.splice((i-1)*2-1, 2);
                         tangentsResult.splice(0, tangentsResult.length);
-                        /*var temp = (i - 2) * 2;
+                        /*let temp = (i - 2) * 2;
                         adjustedPoints.splice(temp,1);
                         adjustedPoints.splice(temp,0,pTangent1);
                         temp = i * 2 - 1;
@@ -4529,24 +4605,24 @@ Funnel.prototype = {
                 i++;
             }
         }
-    },
+    }
 
-    smoothAngle: function( prevPoint, pointToSmooth, nextPoint, side, encirclePoints ) {
+    smoothAngle( prevPoint, pointToSmooth, nextPoint, side, encirclePoints ) {
 
-        var angleType = Geom2D.getDirection(prevPoint,pointToSmooth,nextPoint);
-        var distanceSquared = Squared(prevPoint.x - nextPoint.x, prevPoint.y - nextPoint.y);
+        let angleType = Geom2D.getDirection(prevPoint,pointToSmooth,nextPoint);
+        let distanceSquared = Squared(prevPoint.x - nextPoint.x, prevPoint.y - nextPoint.y);
         if(distanceSquared <= this._sampleCircleDistanceSquared) return;
-        var index = 0;
-        var side1;
-        var side2;
-        var pointInArea;
-        var p_toCheck;
-        //var xToCheck;
-        //var yToCheck;
-        var _g1 = 0;
-        var _g = this._numSamplesCircle;
+        let index = 0;
+        let side1;
+        let side2;
+        let pointInArea;
+        let p_toCheck;
+        //let xToCheck;
+        //let yToCheck;
+        let _g1 = 0;
+        let _g = this._numSamplesCircle;
         while(_g1 < _g) {
-            var i = _g1++;
+            let i = _g1++;
             pointInArea = false;
             p_toCheck = pointToSmooth.clone().add(this._sampleCircle[i]);
             //p_toCheck = new Point(pointToSmooth.x + this._sampleCircle[i].x, pointToSmooth.y + this._sampleCircle[i].y);
@@ -4565,7 +4641,7 @@ Funnel.prototype = {
                 encirclePoints.splice(index, 0, p_toCheck);
                 //encirclePoints.splice(index, 0, new Point(xToCheck, yToCheck));
                 //encirclePoints.splice(index,0);
-                //var x = new Point(xToCheck,yToCheck);
+                //let x = new Point(xToCheck,yToCheck);
                 //encirclePoints.splice(index,0,x);
                 index++;
             } else index = 0;
@@ -4573,31 +4649,30 @@ Funnel.prototype = {
         if(side == -1) encirclePoints.reverse();
         
     }
-};
-
-function PathFinder() {
-
-    this.astar = new AStar();
-    this.funnel = new Funnel();
-    this.listFaces = [];
-    this.listEdges = [];
-    this._mesh = null;
-    this.entity = null;
-
-    Object.defineProperty(this, 'mesh', {
-
-        get: function() { return this._mesh; },
-        set: function(value) { this._mesh = value; this.astar.mesh = value; }
-
-    });
-    
 }
 
-PathFinder.prototype = {
+class PathFinder {
 
-    constructor: PathFinder,
+    constructor () {
 
-    dispose: function () {
+        this.astar = new AStar();
+        this.funnel = new Funnel();
+        this.listFaces = [];
+        this.listEdges = [];
+        this._mesh = null;
+        this.entity = null;
+        
+    }
+
+    get mesh () {
+        return this._mesh;
+    }
+
+    set mesh ( value ) {
+        this._mesh = value; this.astar.mesh = value;
+    }
+
+    dispose () {
 
         this._mesh = null;
         this.astar.dispose();
@@ -4606,9 +4681,9 @@ PathFinder.prototype = {
         this.funnel = null;
         this.listEdges = null;
         this.listFaces = null;
-    },
+    }
 
-    findPath: function( target, resultPath ) {
+    findPath( target, resultPath ) {
 
         //resultPath = [];
         resultPath.splice(0,resultPath.length);
@@ -4621,7 +4696,7 @@ PathFinder.prototype = {
         this.listEdges.splice(0,this.listEdges.length);
         //this.listFaces = [];
         //this.listEdges = [];
-        var start = this.entity.position;
+        let start = this.entity.position;
         this.astar.findPath( start, target, this.listFaces, this.listEdges );
         if(this.listFaces.length == 0) {
             Log("PATH LENGTH = 0 (PathFinder)");
@@ -4631,43 +4706,42 @@ PathFinder.prototype = {
         this.funnel.findPath( start, target, this.listFaces, this.listEdges, resultPath );
 
     }
-};
-
-function PathIterator() {
-
-    this.entity = null;
-    this.hasPrev = false;
-    this.hasNext = false;
-    this.countMax = 0;
-    this.count = 0;
-    this._currentX = 0;
-    this._currentY = 0;
-    this._path = [];
-    
-    Object.defineProperty(this, 'x', {
-        get: function() { return this._currentX; }
-    });
-
-    Object.defineProperty(this, 'y', {
-        get: function() { return this._currentY; }
-    });
-
-    Object.defineProperty(this, 'path', {
-        get: function() { return this._path; },
-        set: function(value) { 
-            this._path = value;
-            this.countMax = this._path.length * 0.5;
-            this.reset();
-        }
-    });
-
 }
 
-PathIterator.prototype = {
+class PathIterator {
 
-    constructor: PathIterator,
+    constructor () {
 
-    reset: function () {
+        this.entity = null;
+        this.hasPrev = false;
+        this.hasNext = false;
+        this.countMax = 0;
+        this.count = 0;
+        this._currentX = 0;
+        this._currentY = 0;
+        this._path = [];
+
+    }
+
+    get x () {
+        return this._currentX
+    }
+
+    get y () {
+        return this._currentY
+    }
+
+    get path () {
+        return this._path
+    }
+
+    set path ( value ) {
+        this._path = value;
+        this.countMax = this._path.length * 0.5;
+        this.reset();
+    }
+
+    reset () {
 
         this.count = 0;
         this._currentX = this._path[this.count];
@@ -4678,9 +4752,9 @@ PathIterator.prototype = {
         if (this._path.length > 2) this.hasNext = true;
         else this.hasNext = false;
 
-    },
+    }
 
-    prev: function () {
+    prev () {
 
         if (! this.hasPrev) return false;
         this.hasNext = true;
@@ -4694,9 +4768,9 @@ PathIterator.prototype = {
         if (this.count == 0) this.hasPrev = false;
         return true;
 
-    },
+    }
 
-    next: function () {
+    next () {
 
         if ( !this.hasNext ) return false;
         this.hasPrev = true;
@@ -4710,90 +4784,138 @@ PathIterator.prototype = {
         if ((this.count+1)*2 == this._path.length) this.hasNext = false;    
         return true;
 
-    },
+    }
 
-    updateEntity: function () {
+    updateEntity () {
 
         if ( !this.entity ) return;
         this.entity.x = this._currentX;
         this.entity.y = this._currentY;
 
     }
-};
 
-function LinearPathSampler () {
-
-    this.entity = null;
-    this._path = null;
-    this._samplingDistanceSquared = 1;
-    this._samplingDistance = 1;
-    this._preCompX = [];
-    this._preCompY = [];
-    this.pos = new Point();
-    this.hasPrev = false;
-    this.hasNext = false;
-    this._count = 0;
-
-    Object.defineProperty(this, 'x', {
-        get: function() { return this.pos.x; }
-    });
-
-    Object.defineProperty(this, 'y', {
-        get: function() { return this.pos.y; }
-    });
-
-    Object.defineProperty(this, 'countMax', {
-        get: function() { return this._preCompX.length-1; }
-    });
-
-    Object.defineProperty(this, 'count', {
-        get: function() { return this._count; },
-        set: function(value) { 
-            this._count = value;
-            if(this._count < 0) this._count = 0;
-            if(this._count > this.countMax - 1) this._count = this.countMax - 1;
-            if(this._count == 0) this.hasPrev = false; else this.hasPrev = true;
-            if(this._count == this.countMax - 1) this.hasNext = false; else this.hasNext = true;
-            //this.pos.x = this._preCompX[this._count];
-            //this.pos.y = this._preCompY[this._count];
-            this.applyLast();
-            this.updateEntity();
-        }
-    });
-
-    Object.defineProperty(this, 'samplingDistance', {
-        get: function() { return this._samplingDistance; },
-        set: function(value) { 
-            this._samplingDistance = value;
-            this._samplingDistanceSquared = this._samplingDistance * this._samplingDistance;
-        }
-    });
-
-    Object.defineProperty(this, 'path', {
-        get: function() { return this._path; },
-        set: function(value) { 
-            this._path = value;
-            this._preComputed = false;
-            this.reset();
-        }
-    });
-    
 }
 
-LinearPathSampler.prototype = {
+class LinearPathSampler {
 
-    constructor: LinearPathSampler,
+    constructor() {
 
-    dispose: function () {
+        this.entity = null;
+        this._path = null;
+        this._samplingDistanceSquared = 1;
+        this._samplingDistance = 1;
+        this._preCompX = [];
+        this._preCompY = [];
+        this.pos = new Point();
+        this.hasPrev = false;
+        this.hasNext = false;
+        this._count = 0;
+
+        /*Object.defineProperty(this, 'x', {
+            get: function() { return this.pos.x; }
+        });
+
+        Object.defineProperty(this, 'y', {
+            get: function() { return this.pos.y; }
+        });
+
+        Object.defineProperty(this, 'countMax', {
+            get: function() { return this._preCompX.length-1; }
+        });
+
+        Object.defineProperty(this, 'count', {
+            get: function() { return this._count; },
+            set: function(value) { 
+                this._count = value;
+                if(this._count < 0) this._count = 0;
+                if(this._count > this.countMax - 1) this._count = this.countMax - 1;
+                if(this._count == 0) this.hasPrev = false; else this.hasPrev = true;
+                if(this._count == this.countMax - 1) this.hasNext = false; else this.hasNext = true;
+                //this.pos.x = this._preCompX[this._count];
+                //this.pos.y = this._preCompY[this._count];
+                this.applyLast();
+                this.updateEntity();
+            }
+        });
+
+        Object.defineProperty(this, 'samplingDistance', {
+            get: function() { return this._samplingDistance; },
+            set: function(value) { 
+                this._samplingDistance = value;
+                this._samplingDistanceSquared = this._samplingDistance * this._samplingDistance;
+            }
+        });
+
+        Object.defineProperty(this, 'path', {
+            get: function() { return this._path; },
+            set: function(value) { 
+                this._path = value;
+                this._preComputed = false;
+                this.reset();
+            }
+        });*/
+        
+    }
+
+    get x () { 
+        return this.pos.x
+    }
+
+    get y () {
+        return this.pos.y
+    }
+
+    get countMax () {
+        return this._preCompX.length-1
+    }
+
+    get count () {
+        return this._count
+    }
+
+    set count ( value ) {
+        this._count = value;
+        if(this._count < 0) this._count = 0;
+        if(this._count > this.countMax - 1) this._count = this.countMax - 1;
+        if(this._count == 0) this.hasPrev = false; else this.hasPrev = true;
+        if(this._count == this.countMax - 1) this.hasNext = false; else this.hasNext = true;
+        //this.pos.x = this._preCompX[this._count];
+        //this.pos.y = this._preCompY[this._count];
+        this.applyLast();
+        this.updateEntity();
+    }
+
+    get samplingDistance () {
+        return this._samplingDistance
+    }
+
+    set samplingDistance ( value ) {
+        this._samplingDistance = value;
+        this._samplingDistanceSquared = this._samplingDistance * this._samplingDistance;
+    }
+
+    get path () {
+        return this._path
+    }
+
+    set path ( value ) {
+        this._path = value;
+        this._preComputed = false;
+        this.reset();
+    }
+
+    //////
+
+    dispose () {
 
         this.entity = null;
         this._path = null;
         this._preCompX = null;
         this._preCompY = null;
 
-    },
+    }
 
-    reset: function () {
+    reset () {
 
         if(this._path.length > 0) {
             this.pos.x = this._path[0];
@@ -4811,9 +4933,9 @@ LinearPathSampler.prototype = {
             //this._path = [];
         }
 
-    },
+    }
 
-    preCompute: function () {
+    preCompute () {
 
         this._preCompX.splice(0,this._preCompX.length);
         this._preCompY.splice(0,this._preCompY.length);
@@ -4828,9 +4950,9 @@ LinearPathSampler.prototype = {
         this.reset();
         this._preComputed = true;
 
-    },
+    }
 
-    prev: function () {
+    prev () {
 
         if(!this.hasPrev) return false;
         this.hasNext = true;
@@ -4844,12 +4966,12 @@ LinearPathSampler.prototype = {
             this.updateEntity();
             return true;
         }
-        var remainingDist;
-        var dist;
+        let remainingDist;
+        let dist;
         remainingDist = this._samplingDistance;
         while(true) {
-            var pathPrev = this._path[this._iPrev];
-            var pathPrev1 = this._path[this._iPrev + 1];
+            let pathPrev = this._path[this._iPrev];
+            let pathPrev1 = this._path[this._iPrev + 1];
             dist = SquaredSqrt(this.pos.x - pathPrev,this.pos.y - pathPrev1);
             if(dist < remainingDist) {
                 remainingDist -= dist;
@@ -4873,9 +4995,9 @@ LinearPathSampler.prototype = {
             return true;
         }
 
-    },
+    }
 
-    next: function () {
+    next () {
 
         if(!this.hasNext) return false;
         this.hasPrev = true;
@@ -4888,12 +5010,12 @@ LinearPathSampler.prototype = {
             this.updateEntity();
             return true;
         }
-        var remainingDist;
-        var dist;
+        let remainingDist;
+        let dist;
         remainingDist = this._samplingDistance;
         while(true) {
-            var pathNext = this._path[this._iNext];
-            var pathNext1 = this._path[this._iNext + 1];
+            let pathNext = this._path[this._iNext];
+            let pathNext1 = this._path[this._iNext + 1];
             dist = SquaredSqrt(this.pos.x - pathNext,this.pos.y - pathNext1);
             if(dist < remainingDist) {
                 remainingDist -= dist;
@@ -4919,20 +5041,26 @@ LinearPathSampler.prototype = {
             return true;
         }
 
-    },
+    }
 
-    applyLast: function () {
+    applyLast () {
 
         this.pos.set(this._preCompX[this._count], this._preCompY[this._count]);
 
-    },
+    }
 
-    updateEntity: function () {
+    updateEntity () {
 
-        if(this.entity == null) return;
-        this.entity.angle = Math.atan2( this.pos.y - this.entity.position.y, this.pos.x - this.entity.position.x );//*_Math.todeg;
-        this.entity.direction.angular( this.entity.angle );
+        if( this.entity === null ) return;
+        //this.entity.angle = Math.atan2( this.pos.y - this.entity.position.y, this.pos.x - this.entity.position.x );//*_Math.todeg;
+
+        
+        this.entity.distance = this.entity.position.distanceTo( this.pos );
+        //console.log(this.entity.distance)
+        if( this.entity.distance > 0.01 ) this.entity.angle = this.entity.position.angleTo( this.pos );
+        this.entity.direction.angular( this.entity.angle ).mul(this.entity.distance);
         this.entity.position.copy( this.pos );
+        //this.entity.angle = this.entity.position.angle()
 
         //console.log(this.entity.direction)
 
@@ -4940,38 +5068,38 @@ LinearPathSampler.prototype = {
         //this.entity.y = this.pos.y;
     }
 
-};
-
-function FieldOfView ( entity, world ) {
-
-    this.entity = entity || null;
-    this.world = world || null;
-    //this._debug = false;
 }
 
-FieldOfView.prototype = {
+//export { LinearPathSampler };
 
-    constructor: FieldOfView,
+class FieldOfView {
 
-    isInField: function ( targetEntity ) {
+    constructor ( entity, world ) {
+
+        this.entity = entity || null;
+        this.world = world || null;
+        //this._debug = false;
+    }
+
+    isInField ( targetEntity ) {
 
         if (!this.world) return;//throw new Error("Mesh missing");
         if (!this.entity) return;//throw new Error("From entity missing");
 
         this.mesh = this.world.getMesh();
 
-        var pos = this.entity.position;
-        var direction = this.entity.direction;
-        var target = targetEntity.position;
+        let pos = this.entity.position;
+        let direction = this.entity.direction;
+        let target = targetEntity.position;
         
-        var radius = this.entity.radiusFOV;
-        var angle = this.entity.angleFOV;
+        let radius = this.entity.radiusFOV;
+        let angle = this.entity.angleFOV;
         
-        //var targetX = targetEntity.x;
-        //var targetY = targetEntity.y;
-        var targetRadius = targetEntity.radius;
+        //let targetX = targetEntity.x;
+        //let targetY = targetEntity.y;
+        let targetRadius = targetEntity.radius;
         
-        var distSquared = Squared( pos.x - target.x, pos.y - target.y );//(posX-targetX)*(posX-targetX) + (posY-targetY)*(posY-targetY);
+        let distSquared = Squared( pos.x - target.x, pos.y - target.y );//(posX-targetX)*(posX-targetX) + (posY-targetY)*(posY-targetY);
         
         // if target is completely outside field radius
         if ( distSquared >= (radius + targetRadius)*(radius + targetRadius) ){
@@ -4984,20 +5112,20 @@ FieldOfView.prototype = {
             return true;
         }*/
         
-        //var leftTargetX, leftTargetY, rightTargetX, rightTargetY, leftTargetInField, rightTargetInField;
+        //let leftTargetX, leftTargetY, rightTargetX, rightTargetY, leftTargetInField, rightTargetInField;
 
-        var leftTarget = new Point();
-        var rightTarget = new Point();
-        var leftTargetInField, rightTargetInField;
+        let leftTarget = new Point();
+        let rightTarget = new Point();
+        let leftTargetInField, rightTargetInField;
         
         // we consider the 2 cicrles intersections
-        var  result = [];
+        let  result = [];
         if ( Geom2D.intersections2Circles(pos, radius, target, targetRadius, result) ){
             leftTarget.set(result[0], result[1]);
             rightTarget.set(result[2], result[3]);
         }
 
-        var mid = pos.clone().add(target).mul(0.5);
+        let mid = pos.clone().add(target).mul(0.5);
         
         if( result.length == 0 || Squared(mid.x-target.x, mid.y-target.y) < Squared(mid.x-leftTarget.x, mid.y-leftTarget.y) ){
             // we consider the 2 tangents from field center to target
@@ -5014,21 +5142,21 @@ FieldOfView.prototype = {
             this._debug.graphics.drawCircle(rightTargetX, rightTargetY, 2);
         }*/
         
-        var dotProdMin = Math.cos( this.entity.angleFOV*0.5 );
+        let dotProdMin = Math.cos( this.entity.angleFOV*0.5 );
 
         // we compare the dots for the left point
-        var left = leftTarget.clone().sub(pos);
-        var lengthLeft = Math.sqrt( left.x*left.x + left.y*left.y );
-        var dotLeft = (left.x/lengthLeft)*direction.x + (left.y/lengthLeft)*direction.y;
+        let left = leftTarget.clone().sub(pos);
+        let lengthLeft = Math.sqrt( left.x*left.x + left.y*left.y );
+        let dotLeft = (left.x/lengthLeft)*direction.x + (left.y/lengthLeft)*direction.y;
         // if the left point is in field
         if (dotLeft > dotProdMin) leftTargetInField = true;
         else leftTargetInField = false;
         
         
         // we compare the dots for the right point
-        var right = rightTarget.clone().sub(pos);
-        var lengthRight = Math.sqrt( right.x*right.x + right.y*right.y );
-        var dotRight = (right.x/lengthRight)*direction.x + (right.y/lengthRight)*direction.y;
+        let right = rightTarget.clone().sub(pos);
+        let lengthRight = Math.sqrt( right.x*right.x + right.y*right.y );
+        let dotRight = (right.x/lengthRight)*direction.x + (right.y/lengthRight)*direction.y;
         // if the right point is in field
         if (dotRight > dotProdMin) rightTargetInField = true;
         else rightTargetInField = false;
@@ -5036,11 +5164,9 @@ FieldOfView.prototype = {
         
         // if the left and right points are outside field
         if (!leftTargetInField && !rightTargetInField){
-            var pdir = pos.clone().add(direction);
+            let pdir = pos.clone().add(direction);
             // we must check if the Left/right points are on 2 different sides
-            if ( Geom2D.getDirection(pos, pdir, leftTarget) === 1 && Geom2D.getDirection(pos, pdir, rightTarget) === -1 ){
-                //trace("the Left/right points are on 2 different sides"); 
-            }else{
+            if ( Geom2D.getDirection(pos, pdir, leftTarget) === 1 && Geom2D.getDirection(pos, pdir, rightTarget) === -1 );else {
                 // we abort : target is not in field
                 return false;
             }
@@ -5048,16 +5174,16 @@ FieldOfView.prototype = {
         
         // we init the window
         if ( !leftTargetInField || !rightTargetInField ){
-            var p = new Point();
-            var dirAngle;
+            let p = new Point();
+            let dirAngle;
             dirAngle = Math.atan2( direction.y, direction.x );
             if ( !leftTargetInField ){
-                var leftField = new Point( Math.cos(dirAngle - angle*0.5), Math.sin(dirAngle - angle*0.5)).add(pos);
+                let leftField = new Point( Math.cos(dirAngle - angle*0.5), Math.sin(dirAngle - angle*0.5)).add(pos);
                 Geom2D.intersections2segments(pos, leftField , leftTarget, rightTarget, p, null, true);
                 leftTarget = p.clone();
             }
             if ( !rightTargetInField ){
-                var rightField = new Point( Math.cos(dirAngle + angle*0.5), Math.sin(dirAngle + angle*0.5)).add(pos);
+                let rightField = new Point( Math.cos(dirAngle + angle*0.5), Math.sin(dirAngle + angle*0.5)).add(pos);
                 Geom2D.intersections2segments(pos, rightField , leftTarget, rightTarget, p, null, true);
                 rightTarget = p.clone();
             }
@@ -5067,14 +5193,14 @@ FieldOfView.prototype = {
         // now we have a triangle called the window defined by: posX, posY, rightTargetX, rightTargetY, leftTargetX, leftTargetY
         
         // we set a dictionnary of faces done
-        var facesDone = new Dictionary( 0 );
+        let facesDone = new Dictionary( 0 );
         // we set a dictionnary of edges done
-        var edgesDone = new Dictionary( 0 );
+        let edgesDone = new Dictionary( 0 );
         // we set the window wall
-        var wall = [];
+        let wall = [];
         // we localize the field center
-        var startObj = Geom2D.locatePosition( pos, this.mesh );
-        var startFace;
+        let startObj = Geom2D.locatePosition( pos, this.mesh );
+        let startFace;
 
         if ( startObj.type == 2 ) startFace = startObj;
         else if ( startObj.type == 1  ) startFace = startObj.leftFace;
@@ -5082,17 +5208,17 @@ FieldOfView.prototype = {
         
         
         // we put the face where the field center is lying in open list
-        var openFacesList = [];
-        var openFaces = new Dictionary( 0 );
+        let openFacesList = [];
+        let openFaces = new Dictionary( 0 );
         openFacesList.push(startFace);
         openFaces[startFace] = true;
         
-        var currentFace, currentEdge, s1, s2;
-        var p1 = new Point();
-        var p2 = new Point();
-        var param1, param2, i, index1, index2;
-        var params = [];
-        var edges = [];
+        let currentFace, currentEdge, s1, s2;
+        let p1 = new Point();
+        let p2 = new Point();
+        let param1, param2, i, index1, index2;
+        let params = [];
+        let edges = [];
         // we iterate as long as we have new open facess
         while ( openFacesList.length > 0 ){
             // we pop the 1st open face: current face
@@ -5155,7 +5281,7 @@ FieldOfView.prototype = {
                             wall.splice(index1, 0, param1);
                             index2++;
                         }
-                        else{
+                        else {
                             index1--;
                         }
                         
@@ -5196,109 +5322,184 @@ FieldOfView.prototype = {
 
     }
 
-};
-
-function Entity ( s, world ) {
-
-    this.isSee = false;
-    this.isWalking = false;
-    this.isSelected = false;
-    this.isMove = false;
-
-    this.world = world;
-
-    s = s || {};
-
-    
-    this.position = new Point( s.x || 0, s.y || 0 );
-    this.direction = new Point(1,0);
-    this.radius = s.r || 10;
-    //this.radiusSquared = 10*10;
-    //this.x = this.y = 0;
-    //this.dirNormX = 1;
-    //this.dirNormY = 0;
-    this.angle = 0;
-    this.angleFOV = ( s.fov || 120 ) * torad;
-    this.radiusFOV = s.distance || 200;
-    this.testSee = s.see || false;
-
-
-    this.path = [];
-    this.tmppath = [];
-
-    this.target = new Point();
-    
-    this.newPath = false;
-
-    this.mesh = null;
-
-    this.fov = new FieldOfView( this , this.world );
-
-    this.pathSampler = new LinearPathSampler();
-    this.pathSampler.entity = this;
-    this.pathSampler.path = this.tmppath;
-    this.pathSampler.samplingDistance = s.speed || 10;
-
-    // compatibility issue
-    //this.entity = this;
-
 }
 
-Entity.prototype = {
+class Entity {
 
-    constructor: Entity,
+    constructor( s = {}, world ) {
+
+        this.isSee = false;
+        this.isWalking = false;
+        this.isSelected = false;
+        this.isMove = false;
+        this.isTurn = false;
+
+        this.isActive = false;
+
+        this.world = world;
+
+        this.turnSpeed = s.turn || 0;
+        this.turnStep = 0;
+        this.needTurn = false;
+        this.step = 0;
+
+        this.color = { r:255, g:255, b:255, a:0.75 };
+        this.color2 = { r:0, g:0, b:255, a:0.75 };
+
+        
+        this.position = new Point( s.x || 0, s.y || 0 );
+        this.direction = new Point(1,0);
+        this.distance = 0;
+        this.radius = s.r || 10;
+
+        this.angle = s.angle || 0;
+        this.angleNext = 0;
+
+        this.angleFOV = ( s.fov || 120 ) * torad;
+        this.radiusFOV = s.distance || 200;
+        this.testSee = s.see || false;
+
+        this.angledelta = 0; 
+        this.turnStep = 0;
+        this.needTurn = false;
+
+
+        this.path = [];
+        this.tmppath = [];
+
+        this.target = new Point();
+        
+        this.newPath = false;
+
+        this.mesh = null;
+
+        this.fov = new FieldOfView( this , this.world );
+
+        this.pathSampler = new LinearPathSampler();
+        this.pathSampler.entity = this;
+        this.pathSampler.path = this.tmppath;
+        this.pathSampler.samplingDistance = s.speed || 10;
+
+        // compatibility issue
+        //this.entity = this;
+
+    }
+
+    clearTarget(){
+
+        if( this.pathSampler.hasNext ){
+
+            //this.path = []
+            //this.tmppath = []
+            //this.pathSampler.reset()
+
+            this.pathSampler.hasPrev = false;
+            this.pathSampler.hasNext = false;
+            this.pathSampler._count = 0;
+
+
+        }
+
+        this.isActive = false;
+
+    }
+
+    setAngle( a ) {
+        this.angle = unwrap( a );
+    }
     
-    setTarget: function ( x, y ) {
+    setTarget( x, y, a ) {
 
         this.path = [];
         this.target.set( x, y );
         this.world.pathFinder.entity = this;
         this.world.pathFinder.findPath( this.target, this.path );
-        this.testPath();
+        return this.testPath( a )
 
-    },
+    }
 
-    testPath: function () {
+    testPath( a ) {
 
-        if( !this.path ) return;
+        if( !this.path ) return false
         if( this.path.length > 0 ){
-        //if( this.path.length > 0 ){
+
+            const startAngle = a !== undefined ? unwrap( a ) : this.angle;
+
             this.pathSampler.reset();
-            this.tmppath = [];
-            var i = this.path.length;
-            while(i--) this.tmppath[i] = this.path[i];
+            this.tmppath = [...this.path];
             this.pathSampler.path = this.tmppath;
-
-            /*this.path = [];
-            var i = this._path.length;
-            while(i--) this.path[i] = this._path[i];
-            //this.tmppath = this.path;*/
             this.newPath = true;
-        }
-    },
 
-    getPos: function () {
+            this.step = 0;
+            this.turnStep = 0;
+            
+            // auto turn 
+            
+            if( this.turnSpeed !== 0 && this.tmppath.length >= 4 ){
+
+                this.angleNext = this.position.angleTo( { x:this.tmppath[2], y:this.tmppath[3]} );
+                let diff = this.getNear( this.angleNext, startAngle );
+
+                this.turnStep = Math.floor( Math.abs( Math.round( diff*todeg )) / this.turnSpeed );
+                this.angledelta =  diff / this.turnStep;
+                this.needTurn = true;
+                this.step = 0;
+
+                if(this.angledelta === Infinity || this.angledelta === -Infinity || isNaN(this.angledelta)){ 
+                    this.angledelta = 0; 
+                    this.turnStep = 0;
+                    this.needTurn = false;
+                }
+
+                //console.log( this.angledelta, this.turnStep  )
+            }
+
+            return true;
+        }
+    }
+
+    getNear( s1, s2 ){ 
+        let r =  Math.atan2(Math.sin(s1-s2), Math.cos(s1-s2));
+        return r
+    }
+
+    getPos() {
 
         return { x:this.position.x, y:this.position.y, r:-this.angle };
 
-    },
+    }
 
-    update: function () {
+    update() {
 
         var p;
       
         if( this.pathSampler.hasNext ){
 
-            this.newPath = false;
-            this.isMove = true;
-            this.pathSampler.next();
+            if( this.needTurn ){
+
+                this.isTurn = true;
+                this.step ++;
+                this.angle += this.angledelta;
+                if ( this.step === this.turnStep ) this.needTurn = false;
+
+            } else {
+
+                this.newPath = false;
+                this.isMove = true;
+                this.isTurn = false;
+                this.pathSampler.next();
+
+            }
 
         } else {
 
             this.isMove = false;
+            this.isTurn = false;
             this.tmppath = [];
 
         }
+
+        this.isActive = this.isMove || this.isTurn ? true : false;
 
         if( this.isMove && !this.isWalking ) this.isWalking = true;
         if( !this.isMove && this.isWalking ) this.isWalking = false;
@@ -5306,246 +5507,232 @@ Entity.prototype = {
         if( this.mesh !== null ){
             p = this.getPos();
             this.mesh.position.set( p.x, 0, p.y );
-            this.mesh.rotation.y = p.r;
+            this.mesh.rotation.y = p.r-(Math.PI*0.5);
         }
 
     }
-};
+}
 
-function RectMesh ( w, h ) {
+class RectMesh extends Mesh2D {
 
-    Mesh2D.call( this, w, h );
+    constructor( w = 10, h = 10 ) {
 
-    //  v0 x---x v1
-    //     |  /|
-    //     | / |
-    //     |/  |
-    //  v3 x---x v2
+        super( w, h );
 
-    var v = [];
-    var e = [];
-    var f = [];
-    var s = [];
-    var i = 4;
+        //  v0 x---x v1
+        //     |  /|
+        //     | / |
+        //     |/  |
+        //  v3 x---x v2
 
-    while(i--){
+        const v = [];
+        const e = [];
+        const f = [];
+        const s = [];
+        let i = 4;
 
-        f.push( new Face() );
-        v.push( new Vertex() );
-        s.push( new Segment() );
-        e.push( new Edge(), new Edge(), new Edge() );
+        while(i--){
+
+            f.push( new Face() );
+            v.push( new Vertex() );
+            s.push( new Segment() );
+            e.push( new Edge(), new Edge(), new Edge() );
+
+        }
+
+        const boundShape = new Shape();   
+        const offset = 10;
+
+        v[0].pos.set(0 - offset, 0 - offset);
+        v[1].pos.set(w + offset, 0 - offset);
+        v[2].pos.set(w + offset, h + offset);
+        v[3].pos.set(0 - offset, h + offset);
+
+        v[0].setDatas(e[0]);
+        v[1].setDatas(e[2]);
+        v[2].setDatas(e[4]);
+        v[3].setDatas(e[6]);
+
+        e[0].setDatas(v[0],e[1],e[2],f[3], true, true);   // v0--v1
+        e[1].setDatas(v[1],e[0],e[7],f[0], true, true);   // v1--v0
+        e[2].setDatas(v[1],e[3],e[11],f[3],true, true);   // v1--v2
+        e[3].setDatas(v[2],e[2],e[8],f[1], true, true);   // v2--v1
+        e[4].setDatas(v[2],e[5],e[6],f[2], true, true);   // v2--v3
+        e[5].setDatas(v[3],e[4],e[3],f[1], true, true);   // v3--v2
+        e[6].setDatas(v[3],e[7],e[10],f[2],true, true);   // v3--v0
+        e[7].setDatas(v[0],e[6],e[9],f[0], true, true);   // v0--v3
+        e[8].setDatas(v[1],e[9],e[5],f[1], true, false);  // v1--v3 diagonal edge
+        e[9].setDatas(v[3],e[8],e[1],f[0], true, false);  // v3--v1 diagonal edge
+        e[10].setDatas(v[0],e[11],e[4],f[2], false, false); // v0--v2 imaginary edge
+        e[11].setDatas(v[2],e[10],e[0],f[3], false, false); // v2--v0 imaginary edge
+
+        f[0].setDatas(e[9], true); // v0-v3-v1
+        f[1].setDatas(e[8], true); // v1-v3-v2
+        f[2].setDatas(e[4], false); // v0-v2-v3
+        f[3].setDatas(e[2], false); // v0-v1-v2
+
+        // constraint relations datas
+        v[0].fromConstraintSegments.push( s[0],s[3] );
+        v[1].fromConstraintSegments.push( s[0],s[1] );
+        v[2].fromConstraintSegments.push( s[1],s[2] );
+        v[3].fromConstraintSegments.push( s[2],s[3] );
+
+        e[0].fromConstraintSegments.push( s[0] );
+        e[1].fromConstraintSegments.push( s[0] );
+        e[2].fromConstraintSegments.push( s[1] );
+        e[3].fromConstraintSegments.push( s[1] );
+        e[4].fromConstraintSegments.push( s[2] );
+        e[5].fromConstraintSegments.push( s[2] );
+        e[6].fromConstraintSegments.push( s[3] );
+        e[7].fromConstraintSegments.push( s[3] );
+
+        s[0].edges.push( e[0] ); // top
+        s[1].edges.push( e[2] ); // right
+        s[2].edges.push( e[4] ); // bottom
+        s[3].edges.push( e[6] ); // left
+        s[0].fromShape = boundShape;
+        s[1].fromShape = boundShape;
+        s[2].fromShape = boundShape;
+        s[3].fromShape = boundShape;
+        boundShape.segments.push( s[0], s[1], s[2], s[3] );
+
+        this._vertices = v;
+        this._edges = e;
+        this._faces = f;
+        this._constraintShapes.push( boundShape );
+
+        this.clipping = false;
+        this.insertConstraintShape( [ 0,0,w,0,  w,0,w,h,  w,h,0,h,  0,h,0,0 ] );
+        this.clipping = true;
 
     }
-
-    var boundShape = new Shape();    
-    var offset = 10;
-
-    v[0].pos.set(0 - offset, 0 - offset);
-    v[1].pos.set(w + offset, 0 - offset);
-    v[2].pos.set(w + offset, h + offset);
-    v[3].pos.set(0 - offset, h + offset);
-
-    v[0].setDatas(e[0]);
-    v[1].setDatas(e[2]);
-    v[2].setDatas(e[4]);
-    v[3].setDatas(e[6]);
-
-    e[0].setDatas(v[0],e[1],e[2],f[3], true, true);   // v0--v1
-    e[1].setDatas(v[1],e[0],e[7],f[0], true, true);   // v1--v0
-    e[2].setDatas(v[1],e[3],e[11],f[3],true, true);   // v1--v2
-    e[3].setDatas(v[2],e[2],e[8],f[1], true, true);   // v2--v1
-    e[4].setDatas(v[2],e[5],e[6],f[2], true, true);   // v2--v3
-    e[5].setDatas(v[3],e[4],e[3],f[1], true, true);   // v3--v2
-    e[6].setDatas(v[3],e[7],e[10],f[2],true, true);   // v3--v0
-    e[7].setDatas(v[0],e[6],e[9],f[0], true, true);   // v0--v3
-    e[8].setDatas(v[1],e[9],e[5],f[1], true, false);  // v1--v3 diagonal edge
-    e[9].setDatas(v[3],e[8],e[1],f[0], true, false);  // v3--v1 diagonal edge
-    e[10].setDatas(v[0],e[11],e[4],f[2], false, false); // v0--v2 imaginary edge
-    e[11].setDatas(v[2],e[10],e[0],f[3], false, false); // v2--v0 imaginary edge
-
-    f[0].setDatas(e[9], true); // v0-v3-v1
-    f[1].setDatas(e[8], true); // v1-v3-v2
-    f[2].setDatas(e[4], false); // v0-v2-v3
-    f[3].setDatas(e[2], false); // v0-v1-v2
-
-    // constraint relations datas
-    v[0].fromConstraintSegments.push( s[0],s[3] );
-    v[1].fromConstraintSegments.push( s[0],s[1] );
-    v[2].fromConstraintSegments.push( s[1],s[2] );
-    v[3].fromConstraintSegments.push( s[2],s[3] );
-
-    e[0].fromConstraintSegments.push( s[0] );
-    e[1].fromConstraintSegments.push( s[0] );
-    e[2].fromConstraintSegments.push( s[1] );
-    e[3].fromConstraintSegments.push( s[1] );
-    e[4].fromConstraintSegments.push( s[2] );
-    e[5].fromConstraintSegments.push( s[2] );
-    e[6].fromConstraintSegments.push( s[3] );
-    e[7].fromConstraintSegments.push( s[3] );
-
-    s[0].edges.push( e[0] ); // top
-    s[1].edges.push( e[2] ); // right
-    s[2].edges.push( e[4] ); // bottom
-    s[3].edges.push( e[6] ); // left
-    s[0].fromShape = boundShape;
-    s[1].fromShape = boundShape;
-    s[2].fromShape = boundShape;
-    s[3].fromShape = boundShape;
-    boundShape.segments.push( s[0], s[1], s[2], s[3] );
-
-    this._vertices = v;
-    this._edges = e;
-    this._faces = f;
-    this._constraintShapes.push( boundShape );
-
-    this.clipping = false;
-    this.insertConstraintShape( [ 0,0,w,0,  w,0,w,h,  w,h,0,h,  0,h,0,0 ] );
-    this.clipping = true;
 
 }
 
-RectMesh.prototype = Object.create( Mesh2D.prototype );
+const ShapeSimplifier = ( coords, epsilon = 1 ) => {
 
-var BitmapObject = {};
-
-BitmapObject.buildFromBmpData = function( pixel, precision, color ) {
-
-    if( color !== undefined ) Potrace.setColor( color );
-    precision = precision || 1;
-
-    var i, j, lng, lng2;
-    
-    // OUTLINES STEP-LIKE SHAPES GENERATION
-
-    var shapes = Potrace.buildShapes( pixel );
-
-    if( precision >= 1 ) {
-
-        i = shapes.length;
-        while ( i-- ) shapes[i] = ShapeSimplifier( shapes[i], precision );
-        
+    epsilon = epsilon || 1;
+    let len = coords.length;
+    //DDLS.Debug.assertFalse((len & 1) != 0,"Wrong size",{ fileName : "ShapeSimplifier.hx", lineNumber : 18, className : "DDLS.ShapeSimplifier", methodName : "simplify"});
+    if(len <= 4) return [].concat(coords);
+    let firstPointX = coords[0];
+    let firstPointY = coords[1];
+    let lastPointX = coords[len - 2];
+    let lastPointY = coords[len - 1];
+    let index = -1;
+    let dist = 0.;
+    let _g1 = 1;
+    let _g = len >> 1;
+    while(_g1 < _g) {
+        let i = _g1++;
+        let currDist = Geom2D.distanceSquaredPointToSegment( new Point(coords[i << 1],coords[(i << 1) + 1]), new Point(firstPointX,firstPointY), new Point(lastPointX,lastPointY) );
+        //let currDist = DDLS.Geom2D.distanceSquaredPointToSegment(coords[i << 1],coords[(i << 1) + 1],firstPointX,firstPointY,lastPointX,lastPointY);
+        if(currDist > dist) {
+            dist = currDist;
+            index = i;
+        }
     }
-
-    // OPTIMIZED POLYGONS GENERATION FROM GRAPH  OF POTENTIAL SEGMENTS GENERATION
-
-    lng = shapes.length;
-    var polygons = new Array( lng );
-    
-    for ( i = 0; i < lng; i++ ){ 
-
-        polygons[i] = Potrace.buildPolygon( Potrace.buildGraph( shapes[i] ) );
-
-    }
-
-    // OBJECT GENERATION
-
-    var obj = new Object2D();
-
-    lng = polygons.length;
-
-    for ( i = 0; i < lng; i++ ) {
-
-        lng2 = polygons[i].length - 2;
-
-        for ( j = 0; j < lng2; j += 2 ) obj.coordinates.push( polygons[i][j], polygons[i][j+1], polygons[i][j+2], polygons[i][j+3] );
-
-        obj.coordinates.push( polygons[i][0], polygons[i][1], polygons[i][j], polygons[i][j+1] );
-
-    }
-
-    return obj;
+    if(dist > epsilon * epsilon) {
+        let l1 = coords.slice(0,(index << 1) + 2);
+        let l2 = coords.slice(index << 1);
+        let r1 = ShapeSimplifier(l1,epsilon);
+        let r2 = ShapeSimplifier(l2,epsilon);
+        let rs = r1.slice(0,r1.length - 2).concat(r2);
+        return rs;
+    } else return [firstPointX,firstPointY,lastPointX,lastPointY];
 
 };
 
-var BitmapMesh = {};
+class BitmapMesh {
 
-BitmapMesh.buildFromBmpData = function ( pixel, precision, color ) {
+    static buildFromBmpData ( pixel, precision = 1, color ) {
 
-    if( color !== undefined ) Potrace.setColor( color );
-    precision = precision || 1;
+        if( color !== undefined ) Potrace.setColor( color );
+        precision = precision || 1;
 
-    var i, j, lng, lng2;
+        let optimised = precision >= 1;
 
-    // OUTLINES STEP-LIKE SHAPES GENERATION
+        // OUTLINES STEP-LIKE SHAPES GENERATION
 
-    var shapes = Potrace.buildShapes( pixel );
-
-    if( precision >= 1 ) {
-
-        i = shapes.length;
-        while ( i-- ) shapes[i] = ShapeSimplifier( shapes[i], precision );
+        const shapes = Potrace.buildShapes( pixel );
         
+
+        // OPTIMIZED POLYGONS GENERATION FROM GRAPH OF POTENTIAL SEGMENTS GENERATION
+        // MESH GENERATION
+
+        let i = shapes.length, j, poly, n = 0, n2 = 0; 
+
+        const mesh = new RectMesh( pixel.width, pixel.height );
+
+        while( i-- ){
+
+            if( optimised ) shapes[n] = ShapeSimplifier( shapes[n], precision );
+
+            poly = Potrace.buildPolygon( Potrace.buildGraph( shapes[n] ) );
+            
+            j = (poly.length - 2) * 0.5;
+            n2 = 0;
+            while(j--){
+                mesh.insertConstraintSegment( poly[n2], poly[n2+1], poly[n2+2], poly[n2+3] );
+                n2 += 2;
+            }
+
+            mesh.insertConstraintSegment( poly[0], poly[1], poly[n2], poly[n2+1] );
+
+            /*
+            lng = poly.length - 2;
+            for ( j = 0; j < lng; j += 2 ) mesh.insertConstraintSegment( poly[j], poly[j+1], poly[j+2], poly[j+3] )
+            mesh.insertConstraintSegment( poly[0], poly[1], poly[j], poly[j+1] )
+            */
+
+            n++;
+
+        }
+
+        return mesh
+
     }
-
-    // OPTIMIZED POLYGONS GENERATION FROM GRAPH  OF POTENTIAL SEGMENTS GENERATION
-
-    lng = shapes.length;
-    var polygons = new Array( lng );
-    
-    for ( i = 0; i < lng; i++ ){ 
-
-        polygons[i] = Potrace.buildPolygon( Potrace.buildGraph( shapes[i] ) );
-
-    }
-
-    // MESH GENERATION
-
-    var mesh = new RectMesh( pixel.width, pixel.height );
-    lng = polygons.length;
-
-    for ( i = 0; i < lng; i++ ) {
-
-        lng2 = polygons[i].length - 2;
-
-        for ( j = 0; j < lng2; j += 2 ) mesh.insertConstraintSegment( polygons[i][j], polygons[i][j+1], polygons[i][j+2], polygons[i][j+3] );
-
-        mesh.insertConstraintSegment( polygons[i][0], polygons[i][1], polygons[i][j], polygons[i][j+1] );
-
-    }
-
-    return mesh;
-
-};
-
-function World ( w, h ) {
-
-    IDX.reset();
-
-    this.heroes = [];
-    this.shapes = [];
-    this.segments = [];
-    this.objects = [];
-    
-    this.w = w || 512;
-    this.h = h || 512;
-
-    this.mesh = new RectMesh( this.w, this.h );
-
-    this.pathFinder = new PathFinder();
-    this.pathFinder.mesh = this.mesh;
 
 }
 
-World.prototype = {
+//https://github.com/hxDaedalus/hxDaedalus/tree/master/src/hxDaedalus
 
-    constructor: World,
+class World {
 
-    getMesh: function () {
+    constructor ( w = 512, h = 512 ) {
 
-        return this.mesh;
+        IDX.reset();
 
-    },
+        this.heroes = [];
+        this.shapes = [];
+        this.segments = [];
+        this.objects = [];
+        
+        this.w = w;
+        this.h = h;
 
-    update: function () {
+        this.mesh = new RectMesh( this.w, this.h );
 
-        var lng = this.heroes.length;
+        this.pathFinder = new PathFinder();
+        this.pathFinder.mesh = this.mesh;
 
-        var i = lng, j, h;
+    }
+
+    getMesh() {
+
+        return this.mesh
+
+    }
+
+    update() {
+
+        let lng = this.heroes.length;
+
+        let i = lng, j, h;
 
         while( i-- ){
 
             h = this.heroes[i];
-
             h.update();
 
             if(h.testSee){
@@ -5560,34 +5747,33 @@ World.prototype = {
 
         }
 
-    },
+    }
 
-    updateMesh: function () {
+    updateMesh() {
 
        this.mesh.updateObjects();
 
-    },
+    }
     
-    add: function ( o ) {
+    add( o ) {
 
         this.mesh.insertObject(o);
         this.objects.push(o);
 
-    },
+    }
 
-    addHeroe: function ( s ) {
+    addHeroe( s ) {
 
-        //var h = new Heroe( s, this );
-        var h = new Entity( s, this );
+        let h = new Entity( s, this );
         this.heroes.push( h );
-        return h;
+        return h
         
-    },
+    }
 
-    addObject: function ( s ) {
+    addObject( s ) {
 
         s = s || {};
-        var o = new Object2D();
+        let o = new Object2D();
         o.coordinates = s.coord || [-1,-1,1,-1,  1,-1,1,1,  1,1,-1,1,  -1,1,-1,-1];
         o.position(s.x || 1,s.y || 1);
         o.scale(s.w || 1, s.h || 1);
@@ -5596,11 +5782,11 @@ World.prototype = {
 
         this.mesh.insertObject(o);
         this.objects.push(o);
-        return o;
+        return o
 
-    },
+    }
 
-    reset: function ( w, h ) {
+    reset( w, h ) {
 
         this.mesh.dispose();
         if(w) this.w = w;
@@ -5608,36 +5794,32 @@ World.prototype = {
         this.mesh = new RectMesh( this.w, this.h );
         this.pathFinder.mesh = this.mesh;
     
-    },
+    }
 
-    rebuild: function ( mesh ) {
+    rebuild( mesh ) {
 
         this.mesh.clear( true );
         if( mesh !== undefined ) this.mesh = mesh;
         else this.mesh = new RectMesh( this.w, this.h );
         this.pathFinder.mesh = this.mesh;
         //this.mesh._objects = [];
-        var i = this.objects.length;
+        let i = this.objects.length;
         while(i--){
             this.objects[i]._constraintShape = null;
             this.mesh.insertObject(this.objects[i]);
         }
 
-    },
+    }
 
-    addBitmapZone: function ( o ) {
-
-        o = o || {};
+    addBitmapZone( o = {} ) {
 
         if( o.url ){ // by image url
 
-            var img = document.createElement( 'img' );
+            let img = document.createElement( 'img' );
 
             img.onload = function(){
 
                 o.pixel = fromImageData( img );
-                o.w = img.width;
-                o.h = img.height;
                 this.updateBitmapZone( o );
 
             }.bind( this );
@@ -5648,28 +5830,23 @@ World.prototype = {
 
         if( o.canvas ){ // by canvas 
 
-            o.w = o.canvas.width;
-            o.h = o.canvas.height;
-            o.pixel = fromImageData( null, o.canvas.getContext('2d').getImageData( 0, 0, o.w, o.h ) );
+            let w = o.canvas.width;
+            let h = o.canvas.height;
+            o.pixel = fromImageData( null, o.canvas.getContext('2d').getImageData( 0, 0, w, h ), w, h );
             this.updateBitmapZone( o );
 
         }
 
         if( o.img ){ // by direct image
 
-            o.w = o.img.width;
-            o.h = o.img.height;
             o.pixel = fromImageData( o.img );
             this.updateBitmapZone( o );
 
         }
 
-    },
+    }
 
-    updateBitmapZone: function ( o ) {
-
-        o = o || {};
-
+    updateBitmapZone( o = {} ) {
         
         this.mesh.dispose();
         this.mesh = BitmapMesh.buildFromBmpData( o.pixel, o.precision, o.color );
@@ -5677,135 +5854,181 @@ World.prototype = {
         
 
         /*
-        var obj = BitmapObject.buildFromBmpData( o.pixel, o.precision, o.color );
+        let obj = BitmapObject.buildFromBmpData( o.pixel, o.precision, o.color );
         obj._constraintShape = null;
         this.reset( o.w, o.h );
         this.mesh.insertObject( obj );
         //this.add( obj );
         */
 
-        var view = Main.get();
+        let view = Main.get();
         if( view ) view.drawMesh( this.mesh );
 
     }
     
+}
 
+class CircleMesh {
 
-};
-
-function CircleMesh ( x, y, r, n ) {
-
-    r = r || 100;
-    x = x || r;
-    y = y || r;
-    n = n || 8;
+    constructor( x = 100, y = 100, r = 100, n = 8 ) {
     
+        let v = [];
+        let e = [];
+        let f = [];
+        let s = [];
+        let coord = [];
 
-    var v = [];
-    var e = [];
-    var f = [];
-    var s = [];
-    var coord = [];
+        let i = n;
 
-    var i = n;
+        while(i--){
+            f.push(new Face());
+            v.push(new Vertex());
+            s.push(new Segment());
+            e.push(new Edge(), new Edge(), new Edge());
+        }
 
-    while(i--){
-        f.push(new Face());
-        v.push(new Vertex());
-        s.push(new Segment());
-        e.push(new Edge(), new Edge(), new Edge());
+        let boundShape = new Shape();    
+        let offset = 10;
+        
+        let ndiv = 1/n;
+        i = 0;
+        while( i < n ) {
+
+            v[i].pos.set( x + ((r+offset) * Math.cos( TwoPI * i * ndiv)), y + ((r+offset) * Math.sin( TwoPI * i * ndiv)) );
+            v[i].setDatas(e[i*2]);
+            i++;
+
+        }
+
+        // TODO edge ? face ?
+
+        /*
+        v[0].pos.set(0 - offset,0 - offset);
+        v[1].pos.set(w + offset,0 - offset);
+        v[2].pos.set(w + offset,h + offset);
+        v[3].pos.set(0 - offset,h + offset);
+        v[0].setDatas(e[0]);
+        v[1].setDatas(e[2]);
+        v[2].setDatas(e[4]);
+        v[3].setDatas(e[6]);
+        e[0].setDatas(v[0],e[1],e[2],f[3],true,true);
+        e[1].setDatas(v[1],e[0],e[7],f[0],true,true);
+        e[2].setDatas(v[1],e[3],e[11],f[3],true,true);
+        e[3].setDatas(v[2],e[2],e[8],f[1],true,true);
+        e[4].setDatas(v[2],e[5],e[6],f[2],true,true);
+        e[5].setDatas(v[3],e[4],e[3],f[1],true,true);
+        e[6].setDatas(v[3],e[7],e[10],f[2],true,true);
+        e[7].setDatas(v[0],e[6],e[9],f[0],true,true);
+        e[8].setDatas(v[1],e[9],e[5],f[1],true,false);
+        e[9].setDatas(v[3],e[8],e[1],f[0],true,false);
+        e[10].setDatas(v[0],e[11],e[4],f[2],false,false);
+        e[11].setDatas(v[2],e[10],e[0],f[3],false,false);
+        f[0].setDatas(e[9]);
+        f[1].setDatas(e[8]);
+        f[2].setDatas(e[4],false);
+        f[3].setDatas(e[2],false);
+        v[0].fromConstraintSegments = [s[0],s[3]];
+        v[1].fromConstraintSegments = [s[0],s[1]];
+        v[2].fromConstraintSegments = [s[1],s[2]];
+        v[3].fromConstraintSegments = [s[2],s[3]];
+        e[0].fromConstraintSegments.push(s[0]);
+        e[1].fromConstraintSegments.push(s[0]);
+        e[2].fromConstraintSegments.push(s[1]);
+        e[3].fromConstraintSegments.push(s[1]);
+        e[4].fromConstraintSegments.push(s[2]);
+        e[5].fromConstraintSegments.push(s[2]);
+        e[6].fromConstraintSegments.push(s[3]);
+        e[7].fromConstraintSegments.push(s[3]);
+        s[0].edges.push(e[0]);
+        s[1].edges.push(e[2]);
+        s[2].edges.push(e[4]);
+        s[3].edges.push(e[6]);
+        s[0].fromShape = boundShape;
+        s[1].fromShape = boundShape;
+        s[2].fromShape = boundShape;
+        s[3].fromShape = boundShape;
+        boundShape.segments.push(s[0], s[1], s[2], s[3]);// = s;*/
+        /*this.tmpObj = new DDLS.Object();
+        this.tmpObj.matrix.translate(x || 0,y || 0);
+        let coordinates = [];
+        this.tmpObj.coordinates = coordinates;
+        */
+        
+        i = 0;
+        while( i < n ) {
+
+            coord.push(x+(r * Math.cos( TwoPI * i * ndiv)));
+            coord.push(y+(r * Math.sin( TwoPI * i * ndiv)));
+            coord.push(x+(r * Math.cos( TwoPI * (i + 1) * ndiv)));
+            coord.push(y+(r * Math.sin( TwoPI * (i + 1) * ndiv)));
+            i++;
+
+        }
+
+
+        let mesh = new Mesh2D( r*2, r*2 );
+        mesh._vertices = v;
+        mesh._edges = e;
+        mesh._faces = f;
+        mesh._constraintShapes.push( boundShape );
+
+        mesh.clipping = false;
+        mesh.insertConstraintShape( coord );
+        mesh.clipping = true;
+
+        return mesh;
+
     }
+}
 
-    var boundShape = new Shape();    
-    var offset = 10;
-    
-    var ndiv = 1/n;
-    i = 0;
-    while( i < n ) {
+class BitmapObject {
 
-        v[i].pos.set( x + ((r+offset) * Math.cos( TwoPI * i * ndiv)), y + ((r+offset) * Math.sin( TwoPI * i * ndiv)) );
-        v[i].setDatas(e[i*2]);
-        i++;
+    static buildFromBmpData ( pixel, precision = 1, color ) {
 
-    }
+        if( color !== undefined ) Potrace.setColor( color );
+        precision = precision || 1;
 
-    // TODO edge ? face ?
+        let optimised = precision >= 1;
+        
+        // OUTLINES STEP-LIKE SHAPES GENERATION
 
-    /*
-    v[0].pos.set(0 - offset,0 - offset);
-    v[1].pos.set(w + offset,0 - offset);
-    v[2].pos.set(w + offset,h + offset);
-    v[3].pos.set(0 - offset,h + offset);
-    v[0].setDatas(e[0]);
-    v[1].setDatas(e[2]);
-    v[2].setDatas(e[4]);
-    v[3].setDatas(e[6]);
-    e[0].setDatas(v[0],e[1],e[2],f[3],true,true);
-    e[1].setDatas(v[1],e[0],e[7],f[0],true,true);
-    e[2].setDatas(v[1],e[3],e[11],f[3],true,true);
-    e[3].setDatas(v[2],e[2],e[8],f[1],true,true);
-    e[4].setDatas(v[2],e[5],e[6],f[2],true,true);
-    e[5].setDatas(v[3],e[4],e[3],f[1],true,true);
-    e[6].setDatas(v[3],e[7],e[10],f[2],true,true);
-    e[7].setDatas(v[0],e[6],e[9],f[0],true,true);
-    e[8].setDatas(v[1],e[9],e[5],f[1],true,false);
-    e[9].setDatas(v[3],e[8],e[1],f[0],true,false);
-    e[10].setDatas(v[0],e[11],e[4],f[2],false,false);
-    e[11].setDatas(v[2],e[10],e[0],f[3],false,false);
-    f[0].setDatas(e[9]);
-    f[1].setDatas(e[8]);
-    f[2].setDatas(e[4],false);
-    f[3].setDatas(e[2],false);
-    v[0].fromConstraintSegments = [s[0],s[3]];
-    v[1].fromConstraintSegments = [s[0],s[1]];
-    v[2].fromConstraintSegments = [s[1],s[2]];
-    v[3].fromConstraintSegments = [s[2],s[3]];
-    e[0].fromConstraintSegments.push(s[0]);
-    e[1].fromConstraintSegments.push(s[0]);
-    e[2].fromConstraintSegments.push(s[1]);
-    e[3].fromConstraintSegments.push(s[1]);
-    e[4].fromConstraintSegments.push(s[2]);
-    e[5].fromConstraintSegments.push(s[2]);
-    e[6].fromConstraintSegments.push(s[3]);
-    e[7].fromConstraintSegments.push(s[3]);
-    s[0].edges.push(e[0]);
-    s[1].edges.push(e[2]);
-    s[2].edges.push(e[4]);
-    s[3].edges.push(e[6]);
-    s[0].fromShape = boundShape;
-    s[1].fromShape = boundShape;
-    s[2].fromShape = boundShape;
-    s[3].fromShape = boundShape;
-    boundShape.segments.push(s[0], s[1], s[2], s[3]);// = s;*/
-    /*this.tmpObj = new DDLS.Object();
-    this.tmpObj.matrix.translate(x || 0,y || 0);
-    var coordinates = [];
-    this.tmpObj.coordinates = coordinates;
-    */
-    
-    i = 0;
-    while( i < n ) {
+        const shapes = Potrace.buildShapes( pixel );
 
-        coord.push(x+(r * Math.cos( TwoPI * i * ndiv)));
-        coord.push(y+(r * Math.sin( TwoPI * i * ndiv)));
-        coord.push(x+(r * Math.cos( TwoPI * (i + 1) * ndiv)));
-        coord.push(y+(r * Math.sin( TwoPI * (i + 1) * ndiv)));
-        i++;
+        // OPTIMIZED POLYGONS GENERATION FROM GRAPH OF POTENTIAL SEGMENTS GENERATION
+        // OBJECT GENERATION
+        
+        let i = shapes.length, j, poly, n = 0, n2 =0; 
+
+        const obj = new Object2D();
+
+        while( i-- ){
+
+            if( optimised ) shapes[n] = ShapeSimplifier( shapes[n], precision );
+
+            poly = Potrace.buildPolygon( Potrace.buildGraph( shapes[n] ) );
+            
+            j = (poly.length - 2) * 0.5;
+            n2 = 0;
+            while(j--){
+                obj.coordinates.push( poly[n2], poly[n2+1], poly[n2+2], poly[n2+3] );
+                n2 += 2;
+            }
+
+            obj.coordinates.push( poly[0], poly[1], poly[n2], poly[n2+1] );
+
+            /*
+            lng = poly.length - 2;
+            for ( j = 0; j < lng; j += 2 ) obj.coordinates.push( poly[j], poly[j+1], poly[j+2], poly[j+3] )
+            obj.coordinates.push( poly[0], poly[1], poly[j], poly[j+1] )
+            */
+
+            n++;
+
+        }
+
+        return obj
 
     }
-
-
-    var mesh = new Mesh2D( r*2, r*2 );
-    mesh._vertices = v;
-    mesh._edges = e;
-    mesh._faces = f;
-    mesh._constraintShapes.push( boundShape );
-
-    mesh.clipping = false;
-    mesh.insertConstraintShape( coord );
-    mesh.clipping = true;
-
-    return mesh;
 
 }
 
@@ -5814,28 +6037,27 @@ function Cell ( col, row ) {
     this.visited = false;
     this.col = col;
     this.row = row;
-    var _g = [];
-    var _g2 = 0;
-    var _g1 = 4;
+    let _g = [];
+    let _g2 = 0;
+    let _g1 = 4;
     while(_g2 < _g1) {
-        var i = _g2++;
+        _g2++;
         _g.push([]);
     }
     this.walls = _g;
 
 }
 
-function GridMaze ( width, height, cols, rows ) {
+class GridMaze {
 
-    this.generate(width,height,cols,rows);
+    constructor ( width, height, cols, rows ) {
 
-}
 
-GridMaze.prototype = {
+        this.generate(width,height,cols,rows);
 
-    constructor: GridMaze,
+    }
 
-    generate: function( width, height, cols, rows ) {
+    generate ( width, height, cols, rows ) {
 
         this.tileWidth = width / cols | 0;
         this.tileHeight = height / rows | 0;
@@ -5846,26 +6068,26 @@ GridMaze.prototype = {
         this.traverseGrid();
         this.populateObject();
 
-    },
+    }
 
-    makeGrid: function () {
+    makeGrid () {
 
         this.grid = [];
-        var _g1 = 0;
-        var _g = this.cols;
+        let _g1 = 0;
+        let _g = this.cols;
         while(_g1 < _g) {
-            var c = _g1++;
+            let c = _g1++;
             this.grid[c] = [];
-            var _g3 = 0;
-            var _g2 = this.rows;
+            let _g3 = 0;
+            let _g2 = this.rows;
             while(_g3 < _g2) {
-                var r = _g3++;
-                var cell = new Cell(c,r);
+                let r = _g3++;
+                let cell = new Cell(c,r);
                 this.grid[c][r] = cell;
-                var topLeft = [c * this.tileWidth,r * this.tileHeight];
-                var topRight = [(c + 1) * this.tileWidth,r * this.tileHeight];
-                var bottomLeft = [c * this.tileWidth,(r + 1) * this.tileHeight];
-                var bottomRight = [(c + 1) * this.tileWidth,(r + 1) * this.tileHeight];
+                let topLeft = [c * this.tileWidth,r * this.tileHeight];
+                let topRight = [(c + 1) * this.tileWidth,r * this.tileHeight];
+                let bottomLeft = [c * this.tileWidth,(r + 1) * this.tileHeight];
+                let bottomRight = [(c + 1) * this.tileWidth,(r + 1) * this.tileHeight];
                 cell.walls[0] = topLeft.concat(topRight);
                 cell.walls[1] = topRight.concat(bottomRight);
                 cell.walls[2] = bottomLeft.concat(bottomRight);
@@ -5873,30 +6095,30 @@ GridMaze.prototype = {
             }
         }
 
-    },
+    }
 
-    traverseGrid: function () {
+    traverseGrid () {
 
-        var DX = [0,1,0,-1];
-        var DY = [-1,0,1,0];
-        var REVERSED_DIR = [2,3,0,1];
-        var c = this.rng.nextInRange( 0, this.cols - 1 );
-        var r = this.rng.nextInRange( 0, this.rows - 1 );
-        var cells = [this.grid[c][r]];
+        let DX = [0,1,0,-1];
+        let DY = [-1,0,1,0];
+        let REVERSED_DIR = [2,3,0,1];
+        let c = this.rng.nextInRange( 0, this.cols - 1 );
+        let r = this.rng.nextInRange( 0, this.rows - 1 );
+        let cells = [this.grid[c][r]];
         while(cells.length > 0) {
-            var idx = cells.length - 1;
-            var currCell = cells[idx];
+            let idx = cells.length - 1;
+            let currCell = cells[idx];
             currCell.visited = true;
-            var dirs = [0,1,2,3];
+            let dirs = [0,1,2,3];
             this.rng.shuffle( dirs );
-            var _g = 0;
+            let _g = 0;
             while(_g < dirs.length) {
-                var dir = dirs[_g];
+                let dir = dirs[_g];
                 ++_g;
-                var c1 = currCell.col + DX[dir];
-                var r1 = currCell.row + DY[dir];
+                let c1 = currCell.col + DX[dir];
+                let r1 = currCell.row + DY[dir];
                 if(c1 >= 0 && c1 < this.cols && r1 >= 0 && r1 < this.rows && !this.grid[c1][r1].visited) {
-                    var chosenCell = this.grid[c1][r1];
+                    let chosenCell = this.grid[c1][r1];
                     currCell.walls[dir] = [];
                     chosenCell.walls[REVERSED_DIR[dir]] = [];
                     chosenCell.visited = true;
@@ -5907,29 +6129,29 @@ GridMaze.prototype = {
             }
             if(idx >= 0) cells.splice(idx,1);
         }
-    },
+    }
 
-    populateObject: function () {
+    populateObject () {
 
         this.object = new Object2D();
-        var coords = [];
-        var _g1 = 0;
-        var _g = this.cols;
+        let coords = [];
+        let _g1 = 0;
+        let _g = this.cols;
         while(_g1 < _g) {
-            var c = _g1++;
-            var _g3 = 0;
-            var _g2 = this.rows;
+            let c = _g1++;
+            let _g3 = 0;
+            let _g2 = this.rows;
             while(_g3 < _g2) {
-                var r = _g3++;
-                var cell = this.grid[c][r];
-                var _g4 = 0;
-                var _g5 = cell.walls;
+                let r = _g3++;
+                let cell = this.grid[c][r];
+                let _g4 = 0;
+                let _g5 = cell.walls;
                 while(_g4 < _g5.length) {
-                    var wall = _g5[_g4];
+                    let wall = _g5[_g4];
                     ++_g4;
-                    var _g6 = 0;
+                    let _g6 = 0;
                     while(_g6 < wall.length) {
-                        var coord = wall[_g6];
+                        let coord = wall[_g6];
                         ++_g6;
                         coords.push(coord);
                     }
@@ -5939,40 +6161,38 @@ GridMaze.prototype = {
         this.object.coordinates = coords;
 
     }
-};
-
-function Dungeon( w, h, min, max ) {
-    //this.callback  = callback;
-    this.generate( w, h, min, max);
-    
-
 }
 
-Dungeon.prototype = {
+class Dungeon {
 
-    constructor: Dungeon,
+    constructor ( w, h, min, max ) {
 
-    generate: function ( w, h, min, max ) {
+        this.generate( w, h, min, max);
+        
+    }
+
+    generate ( w, h, min, max ) {
 
         this.w = w/10;
         this.h = h/10;
         this.rooms = [];
         this.map = [];
 
-        
-        for (var x = 0; x < this.w; x++) {
+        let i, x, y;
+
+        for (x = 0; x < this.w; x++) {
             this.map[x] = [];
-            for (var y = 0; y < this.h; y++) {
+            for (y = 0; y < this.h; y++) {
                 this.map[x][y] = 0;
             }
         }
 
-        var room_count = randInt(10, 20);
-        var min_size = min || 5;
-        var max_size = max || 15;
+        let room_count = randInt(10, 20);
+        let min_size = min || 5;
+        let max_size = max || 15;
 
-        for (var i = 0; i < room_count; i++) {
-            var room = {};
+        for (i = 0; i < room_count; i++) {
+            let room = {};
 
             room.x = randInt(1, this.w - max_size - 1);
             room.y = randInt(1, this.h - max_size - 1);
@@ -5992,14 +6212,14 @@ Dungeon.prototype = {
         this.SquashRooms();
 
         for (i = 0; i < room_count; i++) {
-            var roomA = this.rooms[i];
-            var roomB = this.FindClosestRoom(roomA);
+            let roomA = this.rooms[i];
+            let roomB = this.FindClosestRoom(roomA);
 
-            var pointA = {
+            let pointA = {
                 x: randInt(roomA.x, roomA.x + roomA.w),
                 y: randInt(roomA.y, roomA.y + roomA.h)
             };
-            var pointB = {
+            let pointB = {
                 x: randInt(roomB.x, roomB.x + roomB.w),
                 y: randInt(roomB.y, roomB.y + roomB.h)
             };
@@ -6018,19 +6238,19 @@ Dungeon.prototype = {
         }
 
         for (i = 0; i < room_count; i++) {
-            var room = this.rooms[i];
-            for (var x = room.x; x < room.x + room.w; x++) {
-                for (var y = room.y; y < room.y + room.h; y++) {
+            let room = this.rooms[i];
+            for (let x = room.x; x < room.x + room.w; x++) {
+                for (let y = room.y; y < room.y + room.h; y++) {
                     this.map[x][y] = 1;
                 }
             }
         }
 
-        for (var x = 0; x < this.w; x++) {
-            for (var y = 0; y < this.h; y++) {
+        for (x = 0; x < this.w; x++) {
+            for (y = 0; y < this.h; y++) {
                 if (this.map[x][y] == 1) {
-                    for (var xx = x - 1; xx <= x + 1; xx++) {
-                        for (var yy = y - 1; yy <= y + 1; yy++) {
+                    for (let xx = x - 1; xx <= x + 1; xx++) {
+                        for (let yy = y - 1; yy <= y + 1; yy++) {
                             if (this.map[xx][yy] == 0) this.map[xx][yy] = 2;
                         }
                     }
@@ -6039,35 +6259,37 @@ Dungeon.prototype = {
         }
 
         this.populateObject();
-    },
-    FindClosestRoom: function (room) {
-        var mid = {
+    }
+
+    FindClosestRoom (room) {
+        let mid = {
             x: room.x + (room.w / 2),
             y: room.y + (room.h / 2)
         };
-        var closest = null;
-        var closest_distance = 1000;
-        for (var i = 0; i < this.rooms.length; i++) {
-            var check = this.rooms[i];
+        let closest = null;
+        let closest_distance = 1000;
+        for (let i = 0; i < this.rooms.length; i++) {
+            let check = this.rooms[i];
             if (check == room) continue;
-            var check_mid = {
+            let check_mid = {
                 x: check.x + (check.w / 2),
                 y: check.y + (check.h / 2)
             };
-            var distance = Math.min(Math.abs(mid.x - check_mid.x) - (room.w / 2) - (check.w / 2), Math.abs(mid.y - check_mid.y) - (room.h / 2) - (check.h / 2));
+            let distance = Math.min(Math.abs(mid.x - check_mid.x) - (room.w / 2) - (check.w / 2), Math.abs(mid.y - check_mid.y) - (room.h / 2) - (check.h / 2));
             if (distance < closest_distance) {
                 closest_distance = distance;
                 closest = check;
             }
         }
         return closest;
-    },
-    SquashRooms: function () {
-        for (var i = 0; i < 10; i++) {
-            for (var j = 0; j < this.rooms.length; j++) {
-                var room = this.rooms[j];
+    }
+
+    SquashRooms () {
+        for (let i = 0; i < 10; i++) {
+            for (let j = 0; j < this.rooms.length; j++) {
+                let room = this.rooms[j];
                 while (true) {
-                    var old_position = {
+                    let old_position = {
                         x: room.x,
                         y: room.y
                     };
@@ -6082,33 +6304,32 @@ Dungeon.prototype = {
                 }
             }
         }
-    },
-    DoesCollide: function (room, ignore) {
-        for (var i = 0; i < this.rooms.length; i++) {
+    }
+
+    DoesCollide (room, ignore) {
+        for (let i = 0; i < this.rooms.length; i++) {
             if (i == ignore) continue;
-            var check = this.rooms[i];
+            let check = this.rooms[i];
             if (!((room.x + room.w < check.x) || (room.x > check.x + check.w) || (room.y + room.h < check.y) || (room.y > check.y + check.h))) return true;
         }
 
         return false;
-    },
-    populateObject : function() {
+    }
 
+    populateObject () {
         
-        //this.object = new DDLS.Object();
-        //var coords = [];
-        var canvas = document.createElement('canvas');
+        let canvas = document.createElement('canvas');
         canvas.width = this.w * 10;
         canvas.height = this.h * 10;
 
-        var scale = 10;//canvas.width / this.w;
-        var ctx = canvas.getContext('2d');
+        let scale = 10;//canvas.width / this.w;
+        let ctx = canvas.getContext('2d');
         ctx.fillStyle = '#FFF';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        for (var y = 0; y < this.h; y++) {
-            for (var x = 0; x < this.w; x++) {
-                var tile = this.map[x][y];
+        for (let y = 0; y < this.h; y++) {
+            for (let x = 0; x < this.w; x++) {
+                let tile = this.map[x][y];
                 //console.log(tile)
                 if (tile === 0) ctx.fillStyle = '#000000';
                 else if (tile === 1) ctx.fillStyle = '#FFFFFF';
@@ -6119,85 +6340,80 @@ Dungeon.prototype = {
 
 
 
-        var pixels = fromImageData(null, ctx.getImageData(0,0,this.w* 10,this.h* 10));
+        let pixels = fromImageData(null, ctx.getImageData(0,0,this.w* 10,this.h* 10), this.w* 10, this.h* 10 );
         this.object = BitmapObject.buildFromBmpData( pixels, 1.8 );
 
-        //this.callback( this.object );
-//console.log('creat', this.map )
-        //canvas.style.cssText = 'position:absolute; left:0 top:0;';
-        //document.body.appendChild( canvas );
-
     }
-};
-
-//var DDLS = DDLS || {};
-
-function SimpleView( world ) {
-
-
-
-    //this.w = w || 512;
-    //this.h = h || 512;
-
-    this.g0 = new BasicCanvas( world.w, world.h );
-    this.g = new BasicCanvas( world.w, world.h );
-
-    this.g.canvas.style.pointerEvents = 'none';
-    this.g0.canvas.style.pointerEvents = 'auto';
-
-
-
-    this.entitiesWidth = 1;
-    this.entitiesColor = {r:0, g:0, b:255, a:0.75};
-    this.entitiesColor2 = {r:255, g:255, b:255, a:0.75};
-    this.entitiesField = {r:0, g:0, b:255, a:0.1};
-    this.entitiesField2 = {r:255, g:255, b:255, a:0.1};
-    this.pathsWidth = 2;
-    this.pathsColor = {r:255, g:255, b:0, a:0.75};
-    this.verticesRadius = 1;
-    this.verticesColor = {r:255, g:120, b:0, a:0.5};
-    this.constraintsWidth = 2;
-    this.constraintsColor = {r:0, g:255, b:0, a:1};
-    this.edgesWidth = 1;
-    this.edgesColor = {r:190, g:190, b:190, a:0.25};
-    this.edgesColor2 = {r:0, g:190, b:0, a:0.25};
-    //this.graphics = new DDLS.DrawContext( canvas );
-    //this.g = this.graphics.g;
-    this.mesh_data = null;
-
-    this.domElement = this.g0.canvas;
-
-    Main.set( this );
-
 }
 
-SimpleView.prototype = {
+class SimpleView {
 
-    drawImage : function ( img, w, h ) {
+    constructor ( world, target, css ) {
+
+        //this.w = w || 512;
+        //this.h = h || 512;
+
+        this.g0 = new BasicCanvas( world.w, world.h, target, css );
+        this.g = new BasicCanvas( world.w, world.h, target, css );
+
+        this.g.canvas.style.pointerEvents = 'none';
+        this.g0.canvas.style.pointerEvents = 'auto';
+
+
+
+        this.entitiesWidth = 2;
+        this.entitiesColor = {r:0, g:0, b:255, a:0.75};
+        this.entitiesColor2 = {r:255, g:255, b:255, a:0.75};
+        this.entitiesField = {r:0, g:0, b:255, a:0.1};
+        this.entitiesField2 = {r:255, g:255, b:255, a:0.1};
+        this.pathsWidth = 2;
+        this.pathsColor = {r:255, g:255, b:0, a:0.75};
+        this.verticesRadius = 1;
+        this.verticesColor = {r:255, g:120, b:0, a:0.5};
+        this.constraintsWidth = 2;
+        this.constraintsColor = {r:0, g:255, b:0, a:1};
+        this.edgesWidth = 1;
+        this.edgesColor = {r:190, g:190, b:190, a:0.25};
+        this.edgesColor2 = {r:0, g:190, b:0, a:0.25};
+        //this.graphics = new DDLS.DrawContext( canvas );
+        //this.g = this.graphics.g;
+        this.mesh_data = null;
+
+        this.domElement = this.g0.canvas;
+
+        this.extraEdge = function( p1, p2 ){};
+
+        Main.set( this );
+
+    }
+
+
+    drawImage ( img, w, h ) {
 
         this.g0.drawImage( img, w, h );
 
-    },
+    }
 
-    drawMesh: function ( mesh, clean ) {
+    drawMesh ( mesh, clean ) {
 
-        var g = this.g0;
+        let g = this.g0;
 
-        var c = clean === undefined ? false : clean;
+        let c = clean === undefined ? false : clean;
         if(c) this.g0.clear();
 
         mesh.compute_Data();
 
-        var edge = mesh.AR_edge;
-        var vertex = mesh.AR_vertex;
+        let edge = mesh.AR_edge;
+        let vertex = mesh.AR_vertex;
 
-        var i = edge.length;
-        var n = 0;
+        let i = edge.length;
+        let n = 0;
         while(i--){
             n = i * 5;
             if(edge[n+4]) {
                 g.lineStyle( this.constraintsWidth, this.constraintsColor );
-            }else{
+                this.extraEdge( [edge[n],edge[n+1]], [ edge[n+2],edge[n+3] ] );
+            }else {
                 //if( edge[n+4] ) this.g.lineStyle( this.edgesWidth, this.edgesColor2 );
                 //else 
                 g.lineStyle( this.edgesWidth, this.edgesColor );
@@ -6217,15 +6433,15 @@ SimpleView.prototype = {
             g.drawCircle(vertex[n],vertex[n+1],this.verticesRadius);
             g.endFill();
         }
-    },
+    }
 
-    drawEntity: function( entity, clean ) {
+    drawEntity( entity, clean ) {
 
-        var g = this.g;
+        let g = this.g;
 
-        var see = entity.isSee;
+        let see = entity.isSee;
 
-        var c = clean === undefined ? false : clean;
+        let c = clean === undefined ? false : clean;
         if(c) g.clear();
 
         if( see ) g.beginFill( this.entitiesField );
@@ -6235,91 +6451,103 @@ SimpleView.prototype = {
         g.lineTo( entity.position.x, entity.position.y );
         g.endFill();
 
-        //g.lineStyle( this.entitiesWidth, this.entitiesColor );
-        if( see ) g.beginFill(this.entitiesColor);
-        else g.beginFill(this.entitiesColor2);
+        g.beginFill( see ? entity.color2 : entity.color );
+
+        g.lineStyle( this.entitiesWidth, this.entitiesColor2 );
+       // g.stroke();
+       // if( see ) 
+        //else g.beginFill(this.entitiesColor2);
         g.drawCircle( entity.position.x, entity.position.y, entity.radius );
         //console.log(entity.direction)
+        g.stroke();
         g.endFill();
+        //
 
         
-    },
+    }
 
     /*drawEntities: function( vEntities, clean ) {
 
-        var c = clean === undefined ? false : clean;
+        let c = clean === undefined ? false : clean;
         if(c) this.g.clear();
 
-        var _g1 = 0;
-        var _g = vEntities.length;
+        let _g1 = 0;
+        let _g = vEntities.length;
         while(_g1 < _g) {
-            var i = _g1++;
+            let i = _g1++;
             this.drawEntity( vEntities[i], false );
         }
     },*/
 
-    drawPath: function( path, clean ) {
+    drawPath ( path, clean ) {
 
-        var g = this.g;
+        let g = this.g;
 
-        var c = clean === undefined ? false : clean;
+        let c = clean === undefined ? false : clean;
         if(c) this.g.clear();
 
         if(path.length === 0) return;
         g.lineStyle( this.pathsWidth, this.pathsColor );
         g.moveTo( path[0], path[1] );
-        var i = 2;
+        let i = 2;
         while(i < path.length) {
             g.lineTo(path[i],path[i + 1]);
             //g.moveTo(path[i],path[i + 1]);
             i += 2;
         }
         g.stroke();
-    },
+    }
 
-    clear : function(){
+    clear (){
 
         this.g.clear();
 
     }
 
-};
+}
+
 
 // CANVAS
 
-function BasicCanvas( w, h ) {
+class BasicCanvas {
 
-    this.w = w || 200;
-    this.h = h || 200;
+    constructor ( w, h, target, css ) {
 
-    this.canvas = document.createElement("canvas");
-    this.canvas.width = this.w;
-    this.canvas.height = this.h;
-    this.ctx = this.canvas.getContext("2d");
+        this.w = w || 200;
+        this.h = h || 200;
 
-    this.canvas.style.cssText = 'position:absolute; left:50%; top:50%; margin-left:'+(-this.w*0.5)+'px; margin-top:'+(-this.h*0.5)+'px;';
+        this.canvas = document.createElement("canvas");
+        this.canvas.width = this.w;
+        this.canvas.height = this.h;
+        this.ctx = this.canvas.getContext("2d");
 
-    document.body.appendChild( this.canvas );
+        this.canvas.style.cssText = css || 'position:absolute; left:50%; top:50%; margin-left:'+(-this.w*0.5)+'px; margin-top:'+(-this.h*0.5)+'px;';
 
-}
 
-BasicCanvas.prototype = {
+        if( target === undefined ) target = document.body;
 
-    clear: function() {
+        target.appendChild( this.canvas );
+
+    }
+
+    clear () {
         this.ctx.clearRect(0,0,this.w,this.h);
-    },
-    drawImage : function(img, w, h){
+    }
+    
+    drawImage (img, w, h){
         this.ctx.drawImage( img, 0, 0, w || this.w, h || this.h );
-    },
-    drawCircle: function(x,y,radius, s, e) {
+    }
+
+    drawCircle (x,y,radius, s, e) {
         s = s || 0;
         e = e || TwoPI;
         this.ctx.beginPath();
         this.ctx.arc(x,y,radius, s, e, false);
         //this.ctx.stroke();
         //this.ctx.closePath();
-    },
-    drawRect: function(x,y,width,height) {
+    }
+
+    drawRect (x,y,width,height) {
         this.ctx.beginPath();
         this.ctx.moveTo(x,y);
         this.ctx.lineTo(x + width,y);
@@ -6327,45 +6555,52 @@ BasicCanvas.prototype = {
         this.ctx.lineTo(x,y + height);
         this.ctx.stroke();
         this.ctx.closePath();
-    },
-    lineStyle: function(wid,c) {
+    }
+
+    lineStyle (wid,c) {
 
         this.ctx.lineWidth = wid;
         this.ctx.strokeStyle = "rgba(" + c.r + "," + c.g + "," + c.b + "," + c.a + ")";
 
-    },
-    moveTo: function(x,y) {
+    }
+
+    moveTo (x,y) {
         this.ctx.beginPath();
         this.ctx.moveTo(x,y);
-    },
-    lineTo: function(x,y) {
+    }
+
+    lineTo (x,y) {
         this.ctx.lineTo(x,y);
         //this.ctx.stroke();
        // this.ctx.closePath();
         
-    },
-    stroke: function() {
+    }
+
+    stroke () {
         this.ctx.stroke();
         //this.ctx.stroke();
        // this.ctx.closePath();
         
-    },
-    closePath: function() {
+    }
+
+    closePath () {
         this.ctx.closePath();
         //this.ctx.stroke();
        // this.ctx.closePath();
         
-    },
-    beginFill: function(c) {
+    }
+
+    beginFill(c) {
         this.ctx.fillStyle = "rgba(" + c.r + "," + c.g + "," + c.b + "," + c.a + ")";
         this.ctx.beginPath();
-    },
-    endFill: function() {
+    }
+
+    endFill() {
         //this.ctx.stroke();
         this.ctx.closePath();
         this.ctx.fill();
     }
-};
+}
 
 // DRAW CONTEXT
 /*
@@ -6384,18 +6619,18 @@ DrawContext.prototype = {
     drawRect: function(x,y,w,h) { this.g.drawRect(x,y,w,h); }
 };*/
 
-//var TH;
+//let TH;
 
 function ThreeView( scene, world, THREE ) {
 
-    var TH = THREE;
+    let TH = THREE;
 
     this.world = world;
 
     this.maxVertices = 30000;
     this.currentVertex = 0;
 
-    var geometry = new TH.BufferGeometry();
+    let geometry = new TH.BufferGeometry();
     geometry.addAttribute('position', new TH.BufferAttribute( new Float32Array( this.maxVertices * 3 ), 3 ));
     geometry.addAttribute('color', new TH.BufferAttribute( new Float32Array( this.maxVertices * 3 ), 3 ));
     this.positions = geometry.attributes.position.array;
@@ -6411,7 +6646,7 @@ function ThreeView( scene, world, THREE ) {
     this.maxPathVertices = 1000;
     this.currentPathVertex = 0;
 
-    var geometryPath = new TH.BufferGeometry();
+    let geometryPath = new TH.BufferGeometry();
     geometryPath.addAttribute('position', new TH.BufferAttribute( new Float32Array( this.maxPathVertices * 3 ), 3 ));
     geometryPath.addAttribute('color', new TH.BufferAttribute( new Float32Array( this.maxPathVertices * 3 ), 3 ));
     this.positionsPath = geometryPath.attributes.position.array;
@@ -6436,9 +6671,9 @@ ThreeView.prototype = {
 
     collapseBuffer : function() {
 
-        var i = this.maxVertices;
-        var min = this.currentVertex;
-        var n = 0;
+        let i = this.maxVertices;
+        let min = this.currentVertex;
+        let n = 0;
         while(i>=min){
             n = i * 3;
             this.positions[n] = 0;
@@ -6452,9 +6687,9 @@ ThreeView.prototype = {
     },
     collapsePathBuffer : function() {
 
-        var i = this.maxPathVertices;
-        var min = this.currentPathVertex;
-        var n = 0;
+        let i = this.maxPathVertices;
+        let min = this.currentPathVertex;
+        let n = 0;
         while(i>=min){
             n = i * 3;
             this.positionsPath[n] = 0;
@@ -6471,7 +6706,7 @@ ThreeView.prototype = {
 
         //
 
-        //var redraw = this.world.mesh.updateObjects();
+        //let redraw = this.world.mesh.updateObjects();
         //if(redraw){
         if( this.world.mesh.isRedraw ){
             this.currentVertex = 0;
@@ -6485,7 +6720,7 @@ ThreeView.prototype = {
 
         this.world.update();
 
-        var i = this.world.heroes.length, h;
+        let i = this.world.heroes.length, h;
 
         while(i--){
 
@@ -6495,11 +6730,11 @@ ThreeView.prototype = {
             
             if( h.isSelected && h.tmppath.length > 0 ){
                 this.currentPathVertex = 0;
-                var p = this.world.heroes[i].tmppath;
+                let p = this.world.heroes[i].tmppath;
                 //if( p.length === 0 ) return;
-                var prevX = p[0];
-                var prevY = p[1];
-                var j = 2;
+                let prevX = p[0];
+                let prevY = p[1];
+                let j = 2;
 
                 while(j < p.length) {
                     this.insertPath(prevX, prevY, p[j], p[j+1], 1,0,0);
@@ -6509,7 +6744,7 @@ ThreeView.prototype = {
                 }
 
 
-                /*var j = p.length*0.25, n;
+                /*let j = p.length*0.25, n;
                 while(j--){
                     n = j*4;
                     this.insertPath(p[n], p[n+1], p[n+2], p[n+3], 1,0,0);
@@ -6527,8 +6762,8 @@ ThreeView.prototype = {
 
     insertLine : function(x1, y1, x2, y2, r, g, b) {
 
-        var i = this.currentVertex;
-        var n = i * 3;
+        let i = this.currentVertex;
+        let n = i * 3;
         this.positions[n] = x1;
         this.positions[n + 1] = 0;
         this.positions[n + 2] = y1;
@@ -6548,8 +6783,8 @@ ThreeView.prototype = {
 
     insertPath : function(x1, y1, x2, y2, r, g, b) {
 
-        var i = this.currentPathVertex;
-        var n = i * 3;
+        let i = this.currentPathVertex;
+        let n = i * 3;
         this.positionsPath[n] = x1;
         this.positionsPath[n + 1] = 0;
         this.positionsPath[n + 2] = y1;
@@ -6573,16 +6808,16 @@ Mesh2D.prototype.draw = function(){
     //console.log('meshdraw')
     this.compute_Data();
 
-    var view = Main.get();
+    let view = Main.get();
 
-    var edge = this.AR_edge;
-    var i = edge.length;
-    var n = 0;
+    let edge = this.AR_edge;
+    let i = edge.length;
+    let n = 0;
     while(i--){
         n = i * 5;
         if(edge[n+4]) {
             view.insertLine( edge[n], edge[n+1], edge[n+2], edge[n+3], 0,0,0 );
-        }else{
+        }else {
             view.insertLine( edge[n], edge[n+1], edge[n+2], edge[n+3], 0.4,0.4,0.4 );
         }
     }
@@ -6594,4 +6829,4 @@ Mesh2D.prototype.draw = function(){
 
 }*/
 
-export { Point, Matrix2D, Geom2D, Edge, Face, Vertex, Shape, Segment, Object2D, Graph, Potrace, Mesh2D, AStar, Funnel, PathFinder, PathIterator, LinearPathSampler, FieldOfView, Entity, World, RectMesh, CircleMesh, BitmapObject, BitmapMesh, GridMaze, Dungeon, SimpleView, ThreeView, REVISION, TTIER, torad, todeg, EPSILON_NORMAL, EPSILON_SQUARED, INFINITY, TwoPI, VERTEX, EDGE, FACE, NULL, Main, IDX, Debug, Log, Dictionary, rand, randInt, Squared, SquaredSqrt, nearEqual, Integral, fix, ShapeSimplifier, fromImageData };
+export { AStar, BitmapMesh, BitmapObject, CircleMesh, Debug, Dictionary, Dungeon, EDGE, EPSILON_NORMAL, EPSILON_SQUARED, Edge, Entity, FACE, Face, FieldOfView, Funnel, Geom2D, Graph, GridMaze, IDX, INFINITY, Integral, LinearPathSampler, Log, Main, Matrix2D, Mesh2D, NULL, Object2D, PathFinder, PathIterator, Point, Potrace, REVISION, RectMesh, Segment, Shape, SimpleView, Squared, SquaredSqrt, TTIER, ThreeView, TwoPI, VERTEX, Vertex, World, fix, fromImageData, nearEqual, rand, randInt, todeg, torad, unwrap };

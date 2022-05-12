@@ -1,44 +1,41 @@
-import { IDX } from '../constants';
+import { IDX } from '../constants.js';
 
-function Segment ( x, y ) {
 
-    this.id = IDX.get('segment');
-    this.edges = [];
-    this.fromShape = null;
+export class Segment {
 
-};
+    constructor ( x, y ) {
 
-Segment.prototype = {
+        this.id = IDX.get('segment');
+        this.edges = [];
+        this.fromShape = null;
 
-    constructor: Segment,
+    }
 
-    addEdge: function ( edge ) {
+    addEdge ( edge ) {
 
         if ( this.edges.indexOf(edge) === -1 && this.edges.indexOf( edge.oppositeEdge ) === -1 ) this.edges.push( edge );
 
-    },
+    }
 
-    removeEdge: function ( edge ) {
+    removeEdge ( edge ) {
 
-        var index = this.edges.indexOf( edge );
+        const index = this.edges.indexOf( edge );
         if ( index === -1 ) index = this.edges.indexOf( edge.oppositeEdge );
         if ( index !== -1 ) this.edges.splice( index, 1 );
 
-    },
+    }
 
-    dispose: function () {
+    dispose () {
 
         this.edges = null;
         this.fromShape = null;
 
-    },
+    }
 
-    toString: function () {
+    toString () {
 
         return "seg_id " + this.id;
 
     }
 
-};
-
-export { Segment };
+}

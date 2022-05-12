@@ -1,39 +1,38 @@
-import { randInt } from '../core/Tools';
-import { fromImageData } from '../core/Tools';
-import { BitmapObject } from '../factories/BitmapObject';
+import { randInt } from '../core/Tools.js';
+import { fromImageData } from '../core/Tools.js';
+import { BitmapObject } from '../factories/BitmapObject.js';
 
-function Dungeon( w, h, min, max ) {
-    //this.callback  = callback;
-    this.generate( w, h, min, max);
-    
 
-};
+export class Dungeon {
 
-Dungeon.prototype = {
+    constructor ( w, h, min, max ) {
 
-    constructor: Dungeon,
+        this.generate( w, h, min, max);
+        
+    }
 
-    generate: function ( w, h, min, max ) {
+    generate ( w, h, min, max ) {
 
         this.w = w/10;
         this.h = h/10;
         this.rooms = [];
         this.map = [];
 
-        
-        for (var x = 0; x < this.w; x++) {
+        let i, x, y
+
+        for (x = 0; x < this.w; x++) {
             this.map[x] = [];
-            for (var y = 0; y < this.h; y++) {
+            for (y = 0; y < this.h; y++) {
                 this.map[x][y] = 0;
             }
         }
 
-        var room_count = randInt(10, 20);
-        var min_size = min || 5;
-        var max_size = max || 15;
+        let room_count = randInt(10, 20);
+        let min_size = min || 5;
+        let max_size = max || 15;
 
-        for (var i = 0; i < room_count; i++) {
-            var room = {};
+        for (i = 0; i < room_count; i++) {
+            let room = {};
 
             room.x = randInt(1, this.w - max_size - 1);
             room.y = randInt(1, this.h - max_size - 1);
@@ -53,14 +52,14 @@ Dungeon.prototype = {
         this.SquashRooms();
 
         for (i = 0; i < room_count; i++) {
-            var roomA = this.rooms[i];
-            var roomB = this.FindClosestRoom(roomA);
+            let roomA = this.rooms[i];
+            let roomB = this.FindClosestRoom(roomA);
 
-            var pointA = {
+            let pointA = {
                 x: randInt(roomA.x, roomA.x + roomA.w),
                 y: randInt(roomA.y, roomA.y + roomA.h)
             };
-            var pointB = {
+            let pointB = {
                 x: randInt(roomB.x, roomB.x + roomB.w),
                 y: randInt(roomB.y, roomB.y + roomB.h)
             };
@@ -79,19 +78,19 @@ Dungeon.prototype = {
         }
 
         for (i = 0; i < room_count; i++) {
-            var room = this.rooms[i];
-            for (var x = room.x; x < room.x + room.w; x++) {
-                for (var y = room.y; y < room.y + room.h; y++) {
+            let room = this.rooms[i];
+            for (let x = room.x; x < room.x + room.w; x++) {
+                for (let y = room.y; y < room.y + room.h; y++) {
                     this.map[x][y] = 1;
                 }
             }
         }
 
-        for (var x = 0; x < this.w; x++) {
-            for (var y = 0; y < this.h; y++) {
+        for (x = 0; x < this.w; x++) {
+            for (y = 0; y < this.h; y++) {
                 if (this.map[x][y] == 1) {
-                    for (var xx = x - 1; xx <= x + 1; xx++) {
-                        for (var yy = y - 1; yy <= y + 1; yy++) {
+                    for (let xx = x - 1; xx <= x + 1; xx++) {
+                        for (let yy = y - 1; yy <= y + 1; yy++) {
                             if (this.map[xx][yy] == 0) this.map[xx][yy] = 2;
                         }
                     }
@@ -100,35 +99,37 @@ Dungeon.prototype = {
         }
 
         this.populateObject();
-    },
-    FindClosestRoom: function (room) {
-        var mid = {
+    }
+
+    FindClosestRoom (room) {
+        let mid = {
             x: room.x + (room.w / 2),
             y: room.y + (room.h / 2)
         };
-        var closest = null;
-        var closest_distance = 1000;
-        for (var i = 0; i < this.rooms.length; i++) {
-            var check = this.rooms[i];
+        let closest = null;
+        let closest_distance = 1000;
+        for (let i = 0; i < this.rooms.length; i++) {
+            let check = this.rooms[i];
             if (check == room) continue;
-            var check_mid = {
+            let check_mid = {
                 x: check.x + (check.w / 2),
                 y: check.y + (check.h / 2)
             };
-            var distance = Math.min(Math.abs(mid.x - check_mid.x) - (room.w / 2) - (check.w / 2), Math.abs(mid.y - check_mid.y) - (room.h / 2) - (check.h / 2));
+            let distance = Math.min(Math.abs(mid.x - check_mid.x) - (room.w / 2) - (check.w / 2), Math.abs(mid.y - check_mid.y) - (room.h / 2) - (check.h / 2));
             if (distance < closest_distance) {
                 closest_distance = distance;
                 closest = check;
             }
         }
         return closest;
-    },
-    SquashRooms: function () {
-        for (var i = 0; i < 10; i++) {
-            for (var j = 0; j < this.rooms.length; j++) {
-                var room = this.rooms[j];
+    }
+
+    SquashRooms () {
+        for (let i = 0; i < 10; i++) {
+            for (let j = 0; j < this.rooms.length; j++) {
+                let room = this.rooms[j];
                 while (true) {
-                    var old_position = {
+                    let old_position = {
                         x: room.x,
                         y: room.y
                     };
@@ -143,33 +144,32 @@ Dungeon.prototype = {
                 }
             }
         }
-    },
-    DoesCollide: function (room, ignore) {
-        for (var i = 0; i < this.rooms.length; i++) {
+    }
+
+    DoesCollide (room, ignore) {
+        for (let i = 0; i < this.rooms.length; i++) {
             if (i == ignore) continue;
-            var check = this.rooms[i];
+            let check = this.rooms[i];
             if (!((room.x + room.w < check.x) || (room.x > check.x + check.w) || (room.y + room.h < check.y) || (room.y > check.y + check.h))) return true;
         }
 
         return false;
-    },
-    populateObject : function() {
+    }
 
+    populateObject () {
         
-        //this.object = new DDLS.Object();
-        //var coords = [];
-        var canvas = document.createElement('canvas');
+        let canvas = document.createElement('canvas');
         canvas.width = this.w * 10;
         canvas.height = this.h * 10;
 
-        var scale = 10;//canvas.width / this.w;
-        var ctx = canvas.getContext('2d')
+        let scale = 10;//canvas.width / this.w;
+        let ctx = canvas.getContext('2d')
         ctx.fillStyle = '#FFF';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        for (var y = 0; y < this.h; y++) {
-            for (var x = 0; x < this.w; x++) {
-                var tile = this.map[x][y];
+        for (let y = 0; y < this.h; y++) {
+            for (let x = 0; x < this.w; x++) {
+                let tile = this.map[x][y];
                 //console.log(tile)
                 if (tile === 0) ctx.fillStyle = '#000000';
                 else if (tile === 1) ctx.fillStyle = '#FFFFFF';
@@ -180,15 +180,8 @@ Dungeon.prototype = {
 
 
 
-        var pixels = fromImageData(null, ctx.getImageData(0,0,this.w* 10,this.h* 10));
-        this.object = BitmapObject.buildFromBmpData( pixels, 1.8 );
-
-        //this.callback( this.object );
-//console.log('creat', this.map )
-        //canvas.style.cssText = 'position:absolute; left:0 top:0;';
-        //document.body.appendChild( canvas );
+        let pixels = fromImageData(null, ctx.getImageData(0,0,this.w* 10,this.h* 10), this.w* 10, this.h* 10 )
+        this.object = BitmapObject.buildFromBmpData( pixels, 1.8 )
 
     }
 }
-
-export { Dungeon };

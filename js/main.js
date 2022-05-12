@@ -156,14 +156,24 @@ function demo(){
 
     var i = 29;
     while(i--){
-         addHero(20 + (i*20) ,20,4);
+         addHero(20 + (i*20) ,20, 4, DDLS.rand(0, DDLS.TwoPI));
     }
+
+
+    setTimeout( function(){
+        let i = 29;
+        while(i--){
+             hero[i].setTarget( DDLS.randInt(10, 590), DDLS.randInt(10, 590) );
+        }
+    }, 3000 )
+
+    
 
    
     //h1 = world.addHeroe({x:20, y:20, r:4, speed:10});
 }
 
-function addHero(x, y, r){
+function addHero(x, y, r, a){
 
     var id = hero.length;
 
@@ -183,16 +193,17 @@ function addHero(x, y, r){
     m.material = heroModel.material.clone();
     m.scale.set(25,25,25);
     m.position.y = 7;
-    m.rotation.y = - Math.PI * 0.5;
+    //m.rotation.y = - Math.PI * 0.5;
     m.play("idle", .5);
 
-    hero[id] = world.addHeroe({x:x, y:y, r:r, speed:1});
-    heroObj[id] = new THREE.Mesh(geo, mat);
+    hero[id] = world.addHeroe({ x:x, y:y, r:r, speed:0.2, turn:2, angle:a });
+    heroObj[id] = new THREE.Mesh( geo, mat );
 
     hero[id].mesh = heroObj[id];
 
     var p = hero[id].getPos();
     hero[id].mesh.position.set( p.x, 0, p.y );
+    hero[id].mesh.rotation.order = 'YXZ'
     hero[id].mesh.rotation.y = p.r;
 
     heroObj[id].add(cont);
@@ -200,6 +211,8 @@ function addHero(x, y, r){
     scene.add(heroObj[id]);
 
 }
+
+
 
 function findTargetHero(id){
     //console.log( id, mousePos.x, mousePos.z )

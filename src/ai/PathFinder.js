@@ -1,31 +1,31 @@
-import { Log } from '../constants';
-import { AStar } from '../ai/AStar';
-import { Funnel } from '../ai/Funnel';
-import { Geom2D } from '../math/Geom2D';
+import { Log } from '../constants.js';
+import { AStar } from '../ai/AStar.js';
+import { Funnel } from '../ai/Funnel.js';
+import { Geom2D } from '../math/Geom2D.js';
 
-function PathFinder() {
 
-    this.astar = new AStar();
-    this.funnel = new Funnel();
-    this.listFaces = [];
-    this.listEdges = [];
-    this._mesh = null;
-    this.entity = null;
+export class PathFinder {
 
-    Object.defineProperty(this, 'mesh', {
+    constructor () {
 
-        get: function() { return this._mesh; },
-        set: function(value) { this._mesh = value; this.astar.mesh = value; }
+        this.astar = new AStar()
+        this.funnel = new Funnel()
+        this.listFaces = []
+        this.listEdges = []
+        this._mesh = null
+        this.entity = null
+        
+    }
 
-    });
-    
-};
+    get mesh () {
+        return this._mesh;
+    }
 
-PathFinder.prototype = {
+    set mesh ( value ) {
+        this._mesh = value; this.astar.mesh = value;
+    }
 
-    constructor: PathFinder,
-
-    dispose: function () {
+    dispose () {
 
         this._mesh = null;
         this.astar.dispose();
@@ -34,9 +34,9 @@ PathFinder.prototype = {
         this.funnel = null;
         this.listEdges = null;
         this.listFaces = null;
-    },
+    }
 
-    findPath: function( target, resultPath ) {
+    findPath( target, resultPath ) {
 
         //resultPath = [];
         resultPath.splice(0,resultPath.length);
@@ -49,7 +49,7 @@ PathFinder.prototype = {
         this.listEdges.splice(0,this.listEdges.length);
         //this.listFaces = [];
         //this.listEdges = [];
-        var start = this.entity.position;
+        let start = this.entity.position;
         this.astar.findPath( start, target, this.listFaces, this.listEdges );
         if(this.listFaces.length == 0) {
             Log("PATH LENGTH = 0 (PathFinder)");
@@ -59,6 +59,4 @@ PathFinder.prototype = {
         this.funnel.findPath( start, target, this.listFaces, this.listEdges, resultPath );
 
     }
-};
-
-export { PathFinder };
+}

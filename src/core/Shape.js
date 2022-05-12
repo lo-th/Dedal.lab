@@ -1,23 +1,20 @@
-import { IDX } from '../constants';
+import { IDX } from '../constants.js';
 
-function Shape () {
 
-    this.id = IDX.get('shape');
-    this.segments = [];
-    
-};
+export class Shape {
 
-Shape.prototype = {
+    constructor () {
 
-    constructor: Shape,
+        this.id = IDX.get('shape');
+        this.segments = [];
+        
+    }
 
-    dispose: function () {
+    dispose () {
 
         while(this.segments.length > 0) this.segments.pop().dispose();
         this.segments = null;
 
     }
 
-};
-
-export { Shape };
+}

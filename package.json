@@ -1,7 +1,7 @@
 {
   "name": "ddls",
-  "version": "1.0.1",
-  "description": "JavaScript 3D library",
+  "version": "1.0.0",
+  "description": "JavaScript pathfinder library",
   "main": "build/ddls.js",
   "repository": "lo-th/Dedal.lab",
   "jsnext:main": "build/ddls.module.js",
@@ -12,43 +12,43 @@
     "README.md",
     "build/ddls.js",
     "build/ddls.min.js",
-    "build/ddls.module.js",
-    "src",
-    "examples/js",
-    "examples/fonts"
+    "build/ddls.module.js"
   ],
   "directories": {
-    "doc": "docs",
-    "example": "examples",
-    "test": "test"
   },
   "eslintConfig": {
     "extends": "mdcs"
   },
   "scripts": {
-    "build": "rollup -c",
-    "build-uglify": "rollup -c && uglifyjs build/ddls.js -cm --preamble \"// lo-th.github.io/ddls/license\" > build/ddls.min.js",
-    "build-closure": "rollup -c && java -jar utils/build/compiler/closure-compiler-v20160713.jar --warning_level=VERBOSE --jscomp_off=globalThis --jscomp_off=checkTypes --externs utils/build/externs.js --language_in=ECMASCRIPT5_STRICT --js build/ddls.js --js_output_file build/ddls.min.js",
-    "dev": "rollup -c -w",
-    "lint": "eslint src",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "rollup -c utils/rollup.config.js",
+    "build-module": "ONLY_MODULE=true rollup -c utils/rollup.config.js",
+    "dev": "concurrently --names \"ROLLUP,HTTP\" -c \"bgBlue.bold,bgGreen.bold\" \"rollup -c utils/rollup.config.js -w -m inline\" \"servez -p 8161 --index\"",
+    "start": "concurrently --names \"ROLLUP,HTTP\" -c \"bgBlue.bold,bgGreen.bold\" \"rollup -c utils/rollup.config.js -w -m inline\" \"http-server -c-1 -p 8161 -o index.html\""
   },
   "keywords": [
     "ddls",
     "ddls.js",
-    "ui"
+    "dedal",
+    "pathfinder"
   ],
   "author": "lo-th",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/lo-th/ddls/issues"
+    "url": "https://github.com/lo-th/Dedal.lab/issues"
   },
-  "homepage": "http://lo-th.github.io/ddls/",
+  "homepage": "http://lo-th.github.io/Dedal.lab/",
   "devDependencies": {
-    "eslint": "latest",
-    "eslint-config-mdcs": "latest",
-    "rollup": "latest",
-    "rollup-watch": "latest",
-    "uglify-js": "latest"
+    "@babel/core": "^7.17.9",
+    "@babel/eslint-parser": "^7.17.0",
+    "@babel/plugin-proposal-class-properties": "^7.16.7",
+    "@babel/preset-env": "^7.16.11",
+    "@rollup/plugin-babel": "^5.3.1",
+    "@rollup/plugin-node-resolve": "^13.2.0",
+    "concurrently": "^7.1.0",
+    "rollup": "^2.70.2",
+    "rollup-plugin-filesize": "^9.1.2",
+    "rollup-plugin-terser": "^7.0.2",
+    "rollup-plugin-visualizer": "^5.6.0",
+    "servez": "^1.14.1"
   }
 }

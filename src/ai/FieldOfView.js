@@ -1,39 +1,36 @@
-import { Dictionary, EPSILON_NORMAL } from '../constants';
-import { Squared } from '../core/Tools';
-import { Point } from '../math/Point';
-import { Geom2D } from '../math/Geom2D';
+import { Dictionary, EPSILON_NORMAL } from '../constants.js';
+import { Squared } from '../core/Tools.js';
+import { Point } from '../math/Point.js';
+import { Geom2D } from '../math/Geom2D.js';
 
+export class FieldOfView {
 
-function FieldOfView ( entity, world ) {
+    constructor ( entity, world ) {
 
-    this.entity = entity || null;
-    this.world = world || null;
-    //this._debug = false;
-};
+        this.entity = entity || null;
+        this.world = world || null;
+        //this._debug = false;
+    }
 
-FieldOfView.prototype = {
-
-    constructor: FieldOfView,
-
-    isInField: function ( targetEntity ) {
+    isInField ( targetEntity ) {
 
         if (!this.world) return;//throw new Error("Mesh missing");
         if (!this.entity) return;//throw new Error("From entity missing");
 
         this.mesh = this.world.getMesh();
 
-        var pos = this.entity.position;
-        var direction = this.entity.direction;
-        var target = targetEntity.position;
+        let pos = this.entity.position;
+        let direction = this.entity.direction;
+        let target = targetEntity.position;
         
-        var radius = this.entity.radiusFOV;
-        var angle = this.entity.angleFOV;
+        let radius = this.entity.radiusFOV;
+        let angle = this.entity.angleFOV;
         
-        //var targetX = targetEntity.x;
-        //var targetY = targetEntity.y;
-        var targetRadius = targetEntity.radius
+        //let targetX = targetEntity.x;
+        //let targetY = targetEntity.y;
+        let targetRadius = targetEntity.radius
         
-        var distSquared = Squared( pos.x - target.x, pos.y - target.y );//(posX-targetX)*(posX-targetX) + (posY-targetY)*(posY-targetY);
+        let distSquared = Squared( pos.x - target.x, pos.y - target.y );//(posX-targetX)*(posX-targetX) + (posY-targetY)*(posY-targetY);
         
         // if target is completely outside field radius
         if ( distSquared >= (radius + targetRadius)*(radius + targetRadius) ){
@@ -46,20 +43,20 @@ FieldOfView.prototype = {
             return true;
         }*/
         
-        //var leftTargetX, leftTargetY, rightTargetX, rightTargetY, leftTargetInField, rightTargetInField;
+        //let leftTargetX, leftTargetY, rightTargetX, rightTargetY, leftTargetInField, rightTargetInField;
 
-        var leftTarget = new Point();
-        var rightTarget = new Point();
-        var leftTargetInField, rightTargetInField;
+        let leftTarget = new Point();
+        let rightTarget = new Point();
+        let leftTargetInField, rightTargetInField;
         
         // we consider the 2 cicrles intersections
-        var  result = [];
+        let  result = [];
         if ( Geom2D.intersections2Circles(pos, radius, target, targetRadius, result) ){
             leftTarget.set(result[0], result[1]);
             rightTarget.set(result[2], result[3]);
         }
 
-        var mid = pos.clone().add(target).mul(0.5);
+        let mid = pos.clone().add(target).mul(0.5);
         
         if( result.length == 0 || Squared(mid.x-target.x, mid.y-target.y) < Squared(mid.x-leftTarget.x, mid.y-leftTarget.y) ){
             // we consider the 2 tangents from field center to target
@@ -76,21 +73,21 @@ FieldOfView.prototype = {
             this._debug.graphics.drawCircle(rightTargetX, rightTargetY, 2);
         }*/
         
-        var dotProdMin = Math.cos( this.entity.angleFOV*0.5 );
+        let dotProdMin = Math.cos( this.entity.angleFOV*0.5 );
 
         // we compare the dots for the left point
-        var left = leftTarget.clone().sub(pos);
-        var lengthLeft = Math.sqrt( left.x*left.x + left.y*left.y );
-        var dotLeft = (left.x/lengthLeft)*direction.x + (left.y/lengthLeft)*direction.y;
+        let left = leftTarget.clone().sub(pos);
+        let lengthLeft = Math.sqrt( left.x*left.x + left.y*left.y );
+        let dotLeft = (left.x/lengthLeft)*direction.x + (left.y/lengthLeft)*direction.y;
         // if the left point is in field
         if (dotLeft > dotProdMin) leftTargetInField = true;
         else leftTargetInField = false;
         
         
         // we compare the dots for the right point
-        var right = rightTarget.clone().sub(pos);
-        var lengthRight = Math.sqrt( right.x*right.x + right.y*right.y );
-        var dotRight = (right.x/lengthRight)*direction.x + (right.y/lengthRight)*direction.y;
+        let right = rightTarget.clone().sub(pos);
+        let lengthRight = Math.sqrt( right.x*right.x + right.y*right.y );
+        let dotRight = (right.x/lengthRight)*direction.x + (right.y/lengthRight)*direction.y;
         // if the right point is in field
         if (dotRight > dotProdMin) rightTargetInField = true;
         else rightTargetInField = false;
@@ -98,7 +95,7 @@ FieldOfView.prototype = {
         
         // if the left and right points are outside field
         if (!leftTargetInField && !rightTargetInField){
-            var pdir = pos.clone().add(direction);
+            let pdir = pos.clone().add(direction);
             // we must check if the Left/right points are on 2 different sides
             if ( Geom2D.getDirection(pos, pdir, leftTarget) === 1 && Geom2D.getDirection(pos, pdir, rightTarget) === -1 ){
                 //trace("the Left/right points are on 2 different sides"); 
@@ -110,16 +107,16 @@ FieldOfView.prototype = {
         
         // we init the window
         if ( !leftTargetInField || !rightTargetInField ){
-            var p = new Point();
-            var dirAngle;
+            let p = new Point();
+            let dirAngle;
             dirAngle = Math.atan2( direction.y, direction.x );
             if ( !leftTargetInField ){
-                var leftField = new Point( Math.cos(dirAngle - angle*0.5), Math.sin(dirAngle - angle*0.5)).add(pos);
+                let leftField = new Point( Math.cos(dirAngle - angle*0.5), Math.sin(dirAngle - angle*0.5)).add(pos);
                 Geom2D.intersections2segments(pos, leftField , leftTarget, rightTarget, p, null, true);
                 leftTarget = p.clone();
             }
             if ( !rightTargetInField ){
-                var rightField = new Point( Math.cos(dirAngle + angle*0.5), Math.sin(dirAngle + angle*0.5)).add(pos);
+                let rightField = new Point( Math.cos(dirAngle + angle*0.5), Math.sin(dirAngle + angle*0.5)).add(pos);
                 Geom2D.intersections2segments(pos, rightField , leftTarget, rightTarget, p, null, true);
                 rightTarget = p.clone();
             }
@@ -129,14 +126,14 @@ FieldOfView.prototype = {
         // now we have a triangle called the window defined by: posX, posY, rightTargetX, rightTargetY, leftTargetX, leftTargetY
         
         // we set a dictionnary of faces done
-        var facesDone = new Dictionary( 0 );
+        let facesDone = new Dictionary( 0 );
         // we set a dictionnary of edges done
-        var edgesDone = new Dictionary( 0 );
+        let edgesDone = new Dictionary( 0 );
         // we set the window wall
-        var wall = [];
+        let wall = [];
         // we localize the field center
-        var startObj = Geom2D.locatePosition( pos, this.mesh );
-        var startFace;
+        let startObj = Geom2D.locatePosition( pos, this.mesh );
+        let startFace;
 
         if ( startObj.type == 2 ) startFace = startObj;
         else if ( startObj.type == 1  ) startFace = startObj.leftFace;
@@ -144,17 +141,17 @@ FieldOfView.prototype = {
         
         
         // we put the face where the field center is lying in open list
-        var openFacesList = [];
-        var openFaces = new Dictionary( 0 );
+        let openFacesList = [];
+        let openFaces = new Dictionary( 0 );
         openFacesList.push(startFace);
         openFaces[startFace] = true;
         
-        var currentFace, currentEdge, s1, s2;
-        var p1 = new Point();
-        var p2 = new Point();
-        var param1, param2, i, index1, index2;
-        var params = [];
-        var edges = [];
+        let currentFace, currentEdge, s1, s2;
+        let p1 = new Point();
+        let p2 = new Point();
+        let param1, param2, i, index1, index2;
+        let params = [];
+        let edges = [];
         // we iterate as long as we have new open facess
         while ( openFacesList.length > 0 ){
             // we pop the 1st open face: current face
@@ -259,5 +256,3 @@ FieldOfView.prototype = {
     }
 
 }
-
-export { FieldOfView };

@@ -1,106 +1,103 @@
-import { Main, IDX } from '../constants';
-import { RectMesh } from '../factories/RectMesh';
-import { BitmapObject } from '../factories/BitmapObject';
-import { BitmapMesh } from '../factories/BitmapMesh';
-import { PathFinder } from '../ai/PathFinder';
-import { Object2D } from '../core/Object2D';
-import { Entity } from '../ai/Entity';
-import { fromImageData } from '../core/Tools';
+import { Main, IDX } from '../constants.js'
+import { RectMesh } from '../factories/RectMesh.js'
+import { BitmapMesh } from '../factories/BitmapMesh.js'
+import { PathFinder } from '../ai/PathFinder.js'
+import { fromImageData } from '../core/Tools.js'
+import { Object2D } from '../core/Object2D.js'
+import { Entity } from '../ai/Entity.js'
 
-function World ( w, h ) {
+//https://github.com/hxDaedalus/hxDaedalus/tree/master/src/hxDaedalus
 
-    IDX.reset();
+export class World {
 
-    this.heroes = [];
-    this.shapes = [];
-    this.segments = [];
-    this.objects = [];
-    
-    this.w = w || 512;
-    this.h = h || 512;
+    constructor ( w = 512, h = 512 ) {
 
-    this.mesh = new RectMesh( this.w, this.h );
+        IDX.reset()
 
-    this.pathFinder = new PathFinder();
-    this.pathFinder.mesh = this.mesh;
+        this.heroes = []
+        this.shapes = []
+        this.segments = []
+        this.objects = []
+        
+        this.w = w;
+        this.h = h;
 
-};
+        this.mesh = new RectMesh( this.w, this.h )
 
-World.prototype = {
+        this.pathFinder = new PathFinder()
+        this.pathFinder.mesh = this.mesh
 
-    constructor: World,
+    }
 
-    getMesh: function () {
+    getMesh() {
 
-        return this.mesh;
+        return this.mesh
 
-    },
+    }
 
-    update: function () {
+    update() {
 
-        var lng = this.heroes.length;
+        let lng = this.heroes.length
 
-        var i = lng, j, h;
+        let i = lng, j, h
 
         while( i-- ){
 
-            h = this.heroes[i];
-
-            h.update();
+            h = this.heroes[i]
+            h.update()
 
             if(h.testSee){
                 j = lng;
                 while( j-- ){
                     if( i !== j ) {
                         //this.heroes[i].entity.isSee = this.heroes[i].fov.isInField( this.heroes[j].entity );
-                        this.heroes[i].isSee = this.heroes[i].fov.isInField( this.heroes[j] );
+                        this.heroes[i].isSee = this.heroes[i].fov.isInField( this.heroes[j] )
                     }
                 }
             }
 
         }
 
-    },
+    }
 
-    updateMesh: function () {
+    updateMesh() {
 
-       this.mesh.updateObjects();
+       this.mesh.updateObjects()
 
-    },
+    }
     
-    add: function ( o ) {
+    add( o ) {
 
-        this.mesh.insertObject(o);
-        this.objects.push(o);
+        this.mesh.insertObject(o)
+        this.objects.push(o)
 
-    },
+    }
 
-    addHeroe: function ( s ) {
+    addHeroe( s ) {
 
-        //var h = new Heroe( s, this );
-        var h = new Entity( s, this );
-        this.heroes.push( h );
-        return h;
+        let h = new Entity( s, this )
+        this.heroes.push( h )
+        return h
         
-    },
+    }
 
-    addObject: function ( s ) {
+    addObject( s ) {
 
         s = s || {};
-        var o = new Object2D();
-        o.coordinates = s.coord || [-1,-1,1,-1,  1,-1,1,1,  1,1,-1,1,  -1,1,-1,-1];
-        o.position(s.x || 1,s.y || 1);
-        o.scale(s.w || 1, s.h || 1);
-        o.pivot( s.px || 0, s.py || 0);
-        o.rotation = s.r || 0;
+        let o = new Object2D()
+        o.coordinates = s.coord || [-1,-1,1,-1,  1,-1,1,1,  1,1,-1,1,  -1,1,-1,-1]
+        o.position(s.x || 1,s.y || 1)
+        o.scale(s.w || 1, s.h || 1)
+        o.pivot( s.px || 0, s.py || 0)
+        o.rotation = s.r || 0
 
-        this.mesh.insertObject(o);
-        this.objects.push(o);
-        return o;
+        this.mesh.insertObject(o)
+        this.objects.push(o)
+        return o
 
-    },
+    }
 
-    reset: function ( w, h ) {
+    reset( w, h ) {
 
         this.mesh.dispose();
         if(w) this.w = w;
@@ -108,89 +105,76 @@ World.prototype = {
         this.mesh = new RectMesh( this.w, this.h );
         this.pathFinder.mesh = this.mesh;
     
-    },
+    }
 
-    rebuild: function ( mesh ) {
+    rebuild( mesh ) {
 
-        this.mesh.clear( true );
-        if( mesh !== undefined ) this.mesh = mesh;
-        else this.mesh = new RectMesh( this.w, this.h );
-        this.pathFinder.mesh = this.mesh;
+        this.mesh.clear( true )
+        if( mesh !== undefined ) this.mesh = mesh
+        else this.mesh = new RectMesh( this.w, this.h )
+        this.pathFinder.mesh = this.mesh
         //this.mesh._objects = [];
-        var i = this.objects.length;
+        let i = this.objects.length
         while(i--){
-            this.objects[i]._constraintShape = null;
-            this.mesh.insertObject(this.objects[i]);
+            this.objects[i]._constraintShape = null
+            this.mesh.insertObject(this.objects[i])
         }
 
-    },
+    }
 
-    addBitmapZone: function ( o ) {
-
-        o = o || {};
+    addBitmapZone( o = {} ) {
 
         if( o.url ){ // by image url
 
-            var img = document.createElement( 'img' );
+            let img = document.createElement( 'img' );
 
             img.onload = function(){
 
-                o.pixel = fromImageData( img );
-                o.w = img.width;
-                o.h = img.height;
-                this.updateBitmapZone( o );
+                o.pixel = fromImageData( img )
+                this.updateBitmapZone( o )
 
             }.bind( this )
 
-            img.src = o.url;
+            img.src = o.url
 
         }
 
         if( o.canvas ){ // by canvas 
 
-            o.w = o.canvas.width;
-            o.h = o.canvas.height;
-            o.pixel = fromImageData( null, o.canvas.getContext('2d').getImageData( 0, 0, o.w, o.h ) );
-            this.updateBitmapZone( o );
+            let w = o.canvas.width
+            let h = o.canvas.height
+            o.pixel = fromImageData( null, o.canvas.getContext('2d').getImageData( 0, 0, w, h ), w, h )
+            this.updateBitmapZone( o )
 
         }
 
         if( o.img ){ // by direct image
 
-            o.w = o.img.width;
-            o.h = o.img.height;
-            o.pixel = fromImageData( o.img );
-            this.updateBitmapZone( o );
+            o.pixel = fromImageData( o.img )
+            this.updateBitmapZone( o )
 
         }
 
-    },
+    }
 
-    updateBitmapZone: function ( o ) {
-
-        o = o || {};
-
+    updateBitmapZone( o = {} ) {
         
-        this.mesh.dispose();
-        this.mesh = BitmapMesh.buildFromBmpData( o.pixel, o.precision, o.color );
-        this.pathFinder.mesh = this.mesh;
+        this.mesh.dispose()
+        this.mesh = BitmapMesh.buildFromBmpData( o.pixel, o.precision, o.color )
+        this.pathFinder.mesh = this.mesh
         
 
         /*
-        var obj = BitmapObject.buildFromBmpData( o.pixel, o.precision, o.color );
+        let obj = BitmapObject.buildFromBmpData( o.pixel, o.precision, o.color );
         obj._constraintShape = null;
         this.reset( o.w, o.h );
         this.mesh.insertObject( obj );
         //this.add( obj );
         */
 
-        var view = Main.get();
-        if( view ) view.drawMesh( this.mesh );
+        let view = Main.get()
+        if( view ) view.drawMesh( this.mesh )
 
     }
     
-
-
-};
-
-export { World };
+}
